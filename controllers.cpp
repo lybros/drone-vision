@@ -134,7 +134,7 @@ IncrementalMapperController::IncrementalMapperController(
           running_(false),
           started_(false),
           finished_(false),
-          options_(options) {}
+          options_(options) { }
 
 IncrementalMapperController::IncrementalMapperController(
         const OptionManager& options, class Reconstruction* initial_model)

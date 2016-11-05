@@ -12,11 +12,11 @@
 #include <ceres/ceres.h>
 #include <ceres/rotation.h>
 
-template <typename CameraModel>
+template<typename CameraModel>
 class BundleAdjustmentCostFunction {
 public:
     BundleAdjustmentCostFunction(const Eigen::Vector2d& point2D)
-            : point2D_(point2D) {}
+            : point2D_(point2D) { }
 
     static ceres::CostFunction* Create(const Eigen::Vector2d& point2D) {
         return (new ceres::AutoDiffCostFunction<
@@ -25,7 +25,7 @@ public:
                 new BundleAdjustmentCostFunction(point2D)));
     }
 
-    template <typename T>
+    template<typename T>
     bool operator()(const T* const qvec, const T* const tvec,
                     const T* const point3D, const T* const camera_params,
                     T* residuals) const {
@@ -52,13 +52,13 @@ private:
     const Eigen::Vector2d point2D_;
 };
 
-template <typename CameraModel>
+template<typename CameraModel>
 class BundleAdjustmentConstantPoseCostFunction {
 public:
     BundleAdjustmentConstantPoseCostFunction(const Eigen::Vector4d& qvec,
                                              const Eigen::Vector3d& tvec,
                                              const Eigen::Vector2d& point2D)
-            : qvec_(qvec), tvec_(tvec), point2D_(point2D) {}
+            : qvec_(qvec), tvec_(tvec), point2D_(point2D) { }
 
     static ceres::CostFunction* Create(const Eigen::Vector4d& qvec,
                                        const Eigen::Vector3d& tvec,
@@ -69,7 +69,7 @@ public:
                 new BundleAdjustmentConstantPoseCostFunction(qvec, tvec, point2D)));
     }
 
-    template <typename T>
+    template<typename T>
     bool operator()(const T* const point3D, const T* const camera_params,
                     T* residuals) const {
         T qvec[4] = {T(qvec_(0)), T(qvec_(1)), T(qvec_(2)), T(qvec_(3))};
@@ -102,7 +102,7 @@ private:
 class RelativePoseCostFunction {
 public:
     RelativePoseCostFunction(const Eigen::Vector2d& x1, const Eigen::Vector2d& x2)
-            : x1_(x1), x2_(x2) {}
+            : x1_(x1), x2_(x2) { }
 
     static ceres::CostFunction* Create(const Eigen::Vector2d& x1,
                                        const Eigen::Vector2d& x2) {
@@ -110,7 +110,7 @@ public:
                 new RelativePoseCostFunction(x1, x2)));
     }
 
-    template <typename T>
+    template<typename T>
     bool operator()(const T* const qvec, const T* const tvec,
                     T* residuals) const {
         Eigen::Matrix<T, 3, 3, Eigen::RowMajor> R;
@@ -140,7 +140,7 @@ private:
 };
 
 struct UnitTranslationPlus {
-    template <typename T>
+    template<typename T>
     bool operator()(const T* x, const T* delta, T* x_plus_delta) const {
         x_plus_delta[0] = x[0] + delta[0];
         x_plus_delta[1] = x[1] + delta[1];
@@ -166,40 +166,63 @@ public:
     BundleAdjustmentConfiguration();
 
     size_t NumImages() const;
+
     size_t NumPoints() const;
+
     size_t NumConstantCameras() const;
+
     size_t NumConstantPoses() const;
+
     size_t NumConstantTvecs() const;
+
     size_t NumVariablePoints() const;
+
     size_t NumConstantPoints() const;
 
     void AddImage(const image_t image_id);
+
     bool HasImage(const image_t image_id) const;
+
     void RemoveImage(const image_t image_id);
 
     void SetConstantCamera(const camera_t camera_id);
+
     void SetVariableCamera(const camera_t camera_id);
+
     bool IsConstantCamera(const camera_t camera_id) const;
 
     void SetConstantPose(const image_t image_id);
+
     void SetVariablePose(const image_t image_id);
+
     bool HasConstantPose(const image_t image_id) const;
 
     void SetConstantTvec(const image_t image_id, const std::vector<int>& idxs);
+
     void RemoveConstantTvec(const image_t image_id);
+
     bool HasConstantTvec(const image_t image_id) const;
 
     void AddVariablePoint(const point3D_t point3D_id);
+
     void AddConstantPoint(const point3D_t point3D_id);
+
     bool HasPoint(const point3D_t point3D_id) const;
+
     bool HasVariablePoint(const point3D_t point3D_id) const;
+
     bool HasConstantPoint(const point3D_t point3D_id) const;
+
     void RemoveVariablePoint(const point3D_t point3D_id);
+
     void RemoveConstantPoint(const point3D_t point3D_id);
 
     const std::unordered_set<image_t>& Images() const;
+
     const std::unordered_set<point3D_t>& VariablePoints() const;
+
     const std::unordered_set<point3D_t>& ConstantPoints() const;
+
     const std::vector<int>& ConstantTvec(const image_t image_id) const;
 
 private:
@@ -256,6 +279,7 @@ public:
 private:
     void SetUp(Reconstruction* reconstruction,
                ceres::LossFunction* loss_function);
+
     void TearDown(Reconstruction* reconstruction);
 
     void AddImageToProblem(const image_t image_id, Reconstruction* reconstruction,
@@ -266,6 +290,7 @@ private:
                     ceres::LossFunction* loss_function);
 
     void ParameterizeCameras(Reconstruction* reconstruction);
+
     void ParameterizePoints(Reconstruction* reconstruction);
 
     const Options options_;

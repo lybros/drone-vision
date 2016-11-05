@@ -30,8 +30,8 @@ namespace {
     }
 
     bool IsImagePointInBoundingBox(const Eigen::Vector2d& point,
-                                          const double minx, const double maxx,
-                                          const double miny, const double maxy) {
+                                   const double minx, const double maxx,
+                                   const double miny, const double maxy) {
         return point(0) >= minx && point(0) <= maxx && point(1) >= miny &&
                point(1) <= maxy;
     }
@@ -388,7 +388,7 @@ bool TwoViewGeometry::DetectWatermark(
     ransac_options.min_inlier_ratio = options.watermark_min_inlier_ratio;
 
     LORANSAC<TranslationTransformEstimator<2>, TranslationTransformEstimator<2>>
-                                                                             ransac(ransac_options);
+            ransac(ransac_options);
     const auto report = ransac.Estimate(inlier_points1, inlier_points2);
 
     const double inlier_ratio =

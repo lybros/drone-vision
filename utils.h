@@ -42,9 +42,9 @@
 
 namespace Eigen {
 
-typedef Eigen::Matrix<double, 3, 4> Matrix3x4d;
-typedef Eigen::Matrix<uint8_t, 3, 1> Vector3ub;
-typedef Eigen::Matrix<uint8_t, 4, 1> Vector4ub;
+    typedef Eigen::Matrix<double, 3, 4> Matrix3x4d;
+    typedef Eigen::Matrix<uint8_t, 3, 1> Vector3ub;
+    typedef Eigen::Matrix<uint8_t, 4, 1> Vector4ub;
 
 }
 
@@ -61,7 +61,7 @@ typedef uint64_t point3D_t;
 const camera_t kInvalidCameraId = std::numeric_limits<camera_t>::max();
 const image_t kInvalidImageId = std::numeric_limits<image_t>::max();
 const image_pair_t kInvalidImagePairId =
-    std::numeric_limits<image_pair_t>::max();
+        std::numeric_limits<image_pair_t>::max();
 const point2D_t kInvalidPoint2DIdx = std::numeric_limits<point2D_t>::max();
 const point3D_t kInvalidPoint3DId = std::numeric_limits<point3D_t>::max();
 
@@ -74,28 +74,28 @@ void PrintHeading1(const std::string& heading);
 void PrintHeading2(const std::string& heading);
 
 std::string StringReplace(const std::string& str, const std::string& old_str,
-                              const std::string& new_str);
+                          const std::string& new_str);
 
 std::vector<std::string> StringSplit(const std::string& str,
-                                         const std::string& delim);
+                                     const std::string& delim);
 
-template <typename T>
+template<typename T>
 bool VectorContains(const std::vector<T>& vector, const T value);
 
-template <typename T>
+template<typename T>
 std::vector<T> CSVToVector(const std::string& csv);
 
-template <typename T>
+template<typename T>
 std::string VectorToCSV(const std::vector<T>& values);
 
-template <typename T>
+template<typename T>
 bool VectorContains(const std::vector<T>& vector, const T value) {
     return std::find_if(vector.begin(), vector.end(), [value](const T element) {
         return element == value;
     }) != vector.end();
 }
 
-template <typename T>
+template<typename T>
 std::vector<T> CSVToVector(const std::string& csv) {
     auto elems = StringSplit(csv, ",;");
     std::vector<T> values;
@@ -114,7 +114,7 @@ std::vector<T> CSVToVector(const std::string& csv) {
     return values;
 }
 
-template <typename T>
+template<typename T>
 std::string VectorToCSV(const std::vector<T>& values) {
     std::string string;
     for (const T value : values) {
@@ -128,55 +128,59 @@ std::string VectorToCSV(const std::vector<T>& values) {
 #define M_PI 3.14159265358979323846264338327950288
 #endif
 
-template <typename T>
+template<typename T>
 int SignOfNumber(const T val);
 
 bool IsNaN(const float x);
+
 bool IsNaN(const double x);
 
-template <typename Derived>
+template<typename Derived>
 bool IsNaN(const Eigen::MatrixBase<Derived>& x);
 
 bool IsInf(const float x);
+
 bool IsInf(const double x);
 
-template <typename Derived>
+template<typename Derived>
 bool IsInf(const Eigen::MatrixBase<Derived>& x);
 
-template <typename T>
+template<typename T>
 T Clip(const T& value, const T& low, const T& high);
 
 float DegToRad(const float deg);
+
 double DegToRad(const double deg);
 
 float RadToDeg(const float rad);
+
 double RadToDeg(const double rad);
 
-template <typename T>
+template<typename T>
 double Median(const std::vector<T>& elems);
 
-template <typename T>
+template<typename T>
 double Mean(const std::vector<T>& elems);
 
-template <typename T>
+template<typename T>
 double Variance(const std::vector<T>& elems);
 
-template <typename T>
+template<typename T>
 double StdDev(const std::vector<T>& elems);
 
-template <typename T>
+template<typename T>
 bool AnyLessThan(std::vector<T> elems, T threshold);
 
-template <typename T>
+template<typename T>
 bool AnyGreaterThan(std::vector<T> elems, T threshold);
 
-template <class Iterator>
+template<class Iterator>
 bool NextCombination(Iterator first, Iterator middle, Iterator last);
 
-template <typename T>
+template<typename T>
 T Sigmoid(const T x, const T alpha = 1);
 
-template <typename T>
+template<typename T>
 T ScaleSigmoid(T x, const T alpha = 1, const T x0 = 10);
 
 size_t NChooseK(const size_t n, const size_t k);
@@ -197,7 +201,7 @@ std::vector<std::complex<double>> SolvePolynomialN(
 
 namespace internal {
 
-    template <class Iterator>
+    template<class Iterator>
     bool NextCombination(Iterator first1, Iterator last1, Iterator first2,
                          Iterator last2) {
         if ((first1 == last1) || (first2 == last2)) {
@@ -235,28 +239,28 @@ namespace internal {
 
 }
 
-template <typename T>
+template<typename T>
 int SignOfNumber(const T val) {
     return (T(0) < val) - (val < T(0));
 }
 
-template <typename Derived>
+template<typename Derived>
 bool IsNaN(const Eigen::MatrixBase<Derived>& x) {
     return !(x.array() == x.array()).all();
 }
 
-template <typename Derived>
+template<typename Derived>
 bool IsInf(const Eigen::MatrixBase<Derived>& x) {
     return !((x - x).array() == (x - x).array()).all();
 }
 
-template <typename T>
+template<typename T>
 T Clip(const T& value, const T& low, const T& high) {
     return std::max(low, std::min(value, high));
 }
 
 
-template <typename T>
+template<typename T>
 double Median(const std::vector<T>& elems) {
     const size_t mid_idx = elems.size() / 2;
 
@@ -274,7 +278,7 @@ double Median(const std::vector<T>& elems) {
     }
 }
 
-template <typename T>
+template<typename T>
 double Mean(const std::vector<T>& elems) {
     double sum = 0;
     for (const auto el : elems) {
@@ -283,7 +287,7 @@ double Mean(const std::vector<T>& elems) {
     return sum / elems.size();
 }
 
-template <typename T>
+template<typename T>
 double Variance(const std::vector<T>& elems) {
     const double mean = Mean(elems);
     double var = 0;
@@ -294,12 +298,12 @@ double Variance(const std::vector<T>& elems) {
     return var / (elems.size() - 1);
 }
 
-template <typename T>
+template<typename T>
 double StdDev(const std::vector<T>& elems) {
     return std::sqrt(Variance(elems));
 }
 
-template <typename T>
+template<typename T>
 bool AnyLessThan(std::vector<T> elems, T threshold) {
     for (const auto& el : elems) {
         if (el < threshold) {
@@ -309,7 +313,7 @@ bool AnyLessThan(std::vector<T> elems, T threshold) {
     return false;
 }
 
-template <typename T>
+template<typename T>
 bool AnyGreaterThan(std::vector<T> elems, T threshold) {
     for (const auto& el : elems) {
         if (el > threshold) {
@@ -319,17 +323,17 @@ bool AnyGreaterThan(std::vector<T> elems, T threshold) {
     return false;
 }
 
-template <class Iterator>
+template<class Iterator>
 bool NextCombination(Iterator first, Iterator middle, Iterator last) {
     return internal::NextCombination(first, middle, middle, last);
 }
 
-template <typename T>
+template<typename T>
 T Sigmoid(const T x, const T alpha) {
     return T(1) / (T(1) + exp(-x * alpha));
 }
 
-template <typename T>
+template<typename T>
 T ScaleSigmoid(T x, const T alpha, const T x0) {
     const T t0 = Sigmoid(-x0, alpha);
     const T t1 = Sigmoid(x0, alpha);
@@ -342,12 +346,13 @@ public:
     static const int kMaxNumThreads = -1;
 
     ThreadPool(const int num_threads = kMaxNumThreads);
+
     ~ThreadPool();
 
     int NumThreads() const;
 
-    template <class func_t, class... args_t>
-    auto AddTask(func_t&& f, args_t&&... args)
+    template<class func_t, class... args_t>
+    auto AddTask(func_t&& f, args_t&& ... args)
             -> std::future<typename std::result_of<func_t(args_t...)>::type>;
 
     void Stop();
@@ -363,8 +368,8 @@ private:
     bool stop_;
 };
 
-template <class func_t, class... args_t>
-auto ThreadPool::AddTask(func_t&& f, args_t&&... args)
+template<class func_t, class... args_t>
+auto ThreadPool::AddTask(func_t&& f, args_t&& ... args)
 -> std::future<typename std::result_of<func_t(args_t...)>::type> {
     typedef typename std::result_of<func_t(args_t...)>::type return_t;
 
@@ -392,16 +397,20 @@ extern thread_local std::mt19937* PRNG;
 static const unsigned kRandomPRNGSeed = std::numeric_limits<unsigned>::max();
 
 void SetPRNGSeed(unsigned seed = kRandomPRNGSeed);
-template <typename T>
+
+template<typename T>
 T RandomInteger(const T min, const T max);
-template <typename T>
+
+template<typename T>
 T RandomReal(const T min, const T max);
-template <typename T>
+
+template<typename T>
 T RandomGaussian(const T mean, const T stddev);
-template <typename T>
+
+template<typename T>
 void Shuffle(const uint32_t num_to_shuffle, std::vector<T>* elems);
 
-template <typename T>
+template<typename T>
 T RandomInteger(const T min, const T max) {
     if (PRNG == nullptr) {
         SetPRNGSeed();
@@ -412,7 +421,7 @@ T RandomInteger(const T min, const T max) {
     return distribution(*PRNG);
 }
 
-template <typename T>
+template<typename T>
 T RandomReal(const T min, const T max) {
     if (PRNG == nullptr) {
         SetPRNGSeed();
@@ -423,7 +432,7 @@ T RandomReal(const T min, const T max) {
     return distribution(*PRNG);
 }
 
-template <typename T>
+template<typename T>
 T RandomGaussian(const T mean, const T stddev) {
     if (PRNG == nullptr) {
         SetPRNGSeed();
@@ -433,7 +442,7 @@ T RandomGaussian(const T mean, const T stddev) {
     return distribution(*PRNG);
 }
 
-template <typename T>
+template<typename T>
 void Shuffle(const uint32_t num_to_shuffle, std::vector<T>* elems) {
     const uint32_t last_idx = static_cast<uint32_t>(elems->size() - 1);
     for (uint32_t i = 0; i < num_to_shuffle; ++i) {
@@ -448,18 +457,27 @@ public:
     Timer();
 
     void Start();
+
     void Restart();
+
     void Pause();
+
     void Resume();
+
     void Reset();
 
     double ElapsedMicroSeconds() const;
+
     double ElapsedSeconds() const;
+
     double ElapsedMinutes() const;
+
     double ElapsedHours() const;
 
     void PrintSeconds() const;
+
     void PrintMinutes() const;
+
     void PrintHours() const;
 
 private:
@@ -470,27 +488,37 @@ private:
 };
 
 
-
 void RotationMatrixToEulerAngles(const Eigen::Matrix3d& R, double* rx,
                                  double* ry, double* rz);
+
 Eigen::Matrix3d EulerAnglesToRotationMatrix(const double rx, const double ry,
                                             const double rz);
+
 Eigen::Vector4d RotationMatrixToQuaternion(const Eigen::Matrix3d& rot_mat);
+
 Eigen::Matrix3d QuaternionToRotationMatrix(const Eigen::Vector4d& qvec);
+
 Eigen::Vector4d NormalizeQuaternion(const Eigen::Vector4d& qvec);
+
 Eigen::Vector4d InvertQuaternion(const Eigen::Vector4d& qvec);
+
 Eigen::Vector4d ConcatenateQuaternions(const Eigen::Vector4d& qvec1,
                                        const Eigen::Vector4d& qvec2);
+
 Eigen::Vector3d QuaternionRotatePoint(const Eigen::Vector4d& qvec,
                                       const Eigen::Vector3d& point);
+
 Eigen::Vector3d ProjectionCenterFromMatrix(
         const Eigen::Matrix3x4d& proj_matrix);
+
 Eigen::Vector3d ProjectionCenterFromParameters(const Eigen::Vector4d& qvec,
                                                const Eigen::Vector3d& tvec);
+
 void InterpolatePose(const Eigen::Vector4d& qvec1, const Eigen::Vector3d& tvec1,
                      const Eigen::Vector4d& qvec2, const Eigen::Vector3d& tvec2,
                      const double t, Eigen::Vector4d* qveci,
                      Eigen::Vector3d* tveci);
+
 Eigen::Vector3d CalculateBaseline(const Eigen::Vector4d& qvec1,
                                   const Eigen::Vector3d& tvec1,
                                   const Eigen::Vector4d& qvec2,

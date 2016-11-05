@@ -1,6 +1,6 @@
 #include "optimization.h"
 
-BundleAdjustmentConfiguration::BundleAdjustmentConfiguration() {}
+BundleAdjustmentConfiguration::BundleAdjustmentConfiguration() { }
 
 size_t BundleAdjustmentConfiguration::NumImages() const {
     return image_ids_.size();

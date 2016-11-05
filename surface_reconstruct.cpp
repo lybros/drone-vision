@@ -5,7 +5,7 @@ SurfaceReconstructer::SurfaceReconstructer(const std::string& input_path, const 
           input_path_(input_path),
           binary_path_(binary_path),
           result_(),
-          successfull_(true) {}
+          successfull_(true) { }
 
 void SurfaceReconstructer::Stop() {
     QMutexLocker locker(&mutex_);
@@ -25,7 +25,7 @@ void SurfaceReconstructer::run() {
     std::ofstream input;
     boost::filesystem::path input_path(input_path_);
     input.open((input_path / boost::filesystem::path("input.txt")).string().c_str());
-    for(auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(input_path), {})) {
+    for (auto& entry : boost::make_iterator_range(boost::filesystem::directory_iterator(input_path), {})) {
         size_t pos = entry.path().string().rfind(".");
         if (pos != std::string::npos && entry.path().string().substr(pos) == ".pset") {
             std::ifstream current_input;
@@ -42,13 +42,13 @@ void SurfaceReconstructer::run() {
                                              + "poisson_triangulation/poisson_triangulation");
     QStringList arguments;
     arguments << "--in" << (input_path / boost::filesystem::path("input.txt")).string().c_str()
-              << "--out" << (input_path / boost::filesystem::path("output")).string().c_str() << "--verbose";
+    << "--out" << (input_path / boost::filesystem::path("output")).string().c_str() << "--verbose";
     QProcess* reconstruction_process = new QProcess;
     std::cout << "Running " << program.toUtf8().constData() << " with mode poisson" << std::endl;
     WaitForProcess(reconstruction_process, program, arguments);
 }
 
-void SurfaceReconstructer::WaitForProcess(QProcess *child, const QString &program, const QStringList &params) {
+void SurfaceReconstructer::WaitForProcess(QProcess* child, const QString& program, const QStringList& params) {
     child->setProcessChannelMode(QProcess::ForwardedChannels);
     child->start(program, params);
     while (true) {

@@ -5,7 +5,7 @@ void IncrementalTriangulator::Options::Check() const {
 
 IncrementalTriangulator::IncrementalTriangulator(const SceneGraph* scene_graph,
                                                  Reconstruction* reconstruction)
-        : scene_graph_(scene_graph), reconstruction_(reconstruction) {}
+        : scene_graph_(scene_graph), reconstruction_(reconstruction) { }
 
 size_t IncrementalTriangulator::TriangulateImage(const Options& options,
                                                  const image_t image_id) {
@@ -710,7 +710,7 @@ IncrementalMapper::IncrementalMapper(const DatabaseCache* database_cache)
           triangulator_(nullptr),
           num_total_reg_images_(0),
           num_shared_reg_images_(0),
-          prev_init_image_pair_id_(kInvalidImagePairId) {}
+          prev_init_image_pair_id_(kInvalidImagePairId) { }
 
 void IncrementalMapper::BeginReconstruction(Reconstruction* reconstruction) {
     reconstruction_ = reconstruction;

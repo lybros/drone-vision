@@ -16,14 +16,17 @@
 class SurfaceReconstructer : public QThread {
 public:
     SurfaceReconstructer(const std::string& input_path, const std::string& binary_path);
+
     void Stop();
+
     bool IsSuccessfull();
+
     std::string ResultFile() const;
 
 protected:
     void run();
 
-    void WaitForProcess(QProcess *child, const QString &program, const QStringList &params);
+    void WaitForProcess(QProcess* child, const QString& program, const QStringList& params);
 
     QMutex mutex_;
 

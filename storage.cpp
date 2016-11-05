@@ -1,6 +1,6 @@
 #include "storage.h"
 
-Bitmap::Bitmap() : width_(0), height_(0), channels_(0) {}
+Bitmap::Bitmap() : width_(0), height_(0), channels_(0) { }
 
 Bitmap::Bitmap(FIBITMAP* data) {
     data_.reset(data, &FreeImage_Unload);
@@ -395,7 +395,7 @@ void Bitmap::CloneMetadata(Bitmap* target) const {
 bool Bitmap::ReadExifTag(const FREE_IMAGE_MDMODEL model,
                          const std::string& tag_name,
                          std::string* result) const {
-    FITAG *tag = nullptr;
+    FITAG* tag = nullptr;
     FreeImage_GetMetadata(model, data_.get(), tag_name.c_str(), &tag);
     if (tag == nullptr) {
         *result = "";
@@ -411,10 +411,13 @@ bool Bitmap::ReadExifTag(const FREE_IMAGE_MDMODEL model,
 }
 
 FIBITMAP* Bitmap::Data() { return data_.get(); }
+
 const FIBITMAP* Bitmap::Data() const { return data_.get(); }
 
 int Bitmap::Width() const { return width_; }
+
 int Bitmap::Height() const { return height_; }
+
 int Bitmap::Channels() const { return channels_; }
 
 unsigned int Bitmap::BitsPerPixel() const {
@@ -430,7 +433,7 @@ bool Bitmap::IsRGB() const { return channels_ == 3; }
 bool Bitmap::IsGrey() const { return channels_ == 1; }
 
 
-SceneGraph::SceneGraph() {}
+SceneGraph::SceneGraph() { }
 
 void SceneGraph::Finalize() {
     for (auto it = images_.begin(); it != images_.end();) {
@@ -706,7 +709,7 @@ namespace {
         return matches;
     }
 
-    template <typename MatrixType>
+    template<typename MatrixType>
     MatrixType ReadMatrixBlob(sqlite3_stmt* sql_stmt, const int rc, const int col) {
         MatrixType matrix;
 
@@ -738,7 +741,7 @@ namespace {
         return matrix;
     }
 
-    template <typename MatrixType>
+    template<typename MatrixType>
     void WriteMatrixBlob(sqlite3_stmt* sql_stmt, const MatrixType& matrix,
                          const int col) {
         const size_t num_bytes = matrix.size() * sizeof(typename MatrixType::Scalar);
@@ -1613,8 +1616,7 @@ bool Database::SwapImagePair(const image_t image_id1, const image_t image_id2) {
 }
 
 
-
-DatabaseCache::DatabaseCache() {}
+DatabaseCache::DatabaseCache() { }
 
 void DatabaseCache::AddCamera(const class Camera& camera) {
     cameras_.emplace(camera.CameraId(), camera);
@@ -1733,6 +1735,7 @@ void DatabaseCache::Load(const Database& database, const size_t min_num_matches,
 
 
 size_t DatabaseCache::NumCameras() const { return cameras_.size(); }
+
 size_t DatabaseCache::NumImages() const { return images_.size(); }
 
 class Camera& DatabaseCache::Camera(const camera_t camera_id) {

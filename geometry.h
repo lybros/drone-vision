@@ -6,14 +6,14 @@
 struct TwoViewGeometry {
     enum ConfigurationType {
         UNDEFINED = 0,
-                DEGENERATE = 1,
-                CALIBRATED = 2,
-                UNCALIBRATED = 3,
-                PLANAR = 4,
-                PANORAMIC = 5,
-                PLANAR_OR_PANORAMIC = 6,
-                WATERMARK = 7,
-                MULTIPLE = 8,
+        DEGENERATE = 1,
+        CALIBRATED = 2,
+        UNCALIBRATED = 3,
+        PLANAR = 4,
+        PANORAMIC = 5,
+        PLANAR_OR_PANORAMIC = 6,
+        WATERMARK = 7,
+        MULTIPLE = 8,
     };
 
     struct Options {
@@ -48,7 +48,7 @@ struct TwoViewGeometry {
               tri_angle(0),
               E_num_inliers(0),
               F_num_inliers(0),
-              H_num_inliers(0) {}
+              H_num_inliers(0) { }
 
     void Estimate(const Camera& camera1,
                   const std::vector<Eigen::Vector2d>& points1,

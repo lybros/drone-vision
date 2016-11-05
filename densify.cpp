@@ -45,7 +45,7 @@ ImageDensifier::ImageDensifier(const Reconstruction& reconstruction, const std::
           binary_path_(binary_path),
           results_(),
           successfull_(true),
-          reconstruction_(reconstruction) {}
+          reconstruction_(reconstruction) { }
 
 void ImageDensifier::Stop() {
     QMutexLocker locker(&mutex_);
@@ -214,7 +214,7 @@ void ImageDensifier::run() {
 
         std::ofstream ofstr;
         std::string option = (boost::format("option-%04d") % c).str();
-        ofstr.open((pmvs_path/ fs::path(option)).string().c_str());
+        ofstr.open((pmvs_path / fs::path(option)).string().c_str());
         results_.push_back(option);
 
         ofstr << "level 1" << std::endl;
@@ -253,7 +253,8 @@ void ImageDensifier::run() {
 
         QString program = QString::fromStdString(binary_path_);
         QStringList arguments;
-        arguments << "pmvs" << EnsureTrailingSlash(pmvs_path.string()).c_str() << (boost::format("option-%04d") % c).str().c_str();
+        arguments << "pmvs" << EnsureTrailingSlash(pmvs_path.string()).c_str() <<
+        (boost::format("option-%04d") % c).str().c_str();
         QProcess* pmvs_process = new QProcess;
         std::cout << "Running " << program.toUtf8().constData() << " with mode pmvs" << std::endl;
         WaitForProcess(pmvs_process, program, arguments);
@@ -272,7 +273,7 @@ bool ImageDensifier::IsRunning() {
     return !stop_;
 }
 
-void ImageDensifier::WaitForProcess(QProcess *child, const QString &program, const QStringList &params) {
+void ImageDensifier::WaitForProcess(QProcess* child, const QString& program, const QStringList& params) {
     child->setProcessChannelMode(QProcess::ForwardedChannels);
     child->start(program, params);
     while (true) {
@@ -406,8 +407,8 @@ void UndistortImage(const Bitmap& distorted_bitmap,
                                  distorted_bitmap.IsRGB());
     distorted_bitmap.CloneMetadata(undistorted_bitmap);
     undistorted_bitmap->Allocate(static_cast<int>(undistorted_camera->Width()),
-                           static_cast<int>(undistorted_camera->Height()),
-                           distorted_bitmap.IsRGB());
+                                 static_cast<int>(undistorted_camera->Height()),
+                                 distorted_bitmap.IsRGB());
     Eigen::Vector2d image_point;
     for (int y = 0; y < undistorted_bitmap->Height(); ++y) {
         image_point.y() = y + 0.5;

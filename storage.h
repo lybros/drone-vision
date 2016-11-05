@@ -28,10 +28,13 @@ public:
     bool Allocate(const int width, const int height, const bool as_rgb);
 
     const FIBITMAP* Data() const;
+
     FIBITMAP* Data();
 
     int Width() const;
+
     int Height() const;
+
     int Channels() const;
 
     unsigned int BitsPerPixel() const;
@@ -39,25 +42,33 @@ public:
     unsigned int ScanWidth() const;
 
     bool IsRGB() const;
+
     bool IsGrey() const;
 
     std::vector<uint8_t> ConvertToRawBits() const;
+
     std::vector<uint8_t> ConvertToRowMajorArray() const;
+
     std::vector<uint8_t> ConvertToColMajorArray() const;
 
     bool GetPixel(const int x, const int y, Eigen::Vector3ub* color) const;
+
     bool SetPixel(const int x, const int y, const Eigen::Vector3ub& color);
 
     void Fill(const Eigen::Vector3ub& color);
 
     bool InterpolateNearestNeighbor(const double x, const double y,
                                     Eigen::Vector3ub* color) const;
+
     bool InterpolateBilinear(const double x, const double y,
                              Eigen::Vector3d* color) const;
 
     bool ExifFocalLength(double* focal_length);
+
     bool ExifLatitude(double* latitude);
+
     bool ExifLongitude(double* longitude);
+
     bool ExifAltitude(double* altitude);
 
     bool Read(const std::string& path, const bool as_rgb = true);
@@ -70,7 +81,9 @@ public:
                    const FREE_IMAGE_FILTER filter = FILTER_BILINEAR);
 
     Bitmap Clone() const;
+
     Bitmap CloneAsGrey() const;
+
     Bitmap CloneAsRGB() const;
 
     void CloneMetadata(Bitmap* target) const;
@@ -90,9 +103,10 @@ class SceneGraph {
 public:
     struct Correspondence {
         Correspondence()
-                : image_id(kInvalidImageId), point2D_idx(kInvalidPoint2DIdx) {}
+                : image_id(kInvalidImageId), point2D_idx(kInvalidPoint2DIdx) { }
+
         Correspondence(const image_t image_id, const point2D_t point2D_idx)
-                : image_id(image_id), point2D_idx(point2D_idx) {}
+                : image_id(image_id), point2D_idx(point2D_idx) { }
 
         image_t image_id;
 
@@ -133,7 +147,7 @@ public:
             const image_t image_id1, const image_t image_id2) const;
 
     bool HasCorrespondences(const image_t image_id,
-                                   const point2D_t point2D_idx) const;
+                            const point2D_t point2D_idx) const;
 
     bool IsTwoViewObservation(const image_t image_id,
                               const point2D_t point2D_idx) const;
@@ -186,20 +200,29 @@ public:
     const static size_t kMaxNumImages;
 
     Database();
+
     ~Database();
 
     void Open(const std::string& path);
+
     void Close();
 
     void BeginTransaction() const;
+
     void EndTransaction() const;
 
     bool ExistsCamera(const camera_t camera_id) const;
+
     bool ExistsImage(const image_t image_id) const;
+
     bool ExistsImageName(std::string name) const;
+
     bool ExistsKeypoints(const image_t image_id) const;
+
     bool ExistsDescriptors(const image_t image_id) const;
+
     bool ExistsMatches(const image_t image_id1, const image_t image_id2) const;
+
     bool ExistsInlierMatches(const image_t image_id1,
                              const image_t image_id2) const;
 
@@ -220,30 +243,36 @@ public:
     size_t NumVerifiedImagePairs() const;
 
     static image_pair_t ImagePairToPairId(const image_t image_id1,
-                                                 const image_t image_id2);
+                                          const image_t image_id2);
 
     static void PairIdToImagePair(const image_pair_t pair_id,
-                                         image_t* image_id1, image_t* image_id2);
+                                  image_t* image_id1, image_t* image_id2);
 
     static bool SwapImagePair(const image_t image_id1,
-                                     const image_t image_id2);
+                              const image_t image_id2);
 
     Camera ReadCamera(const camera_t camera_id) const;
+
     std::vector<Camera> ReadAllCameras() const;
 
     Image ReadImage(const image_t image_id) const;
+
     Image ReadImageFromName(const std::string& name) const;
+
     std::vector<Image> ReadAllImages() const;
 
     FeatureKeypoints ReadKeypoints(const image_t image_id) const;
+
     FeatureDescriptors ReadDescriptors(const image_t image_id) const;
 
     FeatureMatches ReadMatches(const image_t image_id1,
                                const image_t image_id2) const;
+
     std::vector<std::pair<image_pair_t, FeatureMatches>> ReadAllMatches() const;
 
     TwoViewGeometry ReadInlierMatches(const image_t image_id1,
                                       const image_t image_id2) const;
+
     std::vector<std::pair<image_pair_t, TwoViewGeometry>> ReadAllInlierMatches()
             const;
 
@@ -258,10 +287,13 @@ public:
 
     void WriteKeypoints(const image_t image_id,
                         const FeatureKeypoints& keypoints) const;
+
     void WriteDescriptors(const image_t image_id,
                           const FeatureDescriptors& descriptors) const;
+
     void WriteMatches(const image_t image_id1, const image_t image_id2,
                       const FeatureMatches& matches) const;
+
     void WriteInlierMatches(const image_t image_id1, const image_t image_id2,
                             const TwoViewGeometry& two_view_geometry) const;
 
@@ -271,23 +303,32 @@ public:
 
 private:
     void PrepareSQLStatements();
+
     void FinalizeSQLStatements();
 
     void CreateTables() const;
+
     void CreateCameraTable() const;
+
     void CreateImageTable() const;
+
     void CreateKeypointsTable() const;
+
     void CreateDescriptorsTable() const;
+
     void CreateMatchesTable() const;
+
     void CreateInlierMatchesTable() const;
 
     void UpdateSchema() const;
 
     bool ExistsRowId(sqlite3_stmt* sql_stmt, const size_t row_id) const;
+
     bool ExistsRowString(sqlite3_stmt* sql_stmt,
                          const std::string& row_entry) const;
 
     size_t CountRows(const std::string& table) const;
+
     size_t SumColumn(const std::string& column, const std::string& table) const;
 
     sqlite3* database_;
@@ -333,22 +374,29 @@ public:
     DatabaseCache();
 
     size_t NumCameras() const;
+
     size_t NumImages() const;
 
     class Camera& Camera(const camera_t camera_id);
+
     const class Camera& Camera(const camera_t camera_id) const;
+
     class Image& Image(const image_t image_id);
+
     const class Image& Image(const image_t image_id) const;
 
     const std::unordered_map<camera_t, class Camera>& Cameras() const;
+
     const std::unordered_map<image_t, class Image>& Images() const;
 
     bool ExistsCamera(const camera_t camera_id) const;
+
     bool ExistsImage(const image_t image_id) const;
 
     const class SceneGraph& SceneGraph() const;
 
     void AddCamera(const class Camera& camera);
+
     void AddImage(const class Image& image);
 
     void Load(const Database& database, const size_t min_num_matches,

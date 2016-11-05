@@ -66,6 +66,7 @@ void DecomposeHomographyMatrix(const Eigen::Matrix3d& H,
                                std::vector<Eigen::Matrix3d>* R,
                                std::vector<Eigen::Vector3d>* t,
                                std::vector<Eigen::Vector3d>* n);
+
 void PoseFromHomographyMatrix(const Eigen::Matrix3d& H,
                               const Eigen::Matrix3d& K1,
                               const Eigen::Matrix3d& K2,
@@ -74,6 +75,7 @@ void PoseFromHomographyMatrix(const Eigen::Matrix3d& H,
                               Eigen::Matrix3d* R, Eigen::Vector3d* t,
                               Eigen::Vector3d* n,
                               std::vector<Eigen::Vector3d>* points3D);
+
 Eigen::Matrix3d HomographyMatrixFromPose(const Eigen::Matrix3d& K1,
                                          const Eigen::Matrix3d& K2,
                                          const Eigen::Matrix3d& R,

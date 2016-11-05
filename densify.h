@@ -9,29 +9,33 @@
 
 
 class ImageDensifier : public QThread {
- public:
-  ImageDensifier(const Reconstruction& reconstruction, const std::string& image_path, const std::string& output_path,
-                 const std::string& binary_path);
-  void Stop();
-  bool IsSuccessfull();
-  bool IsRunning();
-  std::vector<std::string> ResultFiles() const;
+public:
+    ImageDensifier(const Reconstruction& reconstruction, const std::string& image_path, const std::string& output_path,
+                   const std::string& binary_path);
 
- protected:
-  void run();
+    void Stop();
 
-  void WaitForProcess(QProcess *child, const QString &program, const QStringList &params);
+    bool IsSuccessfull();
 
-  QMutex mutex_;
+    bool IsRunning();
 
-  bool stop_;
+    std::vector<std::string> ResultFiles() const;
 
-  std::string image_path_;
-  std::string output_path_;
-  std::string binary_path_;
-  std::vector<std::string> results_;
-  bool successfull_;
-  const Reconstruction& reconstruction_;
+protected:
+    void run();
+
+    void WaitForProcess(QProcess* child, const QString& program, const QStringList& params);
+
+    QMutex mutex_;
+
+    bool stop_;
+
+    std::string image_path_;
+    std::string output_path_;
+    std::string binary_path_;
+    std::vector<std::string> results_;
+    bool successfull_;
+    const Reconstruction& reconstruction_;
 };
 
 Camera UndistortCamera(const Camera& camera);

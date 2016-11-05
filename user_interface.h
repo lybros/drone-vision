@@ -37,12 +37,15 @@ QPixmap DrawMatches(const QPixmap& image1, const QPixmap& image2,
 class JetColormap {
 public:
     static float Red(const float gray);
+
     static float Green(const float gray);
+
     static float Blue(const float gray);
 
 private:
     static float Interpolate(const float val, const float y0, const float x0,
                              const float y1, const float x1);
+
     static float Base(const float val);
 };
 
@@ -59,6 +62,7 @@ public:
                                          const Point_3D& point3D) = 0;
 
     void UpdateScale(std::vector<float>* values);
+
     float AdjustScale(const float gray);
 
     float scale;
@@ -73,20 +77,24 @@ public:
 class PointPainter {
 public:
     PointPainter();
+
     ~PointPainter();
 
     struct Data {
-        Data() : x(0), y(0), z(0), r(0), g(0), b(0), a(0) {}
+        Data() : x(0), y(0), z(0), r(0), g(0), b(0), a(0) { }
+
         Data(const float x_, const float y_, const float z_, const float r_,
              const float g_, const float b_, const float a_)
-                : x(x_), y(y_), z(z_), r(r_), g(g_), b(b_), a(a_) {}
+                : x(x_), y(y_), z(z_), r(r_), g(g_), b(b_), a(a_) { }
 
         float x, y, z;
         float r, g, b, a;
     };
 
     void Setup();
+
     void Upload(const std::vector<PointPainter::Data>& data);
+
     void Render(const QMatrix4x4& pmv_matrix, const float point_size);
 
 private:
@@ -101,19 +109,23 @@ private:
 class LinePainter {
 public:
     LinePainter();
+
     ~LinePainter();
 
     struct Data {
-        Data() {}
+        Data() { }
+
         Data(const PointPainter::Data& p1, const PointPainter::Data& p2)
-                : point1(p1), point2(p2) {}
+                : point1(p1), point2(p2) { }
 
         PointPainter::Data point1;
         PointPainter::Data point2;
     };
 
     void Setup();
+
     void Upload(const std::vector<LinePainter::Data>& data);
+
     void Render(const QMatrix4x4& pmv_matrix, const int width, const int height,
                 const float line_width);
 
@@ -141,13 +153,15 @@ public:
 class TrianglePainter {
 public:
     TrianglePainter();
+
     ~TrianglePainter();
 
     struct Data {
-        Data() {}
+        Data() { }
+
         Data(const PointPainter::Data& p1, const PointPainter::Data& p2,
              const PointPainter::Data& p3)
-                : point1(p1), point2(p2), point3(p3) {}
+                : point1(p1), point2(p2), point3(p3) { }
 
         PointPainter::Data point1;
         PointPainter::Data point2;
@@ -155,7 +169,9 @@ public:
     };
 
     void Setup();
+
     void Upload(const std::vector<TrianglePainter::Data>& data);
+
     void Render(const QMatrix4x4& pmv_matrix);
 
 private:
@@ -179,9 +195,13 @@ private:
     void closeEvent(QCloseEvent* event);
 
     void ClearLocations();
+
     void UpdateImages();
+
     void ZoomIn();
+
     void ZoomOut();
+
     void Delete();
 
     OpenGLWindow* opengl_window_;
@@ -216,8 +236,11 @@ protected:
     void closeEvent(QCloseEvent* event);
 
     void UpdateImage();
+
     void ZoomIn();
+
     void ZoomOut();
+
     void ShowOrHide();
 
     OpenGLWindow* opengl_window_;
@@ -258,6 +281,7 @@ public:
 
 private:
     void Resize();
+
     void Delete();
 
     OpenGLWindow* opengl_window_;
@@ -313,30 +337,39 @@ public:
     OpenGLWindow(QWidget* parent, OptionManager* options, QScreen* screen = 0);
 
     void Update();
+
     void Upload();
+
     void Clear();
 
     ProjectionType GetProjectionType() const;
+
     void SetProjectionType(const ProjectionType type);
 
     void SetPointColormap(PointColormapBase* colormap);
 
     void EnableCoordinateGrid();
+
     void DisableCoordinateGrid();
 
     void ChangeFocusDistance(const float delta);
+
     void ChangeNearPlane(const float delta);
+
     void ChangePointSize(const float delta);
+
     void ChangeImageSize(const float delta);
 
     void RotateView(const float x, const float y, const float prev_x,
                     const float prev_y);
+
     void TranslateView(const float x, const float y, const float prev_x,
                        const float prev_y);
 
     void ResetView();
 
     QMatrix4x4 ModelViewMatrix() const;
+
     void SetModelViewMatrix(const QMatrix4x4& matrix);
 
     void SelectObject(const int x, const int y);
@@ -344,11 +377,15 @@ public:
     QImage GrabImage();
 
     void ShowPointInfo(const point3D_t point3D_id);
+
     void ShowImageInfo(const image_t image_id);
 
     float PointSize() const;
+
     float ImageSize() const;
+
     void SetPointSize(const float point_size);
+
     void SetImageSize(const float image_size);
 
     void SetBackgroundColor(const float r, const float g, const float b);
@@ -363,34 +400,49 @@ public:
 
 private:
     void exposeEvent(QExposeEvent* event);
+
     void mousePressEvent(QMouseEvent* event);
+
     void mouseReleaseEvent(QMouseEvent* event);
+
     void mouseMoveEvent(QMouseEvent* event);
+
     void wheelEvent(QWheelEvent* event);
 
     void SetupGL();
+
     void InitializeGL();
+
     void ResizeGL();
+
     void PaintGL();
 
     void SetupPainters();
 
     void InitializeSettings();
+
     void InitializeView();
 
     void UploadCoordinateGridData();
+
     void UploadPointData(const bool selection_mode = false);
+
     void UploadPointConnectionData();
+
     void UploadImageData(const bool selection_mode = false);
+
     void UploadImageConnectionData();
 
     void ComposeProjectionMatrix();
 
     float ZoomScale() const;
+
     float AspectRatio() const;
+
     float OrthographicWindowExtent() const;
 
     Eigen::Vector4ub ReadPixelColor(int x, int y) const;
+
     Eigen::Vector3f PositionToArcballVector(const float x, const float y) const;
 
     OptionManager* options_;
@@ -445,11 +497,14 @@ public:
     bool IsValid();
 
     std::string ImagePath() const;
+
     void SetImagePath(const std::string& path);
 
 private:
     void Create();
+
     void SelectImagePath();
+
     QString DefaultDirectory();
 
     MainWindow* main_window_;
@@ -464,14 +519,17 @@ private:
 
 class MatchesTab : public QWidget {
 public:
-    MatchesTab() {}
+    MatchesTab() { }
+
     MatchesTab(QWidget* parent, OptionManager* options, Database* database);
 
     void Clear();
 
 protected:
     void InitializeTable(const QStringList& table_header);
+
     void ShowMatches();
+
     void FillTable();
 
     OptionManager* options_;
@@ -524,14 +582,18 @@ public:
     ImageTab(QWidget* parent, OptionManager* options, Database* database);
 
     void Update();
+
     void Save();
+
     void Clear();
 
 private:
     void itemChanged(QTableWidgetItem* item);
 
     void ShowImage();
+
     void ShowMatches();
+
     void SetCamera();
 
     OptionManager* options_;
@@ -552,11 +614,14 @@ public:
     CameraTab(QWidget* parent, Database* database);
 
     void Update();
+
     void Save();
+
     void Clear();
 
 private:
     void itemChanged(QTableWidgetItem* item);
+
     void Add();
 
     Database* database_;
@@ -573,6 +638,7 @@ public:
 
 private:
     void showEvent(QShowEvent* event);
+
     void hideEvent(QHideEvent* event);
 
     void Save();
@@ -595,6 +661,7 @@ public:
     ModelManagerWidget(QWidget* parent);
 
     size_t ModelIdx() const;
+
     void SetModelIdx(const size_t idx);
 
     void UpdateModels(const std::vector<std::unique_ptr<Reconstruction>>& models);
@@ -602,7 +669,6 @@ public:
 private:
     std::vector<size_t> model_idxs_;
 };
-
 
 
 class MainWindow : public QMainWindow {
@@ -615,54 +681,80 @@ public:
 
 protected:
     void showEvent(QShowEvent* event);
+
     void moveEvent(QMoveEvent* event);
+
     void closeEvent(QCloseEvent* event);
 
     void afterShowEvent();
 
 private:
     void CreateWidgets();
+
     void CreateActions();
+
     void CreateToolbar();
+
     void CreateStatusbar();
+
     void CreateControllers();
+
     void CreateFutures();
+
     void CreateProgressBar();
 
     void CenterProgressBar();
 
     void NewProject();
+
     void Import();
+
     void ImportFinished();
+
     void Export();
+
     void ExportFinished();
 
     void FeatureExtraction();
+
     void FeatureMatching();
+
     void DatabaseManagement();
 
     void ReconstructionStart();
+
     void ReconstructionPause();
+
     void ReconstructionReset();
+
     void ReconstructionFinish();
 
     void Render();
+
     void RenderNow();
+
     void RenderSelectedModel();
+
     void RenderClear();
 
     void SelectModelIdx(const size_t);
+
     size_t SelectedModelIdx();
+
     bool HasSelectedModel();
+
     bool IsSelectedModelValid();
 
     void DensifyModel();
+
     void SurfaceReconstructModel();
 
     void ShowInvalidProjectError();
+
     void UpdateTimer();
 
     void EnableBlockingActions();
+
     void DisableBlockingActions();
 
     void UpdateWindowTitle();

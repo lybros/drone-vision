@@ -2,64 +2,66 @@
 
 
 std::string EnsureTrailingSlash(const std::string& str) {
-  if (str.length() > 0) {
-    if (str.at(str.length() - 1) != '/') {
-      return str + "/";
+    if (str.length() > 0) {
+        if (str.at(str.length() - 1) != '/') {
+            return str + "/";
+        }
+    } else {
+        return str + "/";
     }
-  } else {
-    return str + "/";
-  }
-  return str;
+    return str;
 }
 
 bool HasFileExtension(const std::string& file_name, const std::string& ext) {
-  std::string ext_lower = ext;
-  boost::to_lower(ext_lower);
-  if (file_name.size() >= ext_lower.size() &&
-      file_name.substr(file_name.size() - ext_lower.size(), ext_lower.size()) ==
-          ext_lower) {
-    return true;
-  }
-  return false;
+    std::string ext_lower = ext;
+    boost::to_lower(ext_lower);
+    if (file_name.size() >= ext_lower.size() &&
+        file_name.substr(file_name.size() - ext_lower.size(), ext_lower.size()) ==
+        ext_lower) {
+        return true;
+    }
+    return false;
 }
 
 void PrintHeading1(const std::string& heading) {
-  std::cout << std::endl << std::string(78, '=') << std::endl;
-  std::cout << heading << std::endl;
-  std::cout << std::string(78, '=') << std::endl << std::endl;
+    std::cout << std::endl << std::string(78, '=') << std::endl;
+    std::cout << heading << std::endl;
+    std::cout << std::string(78, '=') << std::endl << std::endl;
 }
 
 void PrintHeading2(const std::string& heading) {
-  std::cout << std::endl << heading << std::endl;
-  std::cout << std::string(std::min<int>(heading.size(), 78), '-') << std::endl;
+    std::cout << std::endl << heading << std::endl;
+    std::cout << std::string(std::min<int>(heading.size(), 78), '-') << std::endl;
 }
 
 std::string StringReplace(const std::string& str, const std::string& old_str,
                           const std::string& new_str) {
-  if (old_str.empty()) {
-    return str;
-  }
-  size_t position = 0;
-  std::string mod_str = str;
-  while ((position = mod_str.find(old_str, position)) != std::string::npos) {
-    mod_str.replace(position, old_str.size(), new_str);
-    position += new_str.size();
-  }
-  return mod_str;
+    if (old_str.empty()) {
+        return str;
+    }
+    size_t position = 0;
+    std::string mod_str = str;
+    while ((position = mod_str.find(old_str, position)) != std::string::npos) {
+        mod_str.replace(position, old_str.size(), new_str);
+        position += new_str.size();
+    }
+    return mod_str;
 }
 
 std::vector<std::string> StringSplit(const std::string& str,
                                      const std::string& delim) {
-  std::vector<std::string> elems;
-  boost::split(elems, str, boost::is_any_of(delim), boost::token_compress_on);
-  return elems;
+    std::vector<std::string> elems;
+    boost::split(elems, str, boost::is_any_of(delim), boost::token_compress_on);
+    return elems;
 }
 
 
 bool IsNaN(const float x) { return x != x; }
+
 bool IsNaN(const double x) { return x != x; }
 
 bool IsInf(const float x) { return !IsNaN(x) && IsNaN(x - x); }
+
 bool IsInf(const double x) { return !IsNaN(x) && IsNaN(x - x); }
 
 float DegToRad(const float deg) {
@@ -301,7 +303,7 @@ void SetPRNGSeed(unsigned seed) {
 }
 
 
-Timer::Timer() : started_(false), paused_(false) {}
+Timer::Timer() : started_(false), paused_(false) { }
 
 void Timer::Start() {
     if (started_) {
@@ -342,7 +344,7 @@ double Timer::ElapsedMicroSeconds() const {
         return boost::chrono::duration_cast<boost::chrono::microseconds>(pause_time_ - start_time_).count();
     } else {
         return boost::chrono::duration_cast<boost::chrono::microseconds>(boost::chrono::high_resolution_clock::now() -
-                                           start_time_)
+                                                                         start_time_)
                 .count();
     }
 }

@@ -1,7 +1,7 @@
 #include "model.h"
 
 Reconstruction::Reconstruction()
-        : scene_graph_(nullptr), num_added_points3D_(0) {}
+        : scene_graph_(nullptr), num_added_points3D_(0) { }
 
 std::unordered_set<point3D_t> Reconstruction::Point3DIds() const {
     std::unordered_set<point3D_t> point3D_ids;
@@ -438,7 +438,7 @@ double Reconstruction::ComputeMeanReprojectionError() const {
     }
 }
 
-void Reconstruction::ImportPLY(const std::string &path, bool append_to_existing) {
+void Reconstruction::ImportPLY(const std::string& path, bool append_to_existing) {
     if (!append_to_existing)
         points3D_.clear();
 
@@ -676,7 +676,6 @@ void Reconstruction::ExportBundler(const std::string& path,
     file.close();
     list_file.close();
 }
-
 
 
 void Reconstruction::ExportPLY(const std::string& path) const {

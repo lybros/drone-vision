@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(3d_reconstruction)
 
-if(POLICY CMP0043)
+if (POLICY CMP0043)
     cmake_policy(SET CMP0043 OLD)
-endif()
+endif ()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_PREFIX_PATH $ENV{HOME}/Qt/5.7/clang_64/lib/cmake/)
@@ -37,11 +37,11 @@ include_directories(
         ${JPEG_INCLUDE_DIR}
 )
 
-IF(OPENMP_FOUND)
+IF (OPENMP_FOUND)
     ADD_DEFINITIONS("-DOPENMP_FOUND")
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-ENDIF(OPENMP_FOUND)
+ENDIF (OPENMP_FOUND)
 
 add_subdirectory(sqlite)
 add_subdirectory(sift_gpu)

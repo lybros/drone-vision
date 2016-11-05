@@ -1,30 +1,30 @@
 #include "features.h"
 
 namespace {
-void ScaleBitmap(const Camera& camera, const int max_image_size,
-                 double* scale_x, double* scale_y, Bitmap* bitmap) {
-  if (static_cast<int>(camera.Width()) > max_image_size ||
-      static_cast<int>(camera.Height()) > max_image_size) {
-    const double scale = static_cast<double>(max_image_size) /
-                         std::max(camera.Width(), camera.Height());
-    const int new_width = static_cast<int>(camera.Width() * scale);
-    const int new_height = static_cast<int>(camera.Height() * scale);
+    void ScaleBitmap(const Camera& camera, const int max_image_size,
+                     double* scale_x, double* scale_y, Bitmap* bitmap) {
+        if (static_cast<int>(camera.Width()) > max_image_size ||
+            static_cast<int>(camera.Height()) > max_image_size) {
+            const double scale = static_cast<double>(max_image_size) /
+                                 std::max(camera.Width(), camera.Height());
+            const int new_width = static_cast<int>(camera.Width() * scale);
+            const int new_height = static_cast<int>(camera.Height() * scale);
 
-    std::cout << boost::format(
-                     "  WARNING: Image exceeds maximum dimensions "
-                     "- resizing to %dx%d.") %
-                     new_width % new_height
-              << std::endl;
+            std::cout << boost::format(
+                    "  WARNING: Image exceeds maximum dimensions "
+                            "- resizing to %dx%d.") %
+                         new_width % new_height
+            << std::endl;
 
-    *scale_x = static_cast<double>(new_width) / camera.Width();
-    *scale_y = static_cast<double>(new_height) / camera.Height();
+            *scale_x = static_cast<double>(new_width) / camera.Width();
+            *scale_y = static_cast<double>(new_height) / camera.Height();
 
-    *bitmap = bitmap->Rescale(new_width, new_height);
-  } else {
-    *scale_x = 1.0;
-    *scale_y = 1.0;
-  }
-}
+            *bitmap = bitmap->Rescale(new_width, new_height);
+        } else {
+            *scale_x = 1.0;
+            *scale_y = 1.0;
+        }
+    }
 
 }
 
@@ -37,327 +37,327 @@ void FeatureExtractor::Options::Check() const {
 FeatureExtractor::FeatureExtractor(const Options& options,
                                    const std::string& database_path,
                                    const std::string& image_path)
-    : stop_(false),
-      options_(options),
-      database_path_(database_path),
-      image_path_(image_path) {
-  options_.Check();
-  image_path_ = StringReplace(image_path_, "\\", "/");
-  image_path_ = EnsureTrailingSlash(image_path_);
+        : stop_(false),
+          options_(options),
+          database_path_(database_path),
+          image_path_(image_path) {
+    options_.Check();
+    image_path_ = StringReplace(image_path_, "\\", "/");
+    image_path_ = EnsureTrailingSlash(image_path_);
 }
 
 void FeatureExtractor::run() {
-  last_camera_.SetModelIdFromName(options_.camera_model);
-  last_camera_id_ = kInvalidCameraId;
-  if (!options_.camera_params.empty() &&
-      !last_camera_.SetParamsFromString(options_.camera_params)) {
-    std::cerr << "  ERROR: Invalid camera parameters." << std::endl;
-    return;
-  }
+    last_camera_.SetModelIdFromName(options_.camera_model);
+    last_camera_id_ = kInvalidCameraId;
+    if (!options_.camera_params.empty() &&
+        !last_camera_.SetParamsFromString(options_.camera_params)) {
+        std::cerr << "  ERROR: Invalid camera parameters." << std::endl;
+        return;
+    }
 
-  Timer total_timer;
-  total_timer.Start();
+    Timer total_timer;
+    total_timer.Start();
 
-  database_.Open(database_path_);
-  DoExtraction();
-  database_.Close();
+    database_.Open(database_path_);
+    DoExtraction();
+    database_.Close();
 
-  total_timer.PrintMinutes();
+    total_timer.PrintMinutes();
 }
 
 void FeatureExtractor::Stop() {
-  QMutexLocker locker(&mutex_);
-  stop_ = true;
+    QMutexLocker locker(&mutex_);
+    stop_ = true;
 }
 
 bool FeatureExtractor::ReadImage(const std::string& image_path, Image* image,
                                  Bitmap* bitmap) {
-  image->SetName(image_path);
-  image->SetName(StringReplace(image->Name(), "\\", "/"));
-  image->SetName(StringReplace(image->Name(), image_path_, ""));
+    image->SetName(image_path);
+    image->SetName(StringReplace(image->Name(), "\\", "/"));
+    image->SetName(StringReplace(image->Name(), image_path_, ""));
 
-  std::cout << "  Name:           " << image->Name() << std::endl;
+    std::cout << "  Name:           " << image->Name() << std::endl;
 
-  const bool exists_image = database_.ExistsImageName(image->Name());
+    const bool exists_image = database_.ExistsImageName(image->Name());
 
-  if (exists_image) {
-    database_.BeginTransaction();
-    *image = database_.ReadImageFromName(image->Name());
-    const bool exists_keypoints = database_.ExistsKeypoints(image->ImageId());
-    const bool exists_descriptors =
-        database_.ExistsDescriptors(image->ImageId());
-    database_.EndTransaction();
+    if (exists_image) {
+        database_.BeginTransaction();
+        *image = database_.ReadImageFromName(image->Name());
+        const bool exists_keypoints = database_.ExistsKeypoints(image->ImageId());
+        const bool exists_descriptors =
+                database_.ExistsDescriptors(image->ImageId());
+        database_.EndTransaction();
 
-    if (exists_keypoints && exists_descriptors) {
-      std::cout << "  SKIP: Image already processed." << std::endl;
-      return false;
+        if (exists_keypoints && exists_descriptors) {
+            std::cout << "  SKIP: Image already processed." << std::endl;
+            return false;
+        }
     }
-  }
 
-  if (!bitmap->Read(image_path, false)) {
-    std::cout << "  SKIP: Cannot read image at path " << image_path
-              << std::endl;
-    return false;
-  }
+    if (!bitmap->Read(image_path, false)) {
+        std::cout << "  SKIP: Cannot read image at path " << image_path
+        << std::endl;
+        return false;
+    }
 
-  if (exists_image) {
-    const Camera camera = database_.ReadCamera(image->CameraId());
+    if (exists_image) {
+        const Camera camera = database_.ReadCamera(image->CameraId());
+
+        if (options_.single_camera && last_camera_id_ != kInvalidCameraId &&
+            (camera.Width() != last_camera_.Width() ||
+             camera.Height() != last_camera_.Height())) {
+            std::cerr << "  ERROR: Single camera specified, but images have "
+                    "different dimensions."
+            << std::endl;
+            return false;
+        }
+
+        if (static_cast<size_t>(bitmap->Width()) != camera.Width() ||
+            static_cast<size_t>(bitmap->Height()) != camera.Height()) {
+            std::cerr << "  ERROR: Image previously processed, but current version "
+                    "has different dimensions."
+            << std::endl;
+        }
+    }
 
     if (options_.single_camera && last_camera_id_ != kInvalidCameraId &&
-        (camera.Width() != last_camera_.Width() ||
-         camera.Height() != last_camera_.Height())) {
-      std::cerr << "  ERROR: Single camera specified, but images have "
-                   "different dimensions."
+        (last_camera_.Width() != static_cast<size_t>(bitmap->Width()) ||
+         last_camera_.Height() != static_cast<size_t>(bitmap->Height()))) {
+        std::cerr << "  ERROR: Single camera specified, but images have "
+                "different dimensions"
+        << std::endl;
+        return false;
+    }
+
+    last_camera_.SetWidth(static_cast<size_t>(bitmap->Width()));
+    last_camera_.SetHeight(static_cast<size_t>(bitmap->Height()));
+
+    std::cout << "  Width:          " << last_camera_.Width() << "px"
+    << std::endl;
+    std::cout << "  Height:         " << last_camera_.Height() << "px"
+    << std::endl;
+
+    if (!options_.single_camera || last_camera_id_ == kInvalidCameraId) {
+        if (options_.camera_params.empty()) {
+            double focal_length = 0.0;
+            if (bitmap->ExifFocalLength(&focal_length)) {
+                last_camera_.SetPriorFocalLength(true);
+                std::cout << "  Focal length:   " << focal_length << "px (EXIF)"
                 << std::endl;
-      return false;
+            } else {
+                focal_length = options_.default_focal_length_factor *
+                               std::max(bitmap->Width(), bitmap->Height());
+                last_camera_.SetPriorFocalLength(false);
+                std::cout << "  Focal length:   " << focal_length << "px" << std::endl;
+            }
+
+            last_camera_.InitializeWithId(last_camera_.ModelId(), focal_length,
+                                          last_camera_.Width(),
+                                          last_camera_.Height());
+        }
+
+        if (!last_camera_.VerifyParams()) {
+            std::cerr << "  ERROR: Invalid camera parameters." << std::endl;
+            return false;
+        }
+
+        last_camera_id_ = database_.WriteCamera(last_camera_);
     }
 
-    if (static_cast<size_t>(bitmap->Width()) != camera.Width() ||
-        static_cast<size_t>(bitmap->Height()) != camera.Height()) {
-      std::cerr << "  ERROR: Image previously processed, but current version "
-                   "has different dimensions."
-                << std::endl;
-    }
-  }
+    image->SetCameraId(last_camera_id_);
 
-  if (options_.single_camera && last_camera_id_ != kInvalidCameraId &&
-      (last_camera_.Width() != static_cast<size_t>(bitmap->Width()) ||
-       last_camera_.Height() != static_cast<size_t>(bitmap->Height()))) {
-    std::cerr << "  ERROR: Single camera specified, but images have "
-                 "different dimensions"
-              << std::endl;
-    return false;
-  }
+    std::cout << "  Camera ID:      " << last_camera_id_ << std::endl;
+    std::cout << "  Camera Model:   " << last_camera_.ModelName() << std::endl;
 
-  last_camera_.SetWidth(static_cast<size_t>(bitmap->Width()));
-  last_camera_.SetHeight(static_cast<size_t>(bitmap->Height()));
-
-  std::cout << "  Width:          " << last_camera_.Width() << "px"
-            << std::endl;
-  std::cout << "  Height:         " << last_camera_.Height() << "px"
-            << std::endl;
-
-  if (!options_.single_camera || last_camera_id_ == kInvalidCameraId) {
-    if (options_.camera_params.empty()) {
-      double focal_length = 0.0;
-      if (bitmap->ExifFocalLength(&focal_length)) {
-        last_camera_.SetPriorFocalLength(true);
-        std::cout << "  Focal length:   " << focal_length << "px (EXIF)"
-                  << std::endl;
-      } else {
-        focal_length = options_.default_focal_length_factor *
-                       std::max(bitmap->Width(), bitmap->Height());
-        last_camera_.SetPriorFocalLength(false);
-        std::cout << "  Focal length:   " << focal_length << "px" << std::endl;
-      }
-
-      last_camera_.InitializeWithId(last_camera_.ModelId(), focal_length,
-                                    last_camera_.Width(),
-                                    last_camera_.Height());
-    }
-
-    if (!last_camera_.VerifyParams()) {
-      std::cerr << "  ERROR: Invalid camera parameters." << std::endl;
-      return false;
-    }
-
-    last_camera_id_ = database_.WriteCamera(last_camera_);
-  }
-
-  image->SetCameraId(last_camera_id_);
-
-  std::cout << "  Camera ID:      " << last_camera_id_ << std::endl;
-  std::cout << "  Camera Model:   " << last_camera_.ModelName() << std::endl;
-
-  if (bitmap->ExifLatitude(&image->TvecPrior(0)) &&
-      bitmap->ExifLongitude(&image->TvecPrior(1)) &&
-      bitmap->ExifAltitude(&image->TvecPrior(2))) {
-    std::cout << boost::format(
-                     "  EXIF GPS:       LAT=%.3f, LON=%.3f, ALT=%.3f") %
+    if (bitmap->ExifLatitude(&image->TvecPrior(0)) &&
+        bitmap->ExifLongitude(&image->TvecPrior(1)) &&
+        bitmap->ExifAltitude(&image->TvecPrior(2))) {
+        std::cout << boost::format(
+                "  EXIF GPS:       LAT=%.3f, LON=%.3f, ALT=%.3f") %
                      image->TvecPrior(0) % image->TvecPrior(1) %
                      image->TvecPrior(2)
-              << std::endl;
-  } else {
-    image->TvecPrior(0) = std::numeric_limits<double>::quiet_NaN();
-    image->TvecPrior(1) = std::numeric_limits<double>::quiet_NaN();
-    image->TvecPrior(2) = std::numeric_limits<double>::quiet_NaN();
-  }
+        << std::endl;
+    } else {
+        image->TvecPrior(0) = std::numeric_limits<double>::quiet_NaN();
+        image->TvecPrior(1) = std::numeric_limits<double>::quiet_NaN();
+        image->TvecPrior(2) = std::numeric_limits<double>::quiet_NaN();
+    }
 
-  return true;
+    return true;
 }
 
 SiftGPUFeatureExtractor::SiftGPUFeatureExtractor(
-    const Options& options, const SIFTOptions& sift_options,
-    const std::string& database_path, const std::string& image_path)
-    : FeatureExtractor(options, database_path, image_path),
-      sift_options_(sift_options),
-      parent_thread_(QThread::currentThread()) {
-  sift_options_.Check();
-  surface_ = new QOffscreenSurface();
-  surface_->create();
-  context_ = new QOpenGLContext();
-  context_->create();
-  context_->makeCurrent(surface_);
-  context_->doneCurrent();
-  context_->moveToThread(this);
+        const Options& options, const SIFTOptions& sift_options,
+        const std::string& database_path, const std::string& image_path)
+        : FeatureExtractor(options, database_path, image_path),
+          sift_options_(sift_options),
+          parent_thread_(QThread::currentThread()) {
+    sift_options_.Check();
+    surface_ = new QOffscreenSurface();
+    surface_->create();
+    context_ = new QOpenGLContext();
+    context_->create();
+    context_->makeCurrent(surface_);
+    context_->doneCurrent();
+    context_->moveToThread(this);
 }
 
 SiftGPUFeatureExtractor::~SiftGPUFeatureExtractor() {
-  delete context_;
-  surface_->deleteLater();
+    delete context_;
+    surface_->deleteLater();
 }
 
 void SiftGPUFeatureExtractor::TearDown() {
-  context_->doneCurrent();
-  context_->moveToThread(parent_thread_);
+    context_->doneCurrent();
+    context_->moveToThread(parent_thread_);
 }
 
 void SiftGPUFeatureExtractor::DoExtraction() {
-  PrintHeading1("Feature extraction (GPU)");
+    PrintHeading1("Feature extraction (GPU)");
 
-  context_->makeCurrent(surface_);
+    context_->makeCurrent(surface_);
 
-  const size_t num_files =
-      std::distance(boost::filesystem::recursive_directory_iterator(image_path_),
-                    boost::filesystem::recursive_directory_iterator());
+    const size_t num_files =
+            std::distance(boost::filesystem::recursive_directory_iterator(image_path_),
+                          boost::filesystem::recursive_directory_iterator());
 
-  const std::string max_image_size_str =
-      std::to_string(sift_options_.max_image_size);
-  const std::string max_num_features_str =
-      std::to_string(sift_options_.max_num_features);
-  const std::string first_octave_str =
-      std::to_string(sift_options_.first_octave);
-  const std::string num_octaves_str = std::to_string(sift_options_.num_octaves);
-  const std::string octave_resolution_str =
-      std::to_string(sift_options_.octave_resolution);
-  const std::string peak_threshold_str =
-      std::to_string(sift_options_.peak_threshold);
-  const std::string edge_threshold_str =
-      std::to_string(sift_options_.edge_threshold);
-  const std::string max_num_orientations_str =
-      std::to_string(sift_options_.max_num_orientations);
+    const std::string max_image_size_str =
+            std::to_string(sift_options_.max_image_size);
+    const std::string max_num_features_str =
+            std::to_string(sift_options_.max_num_features);
+    const std::string first_octave_str =
+            std::to_string(sift_options_.first_octave);
+    const std::string num_octaves_str = std::to_string(sift_options_.num_octaves);
+    const std::string octave_resolution_str =
+            std::to_string(sift_options_.octave_resolution);
+    const std::string peak_threshold_str =
+            std::to_string(sift_options_.peak_threshold);
+    const std::string edge_threshold_str =
+            std::to_string(sift_options_.edge_threshold);
+    const std::string max_num_orientations_str =
+            std::to_string(sift_options_.max_num_orientations);
 
-  const int kNumArgs = 19;
-  const char* sift_gpu_args[kNumArgs] = {
-      "-da",
-      "-v", "0",
-      "-maxd", max_image_size_str.c_str(),
-      "-tc2", max_num_features_str.c_str(),
-      "-fo", first_octave_str.c_str(),
-      "-no", num_octaves_str.c_str(),
-      "-d", octave_resolution_str.c_str(),
-      "-t", peak_threshold_str.c_str(),
-      "-e", edge_threshold_str.c_str(),
-      "-mo", max_num_orientations_str.c_str(),
-  };
+    const int kNumArgs = 19;
+    const char* sift_gpu_args[kNumArgs] = {
+            "-da",
+            "-v", "0",
+            "-maxd", max_image_size_str.c_str(),
+            "-tc2", max_num_features_str.c_str(),
+            "-fo", first_octave_str.c_str(),
+            "-no", num_octaves_str.c_str(),
+            "-d", octave_resolution_str.c_str(),
+            "-t", peak_threshold_str.c_str(),
+            "-e", edge_threshold_str.c_str(),
+            "-mo", max_num_orientations_str.c_str(),
+    };
 
-  SiftGPU sift_gpu;
-  sift_gpu.ParseParam(kNumArgs, sift_gpu_args);
+    SiftGPU sift_gpu;
+    sift_gpu.ParseParam(kNumArgs, sift_gpu_args);
 
-  if (sift_gpu.VerifyContextGL() != SiftGPU::SIFTGPU_FULL_SUPPORTED) {
-    std::cerr << "ERROR: SiftGPU not fully supported." << std::endl;
-    TearDown();
-    return;
-  }
-
-  const int max_image_size = sift_gpu.GetMaxDimension();
-
-  size_t i_file = 0;
-  auto dir_iter = boost::filesystem::recursive_directory_iterator(image_path_);
-  for (auto it = dir_iter; it != boost::filesystem::recursive_directory_iterator(); ++it) {
-    const boost::filesystem::path& image_path = *it;
-    i_file += 1;
-
-    if (!boost::filesystem::is_regular_file(image_path)) {
-      continue;
-    }
-
-    {
-      QMutexLocker locker(&mutex_);
-      if (stop_) {
+    if (sift_gpu.VerifyContextGL() != SiftGPU::SIFTGPU_FULL_SUPPORTED) {
+        std::cerr << "ERROR: SiftGPU not fully supported." << std::endl;
         TearDown();
         return;
-      }
     }
 
-    std::cout << "Processing file [" << i_file << "/" << num_files << "]"
-              << std::endl;
+    const int max_image_size = sift_gpu.GetMaxDimension();
 
-    Image image;
-    Bitmap bitmap;
-    if (!ReadImage(image_path.string(), &image, &bitmap)) {
-      continue;
+    size_t i_file = 0;
+    auto dir_iter = boost::filesystem::recursive_directory_iterator(image_path_);
+    for (auto it = dir_iter; it != boost::filesystem::recursive_directory_iterator(); ++it) {
+        const boost::filesystem::path& image_path = *it;
+        i_file += 1;
+
+        if (!boost::filesystem::is_regular_file(image_path)) {
+            continue;
+        }
+
+        {
+            QMutexLocker locker(&mutex_);
+            if (stop_) {
+                TearDown();
+                return;
+            }
+        }
+
+        std::cout << "Processing file [" << i_file << "/" << num_files << "]"
+        << std::endl;
+
+        Image image;
+        Bitmap bitmap;
+        if (!ReadImage(image_path.string(), &image, &bitmap)) {
+            continue;
+        }
+
+        double scale_x;
+        double scale_y;
+        ScaleBitmap(last_camera_, max_image_size, &scale_x, &scale_y, &bitmap);
+
+        const std::vector<uint8_t> bitmap_raw_bits = bitmap.ConvertToRawBits();
+        const int code = sift_gpu.RunSIFT(bitmap.ScanWidth(), bitmap.Height(),
+                                          bitmap_raw_bits.data(), GL_LUMINANCE,
+                                          GL_UNSIGNED_BYTE);
+
+        const int kSuccessCode = 1;
+        if (code == kSuccessCode) {
+            database_.BeginTransaction();
+
+            if (image.ImageId() == kInvalidImageId) {
+                image.SetImageId(database_.WriteImage(image));
+            }
+
+            const size_t num_features = static_cast<size_t>(sift_gpu.GetFeatureNum());
+            std::vector<SiftGPU::SiftKeypoint> sift_gpu_keypoints(num_features);
+
+            Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+                    descriptors(num_features, 128);
+
+            sift_gpu.GetFeatureVector(sift_gpu_keypoints.data(), descriptors.data());
+
+            if (!database_.ExistsKeypoints(image.ImageId())) {
+                if (scale_x != 1.0 || scale_y != 1.0) {
+                    const float inv_scale_x = static_cast<float>(1.0 / scale_x);
+                    const float inv_scale_y = static_cast<float>(1.0 / scale_y);
+                    const float inv_scale_xy = (inv_scale_x + inv_scale_y) / 2.0f;
+                    for (size_t i = 0; i < sift_gpu_keypoints.size(); ++i) {
+                        sift_gpu_keypoints[i].x *= inv_scale_x;
+                        sift_gpu_keypoints[i].y *= inv_scale_y;
+                        sift_gpu_keypoints[i].s *= inv_scale_xy;
+                    }
+                }
+
+                FeatureKeypoints keypoints(num_features);
+                for (size_t i = 0; i < sift_gpu_keypoints.size(); ++i) {
+                    keypoints[i].x = sift_gpu_keypoints[i].x;
+                    keypoints[i].y = sift_gpu_keypoints[i].y;
+                    keypoints[i].scale = sift_gpu_keypoints[i].s;
+                    keypoints[i].orientation = sift_gpu_keypoints[i].o;
+                }
+
+                database_.WriteKeypoints(image.ImageId(), keypoints);
+            }
+
+            if (!database_.ExistsDescriptors(image.ImageId())) {
+                if (sift_options_.normalization == SIFTOptions::Normalization::L2) {
+                    descriptors = L2NormalizeFeatureDescriptors(descriptors);
+                } else if (sift_options_.normalization ==
+                           SIFTOptions::Normalization::L1_ROOT) {
+                    descriptors = L1RootNormalizeFeatureDescriptors(descriptors);
+                }
+                const FeatureDescriptors descriptors_byte =
+                        FeatureDescriptorsToUnsignedByte(descriptors);
+                database_.WriteDescriptors(image.ImageId(), descriptors_byte);
+            }
+
+            std::cout << "  Features:       " << num_features << std::endl;
+
+            database_.EndTransaction();
+        } else {
+            std::cerr << "  ERROR: Could not extract features." << std::endl;
+        }
     }
 
-    double scale_x;
-    double scale_y;
-    ScaleBitmap(last_camera_, max_image_size, &scale_x, &scale_y, &bitmap);
-
-    const std::vector<uint8_t> bitmap_raw_bits = bitmap.ConvertToRawBits();
-    const int code = sift_gpu.RunSIFT(bitmap.ScanWidth(), bitmap.Height(),
-                                      bitmap_raw_bits.data(), GL_LUMINANCE,
-                                      GL_UNSIGNED_BYTE);
-
-    const int kSuccessCode = 1;
-    if (code == kSuccessCode) {
-      database_.BeginTransaction();
-
-      if (image.ImageId() == kInvalidImageId) {
-        image.SetImageId(database_.WriteImage(image));
-      }
-
-      const size_t num_features = static_cast<size_t>(sift_gpu.GetFeatureNum());
-      std::vector<SiftGPU::SiftKeypoint> sift_gpu_keypoints(num_features);
-
-      Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-          descriptors(num_features, 128);
-
-      sift_gpu.GetFeatureVector(sift_gpu_keypoints.data(), descriptors.data());
-
-      if (!database_.ExistsKeypoints(image.ImageId())) {
-        if (scale_x != 1.0 || scale_y != 1.0) {
-          const float inv_scale_x = static_cast<float>(1.0 / scale_x);
-          const float inv_scale_y = static_cast<float>(1.0 / scale_y);
-          const float inv_scale_xy = (inv_scale_x + inv_scale_y) / 2.0f;
-          for (size_t i = 0; i < sift_gpu_keypoints.size(); ++i) {
-            sift_gpu_keypoints[i].x *= inv_scale_x;
-            sift_gpu_keypoints[i].y *= inv_scale_y;
-            sift_gpu_keypoints[i].s *= inv_scale_xy;
-          }
-        }
-
-        FeatureKeypoints keypoints(num_features);
-        for (size_t i = 0; i < sift_gpu_keypoints.size(); ++i) {
-          keypoints[i].x = sift_gpu_keypoints[i].x;
-          keypoints[i].y = sift_gpu_keypoints[i].y;
-          keypoints[i].scale = sift_gpu_keypoints[i].s;
-          keypoints[i].orientation = sift_gpu_keypoints[i].o;
-        }
-
-        database_.WriteKeypoints(image.ImageId(), keypoints);
-      }
-
-      if (!database_.ExistsDescriptors(image.ImageId())) {
-        if (sift_options_.normalization == SIFTOptions::Normalization::L2) {
-          descriptors = L2NormalizeFeatureDescriptors(descriptors);
-        } else if (sift_options_.normalization ==
-                   SIFTOptions::Normalization::L1_ROOT) {
-          descriptors = L1RootNormalizeFeatureDescriptors(descriptors);
-        }
-        const FeatureDescriptors descriptors_byte =
-            FeatureDescriptorsToUnsignedByte(descriptors);
-        database_.WriteDescriptors(image.ImageId(), descriptors_byte);
-      }
-
-      std::cout << "  Features:       " << num_features << std::endl;
-
-      database_.EndTransaction();
-    } else {
-      std::cerr << "  ERROR: Could not extract features." << std::endl;
-    }
-  }
-
-  TearDown();
+    TearDown();
 }
 
 
@@ -663,7 +663,7 @@ void FeatureMatcher::MatchImagePairs(
 
             const int num_matches = sift_match_gpu_->GetSiftMatch(
                     options_.max_num_matches,
-                    reinterpret_cast<int(*)[2]>(matches_buffer_.data()),
+                    reinterpret_cast<int (*)[2]>(matches_buffer_.data()),
                     static_cast<float>(options_.max_distance),
                     static_cast<float>(options_.max_ratio), options_.cross_check);
 
@@ -762,7 +762,7 @@ void FeatureMatcher::MatchImagePairGuided(const image_t image_id1,
 
     const int num_matches = sift_match_gpu_->GetGuidedSiftMatch(
             options_.max_num_matches,
-            reinterpret_cast<int(*)[2]>(matches_buffer_.data()), H_ptr, F_ptr,
+            reinterpret_cast<int (*)[2]>(matches_buffer_.data()), H_ptr, F_ptr,
             static_cast<float>(options_.max_distance),
             static_cast<float>(options_.max_ratio),
             static_cast<float>(options_.max_error * options_.max_error),
@@ -911,7 +911,7 @@ ExhaustiveFeatureMatcher::PreemptivelyFilterImagePairs(
         }
 
         const int num_matches = sift_match_gpu_->GetSiftMatch(
-                options_.max_num_matches, (int(*)[2])matches_buffer_.data(),
+                options_.max_num_matches, (int (*)[2]) matches_buffer_.data(),
                 options_.max_distance, options_.max_ratio, options_.cross_check);
 
         if (num_matches >= exhaustive_options_.preemptive_min_num_matches) {

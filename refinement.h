@@ -4,38 +4,38 @@
 #include "optimization.h"
 
 struct AbsolutePoseEstimationOptions {
-  bool estimate_focal_length = false;
+    bool estimate_focal_length = false;
 
-  size_t num_focal_length_samples = 30;
+    size_t num_focal_length_samples = 30;
 
-  double min_focal_length_ratio = 0.2;
+    double min_focal_length_ratio = 0.2;
 
-  double max_focal_length_ratio = 5;
+    double max_focal_length_ratio = 5;
 
-  int num_threads = ThreadPool::kMaxNumThreads;
+    int num_threads = ThreadPool::kMaxNumThreads;
 
-  RANSACOptions ransac_options;
+    RANSACOptions ransac_options;
 
-  void Check() const {
-    ransac_options.Check();
-  }
+    void Check() const {
+        ransac_options.Check();
+    }
 };
 
 struct AbsolutePoseRefinementOptions {
-  double gradient_tolerance = 1.0;
+    double gradient_tolerance = 1.0;
 
-  int max_num_iterations = 100;
+    int max_num_iterations = 100;
 
-  double loss_function_scale = 1.0;
+    double loss_function_scale = 1.0;
 
-  bool refine_focal_length = true;
+    bool refine_focal_length = true;
 
-  bool refine_extra_params = true;
+    bool refine_extra_params = true;
 
-  bool print_summary = true;
+    bool print_summary = true;
 
-  void Check() const {
-  }
+    void Check() const {
+    }
 };
 
 bool EstimateAbsolutePose(const AbsolutePoseEstimationOptions& options,

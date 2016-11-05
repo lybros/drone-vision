@@ -72,7 +72,8 @@ struct RANSACOptions {
 
 class Sampler {
 public:
-    Sampler(){};
+    Sampler() { };
+
     Sampler(const size_t num_samples);
 
     virtual void Initialize(const size_t total_num_samples) = 0;
@@ -81,14 +82,14 @@ public:
 
     virtual std::vector<size_t> Sample() = 0;
 
-    template <typename X_t>
+    template<typename X_t>
     void SampleX(const X_t& X, X_t* X_rand);
 
-    template <typename X_t, typename Y_t>
+    template<typename X_t, typename Y_t>
     void SampleXY(const X_t& X, const Y_t& Y, X_t* X_rand, Y_t* Y_rand);
 };
 
-template <typename X_t>
+template<typename X_t>
 void Sampler::SampleX(const X_t& X, X_t* X_rand) {
     const auto sample_idxs = Sample();
     for (size_t i = 0; i < X_rand->size(); ++i) {
@@ -96,7 +97,7 @@ void Sampler::SampleX(const X_t& X, X_t* X_rand) {
     }
 }
 
-template <typename X_t, typename Y_t>
+template<typename X_t, typename Y_t>
 void Sampler::SampleXY(const X_t& X, const Y_t& Y, X_t* X_rand, Y_t* Y_rand) {
     const auto sample_idxs = Sample();
     for (size_t i = 0; i < X_rand->size(); ++i) {
@@ -138,7 +139,7 @@ private:
 };
 
 
-template <typename Estimator, typename SupportMeasurer = InlierSupportMeasurer,
+template<typename Estimator, typename SupportMeasurer = InlierSupportMeasurer,
         typename Sampler = RandomSampler>
 class RANSAC {
 public:
@@ -171,7 +172,7 @@ protected:
     RANSACOptions options_;
 };
 
-template <typename Estimator, typename SupportMeasurer, typename Sampler>
+template<typename Estimator, typename SupportMeasurer, typename Sampler>
 RANSAC<Estimator, SupportMeasurer, Sampler>::RANSAC(
         const RANSACOptions& options)
         : sampler(Sampler(Estimator::MinNumSamples())), options_(options) {
@@ -185,7 +186,7 @@ RANSAC<Estimator, SupportMeasurer, Sampler>::RANSAC(
             std::min<size_t>(options_.max_num_trials, dyn_max_num_trials);
 }
 
-template <typename Estimator, typename SupportMeasurer, typename Sampler>
+template<typename Estimator, typename SupportMeasurer, typename Sampler>
 size_t RANSAC<Estimator, SupportMeasurer, Sampler>::ComputeNumTrials(
         const size_t num_inliers, const size_t num_samples,
         const double confidence) {
@@ -204,7 +205,7 @@ size_t RANSAC<Estimator, SupportMeasurer, Sampler>::ComputeNumTrials(
     return static_cast<size_t>(std::ceil(std::log(nom) / std::log(denom)));
 }
 
-template <typename Estimator, typename SupportMeasurer, typename Sampler>
+template<typename Estimator, typename SupportMeasurer, typename Sampler>
 typename RANSAC<Estimator, SupportMeasurer, Sampler>::Report
 RANSAC<Estimator, SupportMeasurer, Sampler>::Estimate(
         const std::vector<typename Estimator::X_t>& X,
@@ -294,7 +295,7 @@ RANSAC<Estimator, SupportMeasurer, Sampler>::Estimate(
 }
 
 
-template <typename Estimator, typename LocalEstimator,
+template<typename Estimator, typename LocalEstimator,
         typename SupportMeasurer = InlierSupportMeasurer,
         typename Sampler = RandomSampler>
 class LORANSAC : public RANSAC<Estimator, SupportMeasurer, Sampler> {
@@ -315,13 +316,13 @@ private:
     using RANSAC<Estimator, SupportMeasurer, Sampler>::options_;
 };
 
-template <typename Estimator, typename LocalEstimator, typename SupportMeasurer,
+template<typename Estimator, typename LocalEstimator, typename SupportMeasurer,
         typename Sampler>
 LORANSAC<Estimator, LocalEstimator, SupportMeasurer, Sampler>::LORANSAC(
         const RANSACOptions& options)
-        : RANSAC<Estimator, SupportMeasurer, Sampler>(options) {}
+        : RANSAC<Estimator, SupportMeasurer, Sampler>(options) { }
 
-template <typename Estimator, typename LocalEstimator, typename SupportMeasurer,
+template<typename Estimator, typename LocalEstimator, typename SupportMeasurer,
         typename Sampler>
 typename LORANSAC<Estimator, LocalEstimator, SupportMeasurer, Sampler>::Report
 LORANSAC<Estimator, LocalEstimator, SupportMeasurer, Sampler>::Estimate(
@@ -448,7 +449,6 @@ LORANSAC<Estimator, LocalEstimator, SupportMeasurer, Sampler>::Estimate(
 }
 
 
-
 class P3PEstimator {
 public:
     typedef Eigen::Vector2d X_t;
@@ -487,19 +487,24 @@ private:
                      Eigen::Matrix3x4d* proj_matrix);
 
     void ChooseControlPoints();
+
     bool ComputeBarycentricCoordinates();
 
     Eigen::Matrix<double, Eigen::Dynamic, 12> ComputeM();
+
     Eigen::Matrix<double, 6, 10> ComputeL6x10(
             const Eigen::Matrix<double, 12, 12>& Ut);
+
     Eigen::Matrix<double, 6, 1> ComputeRho();
 
     void FindBetasApprox1(const Eigen::Matrix<double, 6, 10>& L_6x10,
                           const Eigen::Matrix<double, 6, 1>& rho,
                           Eigen::Vector4d* betas);
+
     void FindBetasApprox2(const Eigen::Matrix<double, 6, 10>& L_6x10,
                           const Eigen::Matrix<double, 6, 1>& rho,
                           Eigen::Vector4d* betas);
+
     void FindBetasApprox3(const Eigen::Matrix<double, 6, 10>& L_6x10,
                           const Eigen::Matrix<double, 6, 1>& rho,
                           Eigen::Vector4d* betas);
@@ -514,6 +519,7 @@ private:
 
     void ComputeCcs(const Eigen::Vector4d& betas,
                     const Eigen::Matrix<double, 12, 12>& Ut);
+
     void ComputePcs();
 
     void SolveForSign();
@@ -530,7 +536,6 @@ private:
     std::array<Eigen::Vector3d, 4> cws_;
     std::array<Eigen::Vector3d, 4> ccs_;
 };
-
 
 
 class EssentialMatrixFivePointEstimator {
@@ -616,7 +621,7 @@ public:
 };
 
 
-template <int kDim>
+template<int kDim>
 class TranslationTransformEstimator {
 public:
     typedef Eigen::Matrix<double, kDim, 1> X_t;
@@ -633,7 +638,7 @@ public:
                           std::vector<double>* residuals);
 };
 
-template <int kDim>
+template<int kDim>
 std::vector<typename TranslationTransformEstimator<kDim>::M_t>
 TranslationTransformEstimator<kDim>::Estimate(const std::vector<X_t>& points1,
                                               const std::vector<Y_t>& points2) {
@@ -654,7 +659,7 @@ TranslationTransformEstimator<kDim>::Estimate(const std::vector<X_t>& points1,
     return models;
 }
 
-template <int kDim>
+template<int kDim>
 void TranslationTransformEstimator<kDim>::Residuals(
         const std::vector<X_t>& points1, const std::vector<Y_t>& points2,
         const M_t& translation, std::vector<double>* residuals) {
@@ -674,18 +679,22 @@ public:
     };
 
     struct PointData {
-        PointData() {}
+        PointData() { }
+
         PointData(const Eigen::Vector2d& point_, const Eigen::Vector2d& point_N_)
-                : point(point_), point_normalized(point_N_) {}
+                : point(point_), point_normalized(point_N_) { }
+
         Eigen::Vector2d point;
         Eigen::Vector2d point_normalized;
     };
 
     struct PoseData {
-        PoseData() : camera(nullptr) {}
+        PoseData() : camera(nullptr) { }
+
         PoseData(const Eigen::Matrix3x4d& proj_matrix_,
                  const Eigen::Vector3d& pose_, const Camera* camera_)
-                : proj_matrix(proj_matrix_), proj_center(pose_), camera(camera_) {}
+                : proj_matrix(proj_matrix_), proj_center(pose_), camera(camera_) { }
+
         Eigen::Matrix3x4d proj_matrix;
         Eigen::Vector3d proj_center;
         const Camera* camera;
@@ -696,6 +705,7 @@ public:
     typedef Eigen::Vector3d M_t;
 
     void SetMinTriAngle(const double min_tri_angle);
+
     void SetResidualType(const ResidualType residual_type);
 
     static size_t MinNumSamples() { return 2; }

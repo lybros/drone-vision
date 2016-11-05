@@ -44,400 +44,400 @@
 
 namespace {
 
-bool CheckOption(const bool value, const std::string& option_class,
-                 const std::string& option, const std::string& expression) {
-  if (!value) {
-    std::cerr << "ERROR: Option " << option_class << "." << option
-              << " failed check - " << expression << std::endl;
-  }
-  return value;
-}
+    bool CheckOption(const bool value, const std::string& option_class,
+                     const std::string& option, const std::string& expression) {
+        if (!value) {
+            std::cerr << "ERROR: Option " << option_class << "." << option
+            << " failed check - " << expression << std::endl;
+        }
+        return value;
+    }
 
 }
 
-void BaseOptions::Reset() {}
+void BaseOptions::Reset() { }
 
 bool BaseOptions::Check() { return false; }
 
 ExtractionOptions::ExtractionOptions() { Reset(); }
 
 void ExtractionOptions::Reset() {
-  FeatureExtractor::Options options;
-  camera_model = options.camera_model;
-  single_camera = options.single_camera;
-  camera_params = options.camera_params;
-  default_focal_length_factor = options.default_focal_length_factor;
-  sift_options = SIFTOptions();
+    FeatureExtractor::Options options;
+    camera_model = options.camera_model;
+    single_camera = options.single_camera;
+    camera_params = options.camera_params;
+    default_focal_length_factor = options.default_focal_length_factor;
+    sift_options = SIFTOptions();
 }
 
 bool ExtractionOptions::Check() {
-  bool verified = true;
+    bool verified = true;
 
-  CHECK_OPTION(ExtractionOptions, default_focal_length_factor, > 0);
+    CHECK_OPTION(ExtractionOptions, default_focal_length_factor, > 0);
 
-  if (!camera_model.empty()) {
-    const auto model_id = CameraModelNameToId(camera_model);
-    VERIFY_OPTION_MSG(ExtractionOptions, camera_model, model_id != -1,
-                      "Camera model does not exist");
+    if (!camera_model.empty()) {
+        const auto model_id = CameraModelNameToId(camera_model);
+        VERIFY_OPTION_MSG(ExtractionOptions, camera_model, model_id != -1,
+                          "Camera model does not exist");
 
-    if (!camera_params.empty()) {
-      const auto camera_params_vector = CSVToVector<double>(camera_params);
-      VERIFY_OPTION_MSG(ExtractionOptions, camera_params,
-                        CameraModelVerifyParams(model_id, camera_params_vector),
-                        "Invalid camera parameters");
+        if (!camera_params.empty()) {
+            const auto camera_params_vector = CSVToVector<double>(camera_params);
+            VERIFY_OPTION_MSG(ExtractionOptions, camera_params,
+                              CameraModelVerifyParams(model_id, camera_params_vector),
+                              "Invalid camera parameters");
+        }
     }
-  }
 
-  CHECK_OPTION(ExtractionOptions, sift_options.max_image_size, > 0);
-  CHECK_OPTION(ExtractionOptions, sift_options.max_num_features, > 0);
-  CHECK_OPTION(ExtractionOptions, sift_options.octave_resolution, > 0);
-  CHECK_OPTION(ExtractionOptions, sift_options.peak_threshold, > 0);
-  CHECK_OPTION(ExtractionOptions, sift_options.edge_threshold, > 0);
+    CHECK_OPTION(ExtractionOptions, sift_options.max_image_size, > 0);
+    CHECK_OPTION(ExtractionOptions, sift_options.max_num_features, > 0);
+    CHECK_OPTION(ExtractionOptions, sift_options.octave_resolution, > 0);
+    CHECK_OPTION(ExtractionOptions, sift_options.peak_threshold, > 0);
+    CHECK_OPTION(ExtractionOptions, sift_options.edge_threshold, > 0);
 
-  return verified;
+    return verified;
 }
 
 FeatureExtractor::Options ExtractionOptions::Options() const {
-  FeatureExtractor::Options options;
-  options.camera_model = camera_model;
-  options.single_camera = single_camera;
-  options.camera_params = camera_params;
-  options.default_focal_length_factor = default_focal_length_factor;
-  return options;
+    FeatureExtractor::Options options;
+    options.camera_model = camera_model;
+    options.single_camera = single_camera;
+    options.camera_params = camera_params;
+    options.default_focal_length_factor = default_focal_length_factor;
+    return options;
 }
 
 MatchOptions::MatchOptions() { Reset(); }
 
 void MatchOptions::Reset() {
-  FeatureMatcher::Options options;
-  num_threads = options.num_threads;
-  gpu_index = options.gpu_index;
-  max_ratio = options.max_ratio;
-  max_distance = options.max_distance;
-  cross_check = options.cross_check;
-  max_num_matches = options.max_num_matches;
-  max_error = options.max_error;
-  confidence = options.confidence;
-  max_num_trials = options.max_num_trials;
-  min_inlier_ratio = options.min_inlier_ratio;
-  min_num_inliers = options.min_num_inliers;
-  multiple_models = options.multiple_models;
-  guided_matching = options.guided_matching;
+    FeatureMatcher::Options options;
+    num_threads = options.num_threads;
+    gpu_index = options.gpu_index;
+    max_ratio = options.max_ratio;
+    max_distance = options.max_distance;
+    cross_check = options.cross_check;
+    max_num_matches = options.max_num_matches;
+    max_error = options.max_error;
+    confidence = options.confidence;
+    max_num_trials = options.max_num_trials;
+    min_inlier_ratio = options.min_inlier_ratio;
+    min_num_inliers = options.min_num_inliers;
+    multiple_models = options.multiple_models;
+    guided_matching = options.guided_matching;
 }
 
 bool MatchOptions::Check() {
-  bool verified = true;
+    bool verified = true;
 
-  CHECK_OPTION(MatchOptions, num_threads, >= -1);
-  CHECK_OPTION(MatchOptions, gpu_index, >= -1);
-  CHECK_OPTION(MatchOptions, max_ratio, >= 0);
-  CHECK_OPTION(MatchOptions, max_ratio, <= 1);
-  CHECK_OPTION(MatchOptions, max_distance, >= 0);
-  CHECK_OPTION(MatchOptions, max_error, >= 0);
-  CHECK_OPTION(MatchOptions, max_num_matches, >= 0);
-  CHECK_OPTION(MatchOptions, confidence, <= 1);
-  CHECK_OPTION(MatchOptions, confidence, >= 0);
-  CHECK_OPTION(MatchOptions, max_num_trials, > 0);
-  CHECK_OPTION(MatchOptions, min_inlier_ratio, >= 0);
-  CHECK_OPTION(MatchOptions, min_inlier_ratio, <= 1);
-  CHECK_OPTION(MatchOptions, min_num_inliers, >= 0);
+    CHECK_OPTION(MatchOptions, num_threads, >= -1);
+    CHECK_OPTION(MatchOptions, gpu_index, >= -1);
+    CHECK_OPTION(MatchOptions, max_ratio, >= 0);
+    CHECK_OPTION(MatchOptions, max_ratio, <= 1);
+    CHECK_OPTION(MatchOptions, max_distance, >= 0);
+    CHECK_OPTION(MatchOptions, max_error, >= 0);
+    CHECK_OPTION(MatchOptions, max_num_matches, >= 0);
+    CHECK_OPTION(MatchOptions, confidence, <= 1);
+    CHECK_OPTION(MatchOptions, confidence, >= 0);
+    CHECK_OPTION(MatchOptions, max_num_trials, > 0);
+    CHECK_OPTION(MatchOptions, min_inlier_ratio, >= 0);
+    CHECK_OPTION(MatchOptions, min_inlier_ratio, <= 1);
+    CHECK_OPTION(MatchOptions, min_num_inliers, >= 0);
 
-  return verified;
+    return verified;
 }
 
 FeatureMatcher::Options MatchOptions::Options() const {
-  FeatureMatcher::Options options;
-  options.num_threads = num_threads;
-  options.gpu_index = gpu_index;
-  options.max_ratio = max_ratio;
-  options.max_distance = max_distance;
-  options.cross_check = cross_check;
-  options.max_num_matches = max_num_matches;
-  options.max_error = max_error;
-  options.confidence = confidence;
-  options.max_num_trials = max_num_trials;
-  options.min_inlier_ratio = min_inlier_ratio;
-  options.min_num_inliers = min_num_inliers;
-  options.multiple_models = multiple_models;
-  options.guided_matching = guided_matching;
-  return options;
+    FeatureMatcher::Options options;
+    options.num_threads = num_threads;
+    options.gpu_index = gpu_index;
+    options.max_ratio = max_ratio;
+    options.max_distance = max_distance;
+    options.cross_check = cross_check;
+    options.max_num_matches = max_num_matches;
+    options.max_error = max_error;
+    options.confidence = confidence;
+    options.max_num_trials = max_num_trials;
+    options.min_inlier_ratio = min_inlier_ratio;
+    options.min_num_inliers = min_num_inliers;
+    options.multiple_models = multiple_models;
+    options.guided_matching = guided_matching;
+    return options;
 }
 
 ExhaustiveMatchOptions::ExhaustiveMatchOptions() { Reset(); }
 
 void ExhaustiveMatchOptions::Reset() {
-  ExhaustiveFeatureMatcher::ExhaustiveOptions options;
-  block_size = options.block_size;
-  preemptive = options.preemptive;
-  preemptive_num_features = options.preemptive_num_features;
-  preemptive_min_num_matches = options.preemptive_min_num_matches;
+    ExhaustiveFeatureMatcher::ExhaustiveOptions options;
+    block_size = options.block_size;
+    preemptive = options.preemptive;
+    preemptive_num_features = options.preemptive_num_features;
+    preemptive_min_num_matches = options.preemptive_min_num_matches;
 }
 
 bool ExhaustiveMatchOptions::Check() {
-  bool verified = true;
+    bool verified = true;
 
-  CHECK_OPTION(ExhaustiveMatchOptions, block_size, > 1);
-  CHECK_OPTION(ExhaustiveMatchOptions, preemptive_num_features, > 0);
-  CHECK_OPTION(ExhaustiveMatchOptions, preemptive_min_num_matches, > 0);
-  CHECK_OPTION(ExhaustiveMatchOptions, preemptive_min_num_matches,
-               <= preemptive_num_features);
+    CHECK_OPTION(ExhaustiveMatchOptions, block_size, > 1);
+    CHECK_OPTION(ExhaustiveMatchOptions, preemptive_num_features, > 0);
+    CHECK_OPTION(ExhaustiveMatchOptions, preemptive_min_num_matches, > 0);
+    CHECK_OPTION(ExhaustiveMatchOptions, preemptive_min_num_matches,
+                 <= preemptive_num_features);
 
-  return verified;
+    return verified;
 }
 
 ExhaustiveFeatureMatcher::ExhaustiveOptions ExhaustiveMatchOptions::Options()
-    const {
-  ExhaustiveFeatureMatcher::ExhaustiveOptions options;
-  options.block_size = block_size;
-  options.preemptive = preemptive;
-  options.preemptive_num_features = preemptive_num_features;
-  options.preemptive_min_num_matches = preemptive_min_num_matches;
-  return options;
+const {
+    ExhaustiveFeatureMatcher::ExhaustiveOptions options;
+    options.block_size = block_size;
+    options.preemptive = preemptive;
+    options.preemptive_num_features = preemptive_num_features;
+    options.preemptive_min_num_matches = preemptive_min_num_matches;
+    return options;
 }
 
 BundleAdjustmentOptions::BundleAdjustmentOptions() { Reset(); }
 
 void BundleAdjustmentOptions::Reset() {
-  max_num_iterations = 100;
-  max_linear_solver_iterations = 200;
+    max_num_iterations = 100;
+    max_linear_solver_iterations = 200;
 
-  function_tolerance = 0;
-  gradient_tolerance = 0;
-  parameter_tolerance = 0;
+    function_tolerance = 0;
+    gradient_tolerance = 0;
+    parameter_tolerance = 0;
 
-  max_num_consecutive_invalid_steps = 10;
-  max_consecutive_nonmonotonic_steps = 10;
-  use_nonmonotonic_steps = false;
+    max_num_consecutive_invalid_steps = 10;
+    max_consecutive_nonmonotonic_steps = 10;
+    use_nonmonotonic_steps = false;
 
-  minimizer_progress_to_stdout = false;
+    minimizer_progress_to_stdout = false;
 
-  BundleAdjuster::Options options;
-  min_observations_per_image = options.min_observations_per_image;
-  loss_function_scale = options.loss_function_scale;
-  refine_focal_length = options.refine_focal_length;
-  refine_principal_point = options.refine_principal_point;
-  refine_extra_params = options.refine_extra_params;
-  print_summary = options.print_summary;
+    BundleAdjuster::Options options;
+    min_observations_per_image = options.min_observations_per_image;
+    loss_function_scale = options.loss_function_scale;
+    refine_focal_length = options.refine_focal_length;
+    refine_principal_point = options.refine_principal_point;
+    refine_extra_params = options.refine_extra_params;
+    print_summary = options.print_summary;
 }
 
 bool BundleAdjustmentOptions::Check() {
-  bool verified = true;
+    bool verified = true;
 
-  CHECK_OPTION(BundleAdjustmentOptions, max_num_iterations, >= 0);
-  CHECK_OPTION(BundleAdjustmentOptions, max_linear_solver_iterations, >= 0);
-  CHECK_OPTION(BundleAdjustmentOptions, function_tolerance, >= 0);
-  CHECK_OPTION(BundleAdjustmentOptions, gradient_tolerance, >= 0);
-  CHECK_OPTION(BundleAdjustmentOptions, parameter_tolerance, >= 0);
-  CHECK_OPTION(BundleAdjustmentOptions, min_observations_per_image, >= 0);
+    CHECK_OPTION(BundleAdjustmentOptions, max_num_iterations, >= 0);
+    CHECK_OPTION(BundleAdjustmentOptions, max_linear_solver_iterations, >= 0);
+    CHECK_OPTION(BundleAdjustmentOptions, function_tolerance, >= 0);
+    CHECK_OPTION(BundleAdjustmentOptions, gradient_tolerance, >= 0);
+    CHECK_OPTION(BundleAdjustmentOptions, parameter_tolerance, >= 0);
+    CHECK_OPTION(BundleAdjustmentOptions, min_observations_per_image, >= 0);
 
-  return verified;
+    return verified;
 }
 
 BundleAdjuster::Options BundleAdjustmentOptions::Options() const {
-  BundleAdjuster::Options options;
-  options.solver_options.max_num_iterations = max_num_iterations;
-  options.solver_options.max_linear_solver_iterations =
-      max_linear_solver_iterations;
-  options.solver_options.function_tolerance = function_tolerance;
-  options.solver_options.gradient_tolerance = gradient_tolerance;
-  options.solver_options.parameter_tolerance = parameter_tolerance;
-  options.solver_options.max_num_consecutive_invalid_steps =
-      max_num_consecutive_invalid_steps;
-  options.solver_options.max_consecutive_nonmonotonic_steps =
-      max_consecutive_nonmonotonic_steps;
-  options.solver_options.use_nonmonotonic_steps = use_nonmonotonic_steps;
-  options.solver_options.minimizer_progress_to_stdout =
-      minimizer_progress_to_stdout;
-  options.min_observations_per_image = min_observations_per_image;
-  options.loss_function_scale = loss_function_scale;
-  options.refine_focal_length = refine_focal_length;
-  options.refine_principal_point = refine_principal_point;
-  options.refine_extra_params = refine_extra_params;
-  options.print_summary = print_summary;
-  return options;
+    BundleAdjuster::Options options;
+    options.solver_options.max_num_iterations = max_num_iterations;
+    options.solver_options.max_linear_solver_iterations =
+            max_linear_solver_iterations;
+    options.solver_options.function_tolerance = function_tolerance;
+    options.solver_options.gradient_tolerance = gradient_tolerance;
+    options.solver_options.parameter_tolerance = parameter_tolerance;
+    options.solver_options.max_num_consecutive_invalid_steps =
+            max_num_consecutive_invalid_steps;
+    options.solver_options.max_consecutive_nonmonotonic_steps =
+            max_consecutive_nonmonotonic_steps;
+    options.solver_options.use_nonmonotonic_steps = use_nonmonotonic_steps;
+    options.solver_options.minimizer_progress_to_stdout =
+            minimizer_progress_to_stdout;
+    options.min_observations_per_image = min_observations_per_image;
+    options.loss_function_scale = loss_function_scale;
+    options.refine_focal_length = refine_focal_length;
+    options.refine_principal_point = refine_principal_point;
+    options.refine_extra_params = refine_extra_params;
+    options.print_summary = print_summary;
+    return options;
 }
 
 TriangulationOptions::TriangulationOptions() { Reset(); }
 
 void TriangulationOptions::Reset() {
-  IncrementalTriangulator::Options options;
-  max_transitivity = options.max_transitivity;
-  create_max_angle_error = options.create_max_angle_error;
-  continue_max_angle_error = options.continue_max_angle_error;
-  merge_max_reproj_error = options.merge_max_reproj_error;
-  re_max_angle_error = options.re_max_angle_error;
-  re_min_ratio = options.re_min_ratio;
-  re_max_trials = options.re_max_trials;
-  complete_max_reproj_error = options.complete_max_reproj_error;
-  complete_max_transitivity = options.complete_max_transitivity;
-  min_angle = options.min_angle;
-  ignore_two_view_tracks = options.ignore_two_view_tracks;
+    IncrementalTriangulator::Options options;
+    max_transitivity = options.max_transitivity;
+    create_max_angle_error = options.create_max_angle_error;
+    continue_max_angle_error = options.continue_max_angle_error;
+    merge_max_reproj_error = options.merge_max_reproj_error;
+    re_max_angle_error = options.re_max_angle_error;
+    re_min_ratio = options.re_min_ratio;
+    re_max_trials = options.re_max_trials;
+    complete_max_reproj_error = options.complete_max_reproj_error;
+    complete_max_transitivity = options.complete_max_transitivity;
+    min_angle = options.min_angle;
+    ignore_two_view_tracks = options.ignore_two_view_tracks;
 }
 
 bool TriangulationOptions::Check() {
-  bool verified = true;
+    bool verified = true;
 
-  CHECK_OPTION(TriangulationOptions, max_transitivity, >= 0);
-  CHECK_OPTION(TriangulationOptions, create_max_angle_error, > 0);
-  CHECK_OPTION(TriangulationOptions, continue_max_angle_error, > 0);
-  CHECK_OPTION(TriangulationOptions, merge_max_reproj_error, > 0);
-  CHECK_OPTION(TriangulationOptions, complete_max_reproj_error, > 0);
-  CHECK_OPTION(TriangulationOptions, complete_max_transitivity, >= 0);
-  CHECK_OPTION(TriangulationOptions, re_max_angle_error, > 0);
-  CHECK_OPTION(TriangulationOptions, re_min_ratio, >= 0);
-  CHECK_OPTION(TriangulationOptions, re_min_ratio, <= 1);
-  CHECK_OPTION(TriangulationOptions, re_max_trials, >= 0);
-  CHECK_OPTION(TriangulationOptions, min_angle, > 0);
+    CHECK_OPTION(TriangulationOptions, max_transitivity, >= 0);
+    CHECK_OPTION(TriangulationOptions, create_max_angle_error, > 0);
+    CHECK_OPTION(TriangulationOptions, continue_max_angle_error, > 0);
+    CHECK_OPTION(TriangulationOptions, merge_max_reproj_error, > 0);
+    CHECK_OPTION(TriangulationOptions, complete_max_reproj_error, > 0);
+    CHECK_OPTION(TriangulationOptions, complete_max_transitivity, >= 0);
+    CHECK_OPTION(TriangulationOptions, re_max_angle_error, > 0);
+    CHECK_OPTION(TriangulationOptions, re_min_ratio, >= 0);
+    CHECK_OPTION(TriangulationOptions, re_min_ratio, <= 1);
+    CHECK_OPTION(TriangulationOptions, re_max_trials, >= 0);
+    CHECK_OPTION(TriangulationOptions, min_angle, > 0);
 
-  return verified;
+    return verified;
 }
 
 IncrementalTriangulator::Options TriangulationOptions::Options() const {
-  IncrementalTriangulator::Options options;
-  options.max_transitivity = max_transitivity;
-  options.create_max_angle_error = create_max_angle_error;
-  options.continue_max_angle_error = continue_max_angle_error;
-  options.merge_max_reproj_error = merge_max_reproj_error;
-  options.complete_max_reproj_error = complete_max_reproj_error;
-  options.complete_max_transitivity = complete_max_transitivity;
-  options.re_max_angle_error = re_max_angle_error;
-  options.re_min_ratio = re_min_ratio;
-  options.re_max_trials = re_max_trials;
-  options.min_angle = min_angle;
-  options.ignore_two_view_tracks = ignore_two_view_tracks;
-  return options;
+    IncrementalTriangulator::Options options;
+    options.max_transitivity = max_transitivity;
+    options.create_max_angle_error = create_max_angle_error;
+    options.continue_max_angle_error = continue_max_angle_error;
+    options.merge_max_reproj_error = merge_max_reproj_error;
+    options.complete_max_reproj_error = complete_max_reproj_error;
+    options.complete_max_transitivity = complete_max_transitivity;
+    options.re_max_angle_error = re_max_angle_error;
+    options.re_min_ratio = re_min_ratio;
+    options.re_max_trials = re_max_trials;
+    options.min_angle = min_angle;
+    options.ignore_two_view_tracks = ignore_two_view_tracks;
+    return options;
 }
 
 IncrementalMapperOptions::IncrementalMapperOptions() { Reset(); }
 
 void IncrementalMapperOptions::Reset() {
-  IncrementalMapper::Options options;
-  init_min_num_inliers = options.init_min_num_inliers;
-  init_max_error = options.init_max_error;
-  init_max_forward_motion = options.init_max_forward_motion;
-  init_min_tri_angle = options.init_min_tri_angle;
-  abs_pose_max_error = options.abs_pose_max_error;
-  abs_pose_min_num_inliers = options.abs_pose_min_num_inliers;
-  abs_pose_min_inlier_ratio = options.abs_pose_min_inlier_ratio;
-  filter_max_reproj_error = options.filter_max_reproj_error;
-  filter_min_tri_angle = options.filter_min_tri_angle;
-  max_reg_trials = options.max_reg_trials;
+    IncrementalMapper::Options options;
+    init_min_num_inliers = options.init_min_num_inliers;
+    init_max_error = options.init_max_error;
+    init_max_forward_motion = options.init_max_forward_motion;
+    init_min_tri_angle = options.init_min_tri_angle;
+    abs_pose_max_error = options.abs_pose_max_error;
+    abs_pose_min_num_inliers = options.abs_pose_min_num_inliers;
+    abs_pose_min_inlier_ratio = options.abs_pose_min_inlier_ratio;
+    filter_max_reproj_error = options.filter_max_reproj_error;
+    filter_min_tri_angle = options.filter_min_tri_angle;
+    max_reg_trials = options.max_reg_trials;
 }
 
 bool IncrementalMapperOptions::Check() {
-  bool verified = true;
+    bool verified = true;
 
-  CHECK_OPTION(MapperOptions, init_min_num_inliers, > 0);
-  CHECK_OPTION(MapperOptions, init_max_error, > 0);
-  CHECK_OPTION(MapperOptions, init_max_forward_motion, >= 0);
-  CHECK_OPTION(MapperOptions, init_max_forward_motion, <= 1);
-  CHECK_OPTION(MapperOptions, init_min_tri_angle, > 0);
+    CHECK_OPTION(MapperOptions, init_min_num_inliers, > 0);
+    CHECK_OPTION(MapperOptions, init_max_error, > 0);
+    CHECK_OPTION(MapperOptions, init_max_forward_motion, >= 0);
+    CHECK_OPTION(MapperOptions, init_max_forward_motion, <= 1);
+    CHECK_OPTION(MapperOptions, init_min_tri_angle, > 0);
 
-  CHECK_OPTION(MapperOptions, abs_pose_max_error, > 0);
-  CHECK_OPTION(MapperOptions, abs_pose_min_num_inliers, > 0);
-  CHECK_OPTION(MapperOptions, abs_pose_min_inlier_ratio, >= 0);
-  CHECK_OPTION(MapperOptions, abs_pose_min_inlier_ratio, <= 1);
+    CHECK_OPTION(MapperOptions, abs_pose_max_error, > 0);
+    CHECK_OPTION(MapperOptions, abs_pose_min_num_inliers, > 0);
+    CHECK_OPTION(MapperOptions, abs_pose_min_inlier_ratio, >= 0);
+    CHECK_OPTION(MapperOptions, abs_pose_min_inlier_ratio, <= 1);
 
-  CHECK_OPTION(MapperOptions, filter_max_reproj_error, > 0);
-  CHECK_OPTION(MapperOptions, filter_min_tri_angle, > 0);
+    CHECK_OPTION(MapperOptions, filter_max_reproj_error, > 0);
+    CHECK_OPTION(MapperOptions, filter_min_tri_angle, > 0);
 
-  CHECK_OPTION(MapperOptions, max_reg_trials, > 0);
+    CHECK_OPTION(MapperOptions, max_reg_trials, > 0);
 
-  return verified;
+    return verified;
 }
 
 IncrementalMapper::Options IncrementalMapperOptions::Options() const {
-  IncrementalMapper::Options options;
-  options.init_min_num_inliers = init_min_num_inliers;
-  options.init_max_error = init_max_error;
-  options.init_max_forward_motion = init_max_forward_motion;
-  options.init_min_tri_angle = init_min_tri_angle;
-  options.abs_pose_max_error = abs_pose_max_error;
-  options.abs_pose_min_num_inliers = abs_pose_min_num_inliers;
-  options.abs_pose_min_inlier_ratio = abs_pose_min_inlier_ratio;
-  options.filter_max_reproj_error = filter_max_reproj_error;
-  options.filter_min_tri_angle = filter_min_tri_angle;
-  options.max_reg_trials = max_reg_trials;
-  return options;
+    IncrementalMapper::Options options;
+    options.init_min_num_inliers = init_min_num_inliers;
+    options.init_max_error = init_max_error;
+    options.init_max_forward_motion = init_max_forward_motion;
+    options.init_min_tri_angle = init_min_tri_angle;
+    options.abs_pose_max_error = abs_pose_max_error;
+    options.abs_pose_min_num_inliers = abs_pose_min_num_inliers;
+    options.abs_pose_min_inlier_ratio = abs_pose_min_inlier_ratio;
+    options.filter_max_reproj_error = filter_max_reproj_error;
+    options.filter_min_tri_angle = filter_min_tri_angle;
+    options.max_reg_trials = max_reg_trials;
+    return options;
 }
 
 MapperOptions::MapperOptions() { Reset(); }
 
 void MapperOptions::Reset() {
-  min_num_matches = 15;
-  ignore_watermarks = false;
+    min_num_matches = 15;
+    ignore_watermarks = false;
 
-  multiple_models = true;
-  max_num_models = 50;
-  max_model_overlap = 20;
-  min_model_size = 10;
+    multiple_models = true;
+    max_num_models = 50;
+    max_model_overlap = 20;
+    min_model_size = 10;
 
-  init_image_id1 = -1;
-  init_image_id2 = -1;
-  init_num_trials = 200;
+    init_image_id1 = -1;
+    init_image_id2 = -1;
+    init_num_trials = 200;
 
-  extract_colors = true;
+    extract_colors = true;
 
-  num_threads = -1;
+    num_threads = -1;
 
-  min_focal_length_ratio = 0.1;
-  max_focal_length_ratio = 10.0;
-  max_extra_param = 1.0;
+    min_focal_length_ratio = 0.1;
+    max_focal_length_ratio = 10.0;
+    max_extra_param = 1.0;
 
-  ba_local_num_images = 6;
-  ba_local_max_num_iterations = 25;
+    ba_local_num_images = 6;
+    ba_local_max_num_iterations = 25;
 
-  ba_global_images_ratio = 1.05;
-  ba_global_points_ratio = 1.05;
-  ba_global_images_freq = 500;
-  ba_global_points_freq = 50000;
-  ba_global_max_num_iterations = 50;
+    ba_global_images_ratio = 1.05;
+    ba_global_points_ratio = 1.05;
+    ba_global_images_freq = 500;
+    ba_global_points_freq = 50000;
+    ba_global_max_num_iterations = 50;
 
-  ba_refine_focal_length = true;
-  ba_refine_principal_point = false;
-  ba_refine_extra_params = true;
+    ba_refine_focal_length = true;
+    ba_refine_principal_point = false;
+    ba_refine_extra_params = true;
 
-  ba_local_max_refinements = 3;
-  ba_local_max_refinement_change = 0.001;
-  ba_global_max_refinements = 5;
-  ba_global_max_refinement_change = 0.0005;
+    ba_local_max_refinements = 3;
+    ba_local_max_refinement_change = 0.001;
+    ba_global_max_refinements = 5;
+    ba_global_max_refinement_change = 0.0005;
 
-  incremental_mapper.Reset();
-  triangulation.Reset();
+    incremental_mapper.Reset();
+    triangulation.Reset();
 }
 
 bool MapperOptions::Check() {
-  bool verified = true;
+    bool verified = true;
 
-  CHECK_OPTION(MapperOptions, min_num_matches, > 0);
-  CHECK_OPTION(MapperOptions, max_num_models, > 0);
-  CHECK_OPTION(MapperOptions, max_model_overlap, > 0);
-  CHECK_OPTION(MapperOptions, min_model_size, >= 0);
+    CHECK_OPTION(MapperOptions, min_num_matches, > 0);
+    CHECK_OPTION(MapperOptions, max_num_models, > 0);
+    CHECK_OPTION(MapperOptions, max_model_overlap, > 0);
+    CHECK_OPTION(MapperOptions, min_model_size, >= 0);
 
-  CHECK_OPTION(MapperOptions, init_num_trials, > 0);
+    CHECK_OPTION(MapperOptions, init_num_trials, > 0);
 
-  CHECK_OPTION(MapperOptions, min_focal_length_ratio, > 0);
-  CHECK_OPTION(MapperOptions, max_focal_length_ratio, > 0);
-  CHECK_OPTION(MapperOptions, max_extra_param, >= 0);
+    CHECK_OPTION(MapperOptions, min_focal_length_ratio, > 0);
+    CHECK_OPTION(MapperOptions, max_focal_length_ratio, > 0);
+    CHECK_OPTION(MapperOptions, max_extra_param, >= 0);
 
-  CHECK_OPTION(MapperOptions, ba_local_num_images, >= 2);
-  CHECK_OPTION(MapperOptions, ba_local_max_num_iterations, >= 0);
+    CHECK_OPTION(MapperOptions, ba_local_num_images, >= 2);
+    CHECK_OPTION(MapperOptions, ba_local_max_num_iterations, >= 0);
 
-  CHECK_OPTION(MapperOptions, ba_global_images_ratio, > 1.0);
-  CHECK_OPTION(MapperOptions, ba_global_points_ratio, > 1.0);
-  CHECK_OPTION(MapperOptions, ba_global_images_freq, > 0);
-  CHECK_OPTION(MapperOptions, ba_global_points_freq, > 0);
-  CHECK_OPTION(MapperOptions, ba_global_max_num_iterations, > 0);
+    CHECK_OPTION(MapperOptions, ba_global_images_ratio, > 1.0);
+    CHECK_OPTION(MapperOptions, ba_global_points_ratio, > 1.0);
+    CHECK_OPTION(MapperOptions, ba_global_images_freq, > 0);
+    CHECK_OPTION(MapperOptions, ba_global_points_freq, > 0);
+    CHECK_OPTION(MapperOptions, ba_global_max_num_iterations, > 0);
 
-  CHECK_OPTION(MapperOptions, ba_local_max_refinements, > 0);
-  CHECK_OPTION(MapperOptions, ba_local_max_refinement_change, >= 0);
-  CHECK_OPTION(MapperOptions, ba_global_max_refinements, > 0);
-  CHECK_OPTION(MapperOptions, ba_global_max_refinement_change, >= 0);
+    CHECK_OPTION(MapperOptions, ba_local_max_refinements, > 0);
+    CHECK_OPTION(MapperOptions, ba_local_max_refinement_change, >= 0);
+    CHECK_OPTION(MapperOptions, ba_global_max_refinements, > 0);
+    CHECK_OPTION(MapperOptions, ba_global_max_refinement_change, >= 0);
 
-  verified = verified && incremental_mapper.Check();
-  verified = verified && triangulation.Check();
+    verified = verified && incremental_mapper.Check();
+    verified = verified && triangulation.Check();
 
-  return verified;
+    return verified;
 }
 
 IncrementalMapper::Options MapperOptions::IncrementalMapperOptions() const {
@@ -451,343 +451,343 @@ IncrementalMapper::Options MapperOptions::IncrementalMapperOptions() const {
 }
 
 IncrementalTriangulator::Options MapperOptions::TriangulationOptions() const {
-  IncrementalTriangulator::Options options = triangulation.Options();
-  options.min_focal_length_ratio = min_focal_length_ratio;
-  options.max_focal_length_ratio = max_focal_length_ratio;
-  options.max_extra_param = max_extra_param;
-  return options;
+    IncrementalTriangulator::Options options = triangulation.Options();
+    options.min_focal_length_ratio = min_focal_length_ratio;
+    options.max_focal_length_ratio = max_focal_length_ratio;
+    options.max_extra_param = max_extra_param;
+    return options;
 }
 
 BundleAdjuster::Options MapperOptions::LocalBundleAdjustmentOptions() const {
-  BundleAdjuster::Options options;
-  options.solver_options.function_tolerance = 0.0;
-  options.solver_options.gradient_tolerance = 10.0;
-  options.solver_options.parameter_tolerance = 0.0;
-  options.solver_options.max_num_iterations = ba_local_max_num_iterations;
-  options.solver_options.max_linear_solver_iterations = 100;
-  options.solver_options.minimizer_progress_to_stdout = false;
-  options.solver_options.num_threads = num_threads;
-  options.solver_options.num_linear_solver_threads = num_threads;
-  options.print_summary = true;
-  options.refine_focal_length = ba_refine_focal_length;
-  options.refine_principal_point = ba_refine_principal_point;
-  options.refine_extra_params = ba_refine_extra_params;
-  options.loss_function_scale = 1.0;
-  options.loss_function_type =
-      BundleAdjuster::Options::LossFunctionType::CAUCHY;
-  return options;
+    BundleAdjuster::Options options;
+    options.solver_options.function_tolerance = 0.0;
+    options.solver_options.gradient_tolerance = 10.0;
+    options.solver_options.parameter_tolerance = 0.0;
+    options.solver_options.max_num_iterations = ba_local_max_num_iterations;
+    options.solver_options.max_linear_solver_iterations = 100;
+    options.solver_options.minimizer_progress_to_stdout = false;
+    options.solver_options.num_threads = num_threads;
+    options.solver_options.num_linear_solver_threads = num_threads;
+    options.print_summary = true;
+    options.refine_focal_length = ba_refine_focal_length;
+    options.refine_principal_point = ba_refine_principal_point;
+    options.refine_extra_params = ba_refine_extra_params;
+    options.loss_function_scale = 1.0;
+    options.loss_function_type =
+            BundleAdjuster::Options::LossFunctionType::CAUCHY;
+    return options;
 }
 
 BundleAdjuster::Options MapperOptions::GlobalBundleAdjustmentOptions() const {
-  BundleAdjuster::Options options;
-  options.solver_options.function_tolerance = 0.0;
-  options.solver_options.gradient_tolerance = 1.0;
-  options.solver_options.parameter_tolerance = 0.0;
-  options.solver_options.max_num_iterations = ba_global_max_num_iterations;
-  options.solver_options.max_linear_solver_iterations = 100;
-  options.solver_options.minimizer_progress_to_stdout = true;
-  options.solver_options.num_threads = num_threads;
-  options.solver_options.num_linear_solver_threads = num_threads;
-  options.print_summary = true;
-  options.refine_focal_length = ba_refine_focal_length;
-  options.refine_principal_point = ba_refine_principal_point;
-  options.refine_extra_params = ba_refine_extra_params;
-  options.loss_function_type =
-      BundleAdjuster::Options::LossFunctionType::TRIVIAL;
-  return options;
+    BundleAdjuster::Options options;
+    options.solver_options.function_tolerance = 0.0;
+    options.solver_options.gradient_tolerance = 1.0;
+    options.solver_options.parameter_tolerance = 0.0;
+    options.solver_options.max_num_iterations = ba_global_max_num_iterations;
+    options.solver_options.max_linear_solver_iterations = 100;
+    options.solver_options.minimizer_progress_to_stdout = true;
+    options.solver_options.num_threads = num_threads;
+    options.solver_options.num_linear_solver_threads = num_threads;
+    options.print_summary = true;
+    options.refine_focal_length = ba_refine_focal_length;
+    options.refine_principal_point = ba_refine_principal_point;
+    options.refine_extra_params = ba_refine_extra_params;
+    options.loss_function_type =
+            BundleAdjuster::Options::LossFunctionType::TRIVIAL;
+    return options;
 }
 
 RenderOptions::RenderOptions() { Reset(); }
 
 void RenderOptions::Reset() {
-  min_track_len = 3;
-  max_error = 2;
-  refresh_rate = 1;
-  adapt_refresh_rate = true;
-  image_connections = false;
+    min_track_len = 3;
+    max_error = 2;
+    refresh_rate = 1;
+    adapt_refresh_rate = true;
+    image_connections = false;
 }
 
 bool RenderOptions::Check() {
-  bool verified = true;
+    bool verified = true;
 
-  CHECK_OPTION(RenderOptions, min_track_len, >= 2);
-  CHECK_OPTION(RenderOptions, max_error, >= 0);
-  CHECK_OPTION(RenderOptions, refresh_rate, > 0);
+    CHECK_OPTION(RenderOptions, min_track_len, >= 2);
+    CHECK_OPTION(RenderOptions, max_error, >= 0);
+    CHECK_OPTION(RenderOptions, refresh_rate, > 0);
 
-  return verified;
+    return verified;
 }
 
 OptionManager::OptionManager() {
-  project_path.reset(new std::string());
-  database_path.reset(new std::string());
-  image_path.reset(new std::string());
+    project_path.reset(new std::string());
+    database_path.reset(new std::string());
+    image_path.reset(new std::string());
 
-  extraction_options.reset(new ExtractionOptions());
-  match_options.reset(new MatchOptions());
-  exhaustive_match_options.reset(new ExhaustiveMatchOptions());
-  ba_options.reset(new BundleAdjustmentOptions());
-  mapper_options.reset(new MapperOptions());
-  render_options.reset(new RenderOptions());
+    extraction_options.reset(new ExtractionOptions());
+    match_options.reset(new MatchOptions());
+    exhaustive_match_options.reset(new ExhaustiveMatchOptions());
+    ba_options.reset(new BundleAdjustmentOptions());
+    mapper_options.reset(new MapperOptions());
+    render_options.reset(new RenderOptions());
 
-  Reset();
+    Reset();
 
-  desc->add_options()(
-      "help,h",
-      "Configuration can either be specified via command_line or by "
-      "defining the parameters in a .ini project_file (see `--project_path`).")(
-      "project_path", boost::program_options::value<std::string>());
+    desc->add_options()(
+            "help,h",
+            "Configuration can either be specified via command_line or by "
+                    "defining the parameters in a .ini project_file (see `--project_path`).")(
+            "project_path", boost::program_options::value<std::string>());
 }
 
 void OptionManager::AddAllOptions() {
-  AddDatabaseOptions();
-  AddImageOptions();
-  AddExtractionOptions();
-  AddMatchOptions();
-  AddExhaustiveMatchOptions();
-  AddBundleAdjustmentOptions();
-  AddMapperOptions();
-  AddRenderOptions();
+    AddDatabaseOptions();
+    AddImageOptions();
+    AddExtractionOptions();
+    AddMatchOptions();
+    AddExhaustiveMatchOptions();
+    AddBundleAdjustmentOptions();
+    AddMapperOptions();
+    AddRenderOptions();
 }
 
 
 void OptionManager::AddDatabaseOptions() {
-  if (added_database_options_) {
-    return;
-  }
-  added_database_options_ = true;
+    if (added_database_options_) {
+        return;
+    }
+    added_database_options_ = true;
 
-  desc->add_options()(
-      "General.database_path",
-      boost::program_options::value<std::string>(database_path.get())->required());
-  RegisterOption("General.database_path", database_path.get());
+    desc->add_options()(
+            "General.database_path",
+            boost::program_options::value<std::string>(database_path.get())->required());
+    RegisterOption("General.database_path", database_path.get());
 }
 
 void OptionManager::AddImageOptions() {
-  if (added_image_options_) {
-    return;
-  }
-  added_image_options_ = true;
+    if (added_image_options_) {
+        return;
+    }
+    added_image_options_ = true;
 
-  desc->add_options()("General.image_path",
-                      boost::program_options::value<std::string>(image_path.get())->required());
-  RegisterOption("General.image_path", image_path.get());
+    desc->add_options()("General.image_path",
+                        boost::program_options::value<std::string>(image_path.get())->required());
+    RegisterOption("General.image_path", image_path.get());
 }
 
 void OptionManager::AddExtractionOptions() {
-  if (added_extraction_options_) {
-    return;
-  }
-  added_extraction_options_ = true;
+    if (added_extraction_options_) {
+        return;
+    }
+    added_extraction_options_ = true;
 
-  ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options, camera_model);
-  ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options, single_camera);
-  ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options, camera_params);
-  ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
-                     default_focal_length_factor);
+    ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options, camera_model);
+    ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options, single_camera);
+    ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options, camera_params);
+    ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
+                       default_focal_length_factor);
 
-  ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
-                     sift_options.max_image_size);
-  ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
-                     sift_options.max_num_features);
-  ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
-                     sift_options.first_octave);
-  ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
-                     sift_options.octave_resolution);
-  ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
-                     sift_options.peak_threshold);
-  ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
-                     sift_options.edge_threshold);
+    ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
+                       sift_options.max_image_size);
+    ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
+                       sift_options.max_num_features);
+    ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
+                       sift_options.first_octave);
+    ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
+                       sift_options.octave_resolution);
+    ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
+                       sift_options.peak_threshold);
+    ADD_OPTION_DEFAULT(ExtractionOptions, extraction_options,
+                       sift_options.edge_threshold);
 }
 
 void OptionManager::AddMatchOptions() {
-  if (added_match_options_) {
-    return;
-  }
-  added_match_options_ = true;
+    if (added_match_options_) {
+        return;
+    }
+    added_match_options_ = true;
 
-  ADD_OPTION_DEFAULT(MatchOptions, match_options, num_threads);
-  ADD_OPTION_DEFAULT(MatchOptions, match_options, gpu_index);
-  ADD_OPTION_DEFAULT(MatchOptions, match_options, max_ratio);
-  ADD_OPTION_DEFAULT(MatchOptions, match_options, max_distance);
-  ADD_OPTION_DEFAULT(MatchOptions, match_options, cross_check);
-  ADD_OPTION_DEFAULT(MatchOptions, match_options, max_error);
-  ADD_OPTION_DEFAULT(MatchOptions, match_options, max_num_matches);
-  ADD_OPTION_DEFAULT(MatchOptions, match_options, confidence);
-  ADD_OPTION_DEFAULT(MatchOptions, match_options, max_num_trials);
-  ADD_OPTION_DEFAULT(MatchOptions, match_options, min_inlier_ratio);
-  ADD_OPTION_DEFAULT(MatchOptions, match_options, min_num_inliers);
-  ADD_OPTION_DEFAULT(MatchOptions, match_options, multiple_models);
-  ADD_OPTION_DEFAULT(MatchOptions, match_options, guided_matching);
+    ADD_OPTION_DEFAULT(MatchOptions, match_options, num_threads);
+    ADD_OPTION_DEFAULT(MatchOptions, match_options, gpu_index);
+    ADD_OPTION_DEFAULT(MatchOptions, match_options, max_ratio);
+    ADD_OPTION_DEFAULT(MatchOptions, match_options, max_distance);
+    ADD_OPTION_DEFAULT(MatchOptions, match_options, cross_check);
+    ADD_OPTION_DEFAULT(MatchOptions, match_options, max_error);
+    ADD_OPTION_DEFAULT(MatchOptions, match_options, max_num_matches);
+    ADD_OPTION_DEFAULT(MatchOptions, match_options, confidence);
+    ADD_OPTION_DEFAULT(MatchOptions, match_options, max_num_trials);
+    ADD_OPTION_DEFAULT(MatchOptions, match_options, min_inlier_ratio);
+    ADD_OPTION_DEFAULT(MatchOptions, match_options, min_num_inliers);
+    ADD_OPTION_DEFAULT(MatchOptions, match_options, multiple_models);
+    ADD_OPTION_DEFAULT(MatchOptions, match_options, guided_matching);
 }
 
 void OptionManager::AddExhaustiveMatchOptions() {
-  if (added_exhaustive_match_options_) {
-    return;
-  }
-  added_exhaustive_match_options_ = true;
+    if (added_exhaustive_match_options_) {
+        return;
+    }
+    added_exhaustive_match_options_ = true;
 
-  ADD_OPTION_DEFAULT(ExhaustiveMatchOptions, exhaustive_match_options,
-                     block_size);
-  ADD_OPTION_DEFAULT(ExhaustiveMatchOptions, exhaustive_match_options,
-                     preemptive);
-  ADD_OPTION_DEFAULT(ExhaustiveMatchOptions, exhaustive_match_options,
-                     preemptive_num_features);
-  ADD_OPTION_DEFAULT(ExhaustiveMatchOptions, exhaustive_match_options,
-                     preemptive_min_num_matches);
+    ADD_OPTION_DEFAULT(ExhaustiveMatchOptions, exhaustive_match_options,
+                       block_size);
+    ADD_OPTION_DEFAULT(ExhaustiveMatchOptions, exhaustive_match_options,
+                       preemptive);
+    ADD_OPTION_DEFAULT(ExhaustiveMatchOptions, exhaustive_match_options,
+                       preemptive_num_features);
+    ADD_OPTION_DEFAULT(ExhaustiveMatchOptions, exhaustive_match_options,
+                       preemptive_min_num_matches);
 }
 
 void OptionManager::AddBundleAdjustmentOptions() {
-  if (added_ba_options_) {
-    return;
-  }
-  added_ba_options_ = true;
+    if (added_ba_options_) {
+        return;
+    }
+    added_ba_options_ = true;
 
-  ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options, max_num_iterations);
-  ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options,
-                     max_linear_solver_iterations);
-  ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options, function_tolerance);
-  ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options, gradient_tolerance);
-  ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options, parameter_tolerance);
-  ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options, refine_focal_length);
-  ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options,
-                     refine_principal_point);
-  ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options, refine_extra_params);
+    ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options, max_num_iterations);
+    ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options,
+                       max_linear_solver_iterations);
+    ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options, function_tolerance);
+    ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options, gradient_tolerance);
+    ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options, parameter_tolerance);
+    ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options, refine_focal_length);
+    ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options,
+                       refine_principal_point);
+    ADD_OPTION_DEFAULT(BundleAdjustmentOptions, ba_options, refine_extra_params);
 }
 
 void OptionManager::AddMapperOptions() {
-  if (added_mapper_options_) {
-    return;
-  }
-  added_mapper_options_ = true;
+    if (added_mapper_options_) {
+        return;
+    }
+    added_mapper_options_ = true;
 
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, min_num_matches);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, multiple_models);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, max_num_models);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, max_model_overlap);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, min_model_size);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, init_image_id1);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, init_image_id2);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, init_num_trials);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, extract_colors);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, num_threads);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, min_focal_length_ratio);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, max_focal_length_ratio);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, max_extra_param);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, min_num_matches);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, multiple_models);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, max_num_models);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, max_model_overlap);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, min_model_size);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, init_image_id1);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, init_image_id2);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, init_num_trials);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, extract_colors);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, num_threads);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, min_focal_length_ratio);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, max_focal_length_ratio);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, max_extra_param);
 
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     incremental_mapper.init_min_num_inliers);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     incremental_mapper.init_max_error);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     incremental_mapper.init_max_forward_motion);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     incremental_mapper.init_min_tri_angle);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     incremental_mapper.abs_pose_max_error);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     incremental_mapper.abs_pose_min_num_inliers);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     incremental_mapper.abs_pose_min_inlier_ratio);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     incremental_mapper.filter_max_reproj_error);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     incremental_mapper.filter_min_tri_angle);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     incremental_mapper.max_reg_trials);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       incremental_mapper.init_min_num_inliers);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       incremental_mapper.init_max_error);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       incremental_mapper.init_max_forward_motion);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       incremental_mapper.init_min_tri_angle);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       incremental_mapper.abs_pose_max_error);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       incremental_mapper.abs_pose_min_num_inliers);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       incremental_mapper.abs_pose_min_inlier_ratio);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       incremental_mapper.filter_max_reproj_error);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       incremental_mapper.filter_min_tri_angle);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       incremental_mapper.max_reg_trials);
 
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     triangulation.max_transitivity);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     triangulation.create_max_angle_error);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     triangulation.continue_max_angle_error);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     triangulation.merge_max_reproj_error);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     triangulation.complete_max_reproj_error);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     triangulation.complete_max_transitivity);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     triangulation.re_max_angle_error);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, triangulation.re_min_ratio);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     triangulation.re_max_trials);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, triangulation.min_angle);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     triangulation.ignore_two_view_tracks);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       triangulation.max_transitivity);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       triangulation.create_max_angle_error);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       triangulation.continue_max_angle_error);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       triangulation.merge_max_reproj_error);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       triangulation.complete_max_reproj_error);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       triangulation.complete_max_transitivity);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       triangulation.re_max_angle_error);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, triangulation.re_min_ratio);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       triangulation.re_max_trials);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, triangulation.min_angle);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       triangulation.ignore_two_view_tracks);
 
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_refine_focal_length);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_refine_principal_point);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_refine_extra_params);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_refine_focal_length);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_refine_principal_point);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_refine_extra_params);
 
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_local_num_images);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     ba_local_max_num_iterations);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_local_num_images);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       ba_local_max_num_iterations);
 
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_global_images_ratio);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_global_images_freq);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_global_points_ratio);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_global_points_freq);
-  ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
-                     ba_global_max_num_iterations);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_global_images_ratio);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_global_images_freq);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_global_points_ratio);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options, ba_global_points_freq);
+    ADD_OPTION_DEFAULT(MapperOptions, mapper_options,
+                       ba_global_max_num_iterations);
 }
 
 void OptionManager::AddRenderOptions() {
-  if (added_render_options_) {
-    return;
-  }
-  added_render_options_ = true;
+    if (added_render_options_) {
+        return;
+    }
+    added_render_options_ = true;
 
-  ADD_OPTION_DEFAULT(RenderOptions, render_options, min_track_len);
-  ADD_OPTION_DEFAULT(RenderOptions, render_options, max_error);
-  ADD_OPTION_DEFAULT(RenderOptions, render_options, refresh_rate);
-  ADD_OPTION_DEFAULT(RenderOptions, render_options, adapt_refresh_rate);
-  ADD_OPTION_DEFAULT(RenderOptions, render_options, image_connections);
+    ADD_OPTION_DEFAULT(RenderOptions, render_options, min_track_len);
+    ADD_OPTION_DEFAULT(RenderOptions, render_options, max_error);
+    ADD_OPTION_DEFAULT(RenderOptions, render_options, refresh_rate);
+    ADD_OPTION_DEFAULT(RenderOptions, render_options, adapt_refresh_rate);
+    ADD_OPTION_DEFAULT(RenderOptions, render_options, image_connections);
 }
 
 void OptionManager::Reset() {
-  project_path->clear();
-  database_path->clear();
-  image_path->clear();
+    project_path->clear();
+    database_path->clear();
+    image_path->clear();
 
-  extraction_options->Reset();
-  match_options->Reset();
-  exhaustive_match_options->Reset();
-  ba_options->Reset();
-  mapper_options->Reset();
-  render_options->Reset();
+    extraction_options->Reset();
+    match_options->Reset();
+    exhaustive_match_options->Reset();
+    ba_options->Reset();
+    mapper_options->Reset();
+    render_options->Reset();
 
-  desc.reset(new boost::program_options::options_description());
+    desc.reset(new boost::program_options::options_description());
 
-  options_bool_.clear();
-  options_int_.clear();
-  options_double_.clear();
-  options_string_.clear();
+    options_bool_.clear();
+    options_int_.clear();
+    options_double_.clear();
+    options_string_.clear();
 
-  added_database_options_ = false;
-  added_image_options_ = false;
-  added_extraction_options_ = false;
-  added_match_options_ = false;
-  added_exhaustive_match_options_ = false;
-  added_ba_options_ = false;
-  added_mapper_options_ = false;
-  added_render_options_ = false;
+    added_database_options_ = false;
+    added_image_options_ = false;
+    added_extraction_options_ = false;
+    added_match_options_ = false;
+    added_exhaustive_match_options_ = false;
+    added_ba_options_ = false;
+    added_mapper_options_ = false;
+    added_render_options_ = false;
 }
 
 bool OptionManager::Check() {
-  bool verified = true;
+    bool verified = true;
 
-  verified =
-      verified && boost::filesystem::is_directory(
-                      boost::filesystem::path(*database_path).parent_path());
-  verified = verified && boost::filesystem::is_directory(*image_path);
+    verified =
+            verified && boost::filesystem::is_directory(
+                    boost::filesystem::path(*database_path).parent_path());
+    verified = verified && boost::filesystem::is_directory(*image_path);
 
-  verified = verified && extraction_options->Check();
-  verified = verified && match_options->Check();
-  verified = verified && exhaustive_match_options->Check();
-  verified = verified && ba_options->Check();
-  verified = verified && mapper_options->Check();
-  verified = verified && render_options->Check();
+    verified = verified && extraction_options->Check();
+    verified = verified && match_options->Check();
+    verified = verified && exhaustive_match_options->Check();
+    verified = verified && ba_options->Check();
+    verified = verified && mapper_options->Check();
+    verified = verified && render_options->Check();
 
-  return verified;
+    return verified;
 }

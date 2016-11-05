@@ -10,267 +10,287 @@
 #include <boost/filesystem.hpp>
 
 struct BaseOptions {
-  virtual void Reset() = 0;
-  virtual bool Check() = 0;
+    virtual void Reset() = 0;
+
+    virtual bool Check() = 0;
 };
 
 struct ExtractionOptions : public BaseOptions {
-  ExtractionOptions();
+    ExtractionOptions();
 
-  void Reset() override;
-  bool Check() override;
+    void Reset() override;
 
-  FeatureExtractor::Options Options() const;
+    bool Check() override;
 
-  std::string camera_model;
-  bool single_camera;
-  std::string camera_params;
-  double default_focal_length_factor;
+    FeatureExtractor::Options Options() const;
 
-  SIFTOptions sift_options;
+    std::string camera_model;
+    bool single_camera;
+    std::string camera_params;
+    double default_focal_length_factor;
+
+    SIFTOptions sift_options;
 };
 
 struct MatchOptions : public BaseOptions {
-  MatchOptions();
+    MatchOptions();
 
-  void Reset() override;
-  bool Check() override;
+    void Reset() override;
 
-  FeatureMatcher::Options Options() const;
+    bool Check() override;
 
-  int num_threads;
-  int gpu_index;
-  double max_ratio;
-  double max_distance;
-  bool cross_check;
-  int max_num_matches;
-  double max_error;
-  double confidence;
-  int max_num_trials;
-  double min_inlier_ratio;
-  int min_num_inliers;
-  bool multiple_models;
-  bool guided_matching;
+    FeatureMatcher::Options Options() const;
+
+    int num_threads;
+    int gpu_index;
+    double max_ratio;
+    double max_distance;
+    bool cross_check;
+    int max_num_matches;
+    double max_error;
+    double confidence;
+    int max_num_trials;
+    double min_inlier_ratio;
+    int min_num_inliers;
+    bool multiple_models;
+    bool guided_matching;
 };
 
 struct ExhaustiveMatchOptions : public BaseOptions {
-  ExhaustiveMatchOptions();
+    ExhaustiveMatchOptions();
 
-  void Reset() override;
-  bool Check() override;
+    void Reset() override;
 
-  ExhaustiveFeatureMatcher::ExhaustiveOptions Options() const;
+    bool Check() override;
 
-  int block_size;
-  bool preemptive;
-  int preemptive_num_features;
-  int preemptive_min_num_matches;
+    ExhaustiveFeatureMatcher::ExhaustiveOptions Options() const;
+
+    int block_size;
+    bool preemptive;
+    int preemptive_num_features;
+    int preemptive_min_num_matches;
 };
 
 struct BundleAdjustmentOptions : public BaseOptions {
-  BundleAdjustmentOptions();
+    BundleAdjustmentOptions();
 
-  void Reset() override;
-  bool Check() override;
+    void Reset() override;
 
-  virtual BundleAdjuster::Options Options() const;
+    bool Check() override;
 
-  int max_num_iterations;
-  int max_linear_solver_iterations;
+    virtual BundleAdjuster::Options Options() const;
 
-  double function_tolerance;
-  double gradient_tolerance;
-  double parameter_tolerance;
+    int max_num_iterations;
+    int max_linear_solver_iterations;
 
-  int max_num_consecutive_invalid_steps;
-  int max_consecutive_nonmonotonic_steps;
-  bool use_nonmonotonic_steps;
+    double function_tolerance;
+    double gradient_tolerance;
+    double parameter_tolerance;
 
-  bool minimizer_progress_to_stdout;
+    int max_num_consecutive_invalid_steps;
+    int max_consecutive_nonmonotonic_steps;
+    bool use_nonmonotonic_steps;
 
-  int min_observations_per_image;
+    bool minimizer_progress_to_stdout;
 
-  double loss_function_scale;
+    int min_observations_per_image;
 
-  bool refine_focal_length;
-  bool refine_principal_point;
-  bool refine_extra_params;
+    double loss_function_scale;
 
-  bool print_summary;
+    bool refine_focal_length;
+    bool refine_principal_point;
+    bool refine_extra_params;
+
+    bool print_summary;
 };
 
 struct TriangulationOptions : public BaseOptions {
-  TriangulationOptions();
+    TriangulationOptions();
 
-  void Reset() override;
-  bool Check() override;
+    void Reset() override;
 
-  IncrementalTriangulator::Options Options() const;
+    bool Check() override;
 
-  int max_transitivity;
-  double create_max_angle_error;
-  double continue_max_angle_error;
-  double merge_max_reproj_error;
-  double re_max_angle_error;
-  double re_min_ratio;
-  int re_max_trials;
-  double complete_max_reproj_error;
-  int complete_max_transitivity;
-  double min_angle;
-  bool ignore_two_view_tracks;
+    IncrementalTriangulator::Options Options() const;
+
+    int max_transitivity;
+    double create_max_angle_error;
+    double continue_max_angle_error;
+    double merge_max_reproj_error;
+    double re_max_angle_error;
+    double re_min_ratio;
+    int re_max_trials;
+    double complete_max_reproj_error;
+    int complete_max_transitivity;
+    double min_angle;
+    bool ignore_two_view_tracks;
 };
 
 struct IncrementalMapperOptions : public BaseOptions {
-  IncrementalMapperOptions();
+    IncrementalMapperOptions();
 
-  void Reset() override;
-  bool Check() override;
+    void Reset() override;
 
-  IncrementalMapper::Options Options() const;
+    bool Check() override;
 
-  int init_min_num_inliers;
-  double init_max_error;
-  double init_max_forward_motion;
-  double init_min_tri_angle;
+    IncrementalMapper::Options Options() const;
 
-  double abs_pose_max_error;
-  int abs_pose_min_num_inliers;
-  double abs_pose_min_inlier_ratio;
+    int init_min_num_inliers;
+    double init_max_error;
+    double init_max_forward_motion;
+    double init_min_tri_angle;
 
-  double filter_max_reproj_error;
-  double filter_min_tri_angle;
+    double abs_pose_max_error;
+    int abs_pose_min_num_inliers;
+    double abs_pose_min_inlier_ratio;
 
-  int max_reg_trials;
+    double filter_max_reproj_error;
+    double filter_min_tri_angle;
+
+    int max_reg_trials;
 };
 
 struct MapperOptions : public BaseOptions {
-  MapperOptions();
+    MapperOptions();
 
-  void Reset() override;
-  bool Check() override;
+    void Reset() override;
 
-  IncrementalMapper::Options IncrementalMapperOptions() const;
-  IncrementalTriangulator::Options TriangulationOptions() const;
-  BundleAdjuster::Options LocalBundleAdjustmentOptions() const;
-  BundleAdjuster::Options GlobalBundleAdjustmentOptions() const;
+    bool Check() override;
 
-  int min_num_matches;
-  bool ignore_watermarks;
+    IncrementalMapper::Options IncrementalMapperOptions() const;
 
-  bool multiple_models;
-  int max_num_models;
-  int max_model_overlap;
-  int min_model_size;
+    IncrementalTriangulator::Options TriangulationOptions() const;
 
-  int init_image_id1;
-  int init_image_id2;
-  int init_num_trials;
+    BundleAdjuster::Options LocalBundleAdjustmentOptions() const;
 
-  bool extract_colors;
+    BundleAdjuster::Options GlobalBundleAdjustmentOptions() const;
 
-  int num_threads;
+    int min_num_matches;
+    bool ignore_watermarks;
 
-  double min_focal_length_ratio;
-  double max_focal_length_ratio;
-  double max_extra_param;
+    bool multiple_models;
+    int max_num_models;
+    int max_model_overlap;
+    int min_model_size;
 
-  bool ba_refine_focal_length;
-  bool ba_refine_principal_point;
-  bool ba_refine_extra_params;
+    int init_image_id1;
+    int init_image_id2;
+    int init_num_trials;
 
-  int ba_local_num_images;
-  int ba_local_max_num_iterations;
+    bool extract_colors;
 
-  double ba_global_images_ratio;
-  double ba_global_points_ratio;
-  int ba_global_images_freq;
-  int ba_global_points_freq;
-  int ba_global_max_num_iterations;
+    int num_threads;
 
-  int ba_global_max_refinements;
-  double ba_global_max_refinement_change;
-  int ba_local_max_refinements;
-  double ba_local_max_refinement_change;
+    double min_focal_length_ratio;
+    double max_focal_length_ratio;
+    double max_extra_param;
 
-  struct IncrementalMapperOptions incremental_mapper;
-  struct TriangulationOptions triangulation;
+    bool ba_refine_focal_length;
+    bool ba_refine_principal_point;
+    bool ba_refine_extra_params;
+
+    int ba_local_num_images;
+    int ba_local_max_num_iterations;
+
+    double ba_global_images_ratio;
+    double ba_global_points_ratio;
+    int ba_global_images_freq;
+    int ba_global_points_freq;
+    int ba_global_max_num_iterations;
+
+    int ba_global_max_refinements;
+    double ba_global_max_refinement_change;
+    int ba_local_max_refinements;
+    double ba_local_max_refinement_change;
+
+    struct IncrementalMapperOptions incremental_mapper;
+    struct TriangulationOptions triangulation;
 };
 
 struct RenderOptions : public BaseOptions {
-  RenderOptions();
+    RenderOptions();
 
-  void Reset() override;
-  bool Check() override;
+    void Reset() override;
 
-  int min_track_len;
-  double max_error;
-  int refresh_rate;
-  bool adapt_refresh_rate;
-  bool image_connections;
+    bool Check() override;
+
+    int min_track_len;
+    double max_error;
+    int refresh_rate;
+    bool adapt_refresh_rate;
+    bool image_connections;
 };
 
 class OptionManager {
- public:
-  OptionManager();
+public:
+    OptionManager();
 
-  void AddAllOptions();
-  void AddDatabaseOptions();
-  void AddImageOptions();
-  void AddExtractionOptions();
-  void AddMatchOptions();
-  void AddExhaustiveMatchOptions();
-  void AddBundleAdjustmentOptions();
-  void AddMapperOptions();
-  void AddRenderOptions();
+    void AddAllOptions();
 
-  void Reset();
+    void AddDatabaseOptions();
 
-  bool Check();
+    void AddImageOptions();
 
-  std::shared_ptr<boost::program_options::options_description> desc;
+    void AddExtractionOptions();
 
-  std::shared_ptr<std::string> project_path;
-  std::shared_ptr<std::string> database_path;
-  std::shared_ptr<std::string> image_path;
+    void AddMatchOptions();
 
-  std::shared_ptr<ExtractionOptions> extraction_options;
-  std::shared_ptr<MatchOptions> match_options;
-  std::shared_ptr<ExhaustiveMatchOptions> exhaustive_match_options;
-  std::shared_ptr<BundleAdjustmentOptions> ba_options;
-  std::shared_ptr<MapperOptions> mapper_options;
-  std::shared_ptr<RenderOptions> render_options;
+    void AddExhaustiveMatchOptions();
 
- private:
-  template <typename T>
-  void RegisterOption(const std::string& name, const T* option);
+    void AddBundleAdjustmentOptions();
 
-  std::vector<std::pair<std::string, const bool*>> options_bool_;
-  std::vector<std::pair<std::string, const int*>> options_int_;
-  std::vector<std::pair<std::string, const double*>> options_double_;
-  std::vector<std::pair<std::string, const std::string*>> options_string_;
+    void AddMapperOptions();
 
-  bool added_database_options_;
-  bool added_image_options_;
-  bool added_extraction_options_;
-  bool added_match_options_;
-  bool added_exhaustive_match_options_;
-  bool added_ba_options_;
-  bool added_mapper_options_;
-  bool added_render_options_;
+    void AddRenderOptions();
+
+    void Reset();
+
+    bool Check();
+
+    std::shared_ptr<boost::program_options::options_description> desc;
+
+    std::shared_ptr<std::string> project_path;
+    std::shared_ptr<std::string> database_path;
+    std::shared_ptr<std::string> image_path;
+
+    std::shared_ptr<ExtractionOptions> extraction_options;
+    std::shared_ptr<MatchOptions> match_options;
+    std::shared_ptr<ExhaustiveMatchOptions> exhaustive_match_options;
+    std::shared_ptr<BundleAdjustmentOptions> ba_options;
+    std::shared_ptr<MapperOptions> mapper_options;
+    std::shared_ptr<RenderOptions> render_options;
+
+private:
+    template<typename T>
+    void RegisterOption(const std::string& name, const T* option);
+
+    std::vector<std::pair<std::string, const bool*>> options_bool_;
+    std::vector<std::pair<std::string, const int*>> options_int_;
+    std::vector<std::pair<std::string, const double*>> options_double_;
+    std::vector<std::pair<std::string, const std::string*>> options_string_;
+
+    bool added_database_options_;
+    bool added_image_options_;
+    bool added_extraction_options_;
+    bool added_match_options_;
+    bool added_exhaustive_match_options_;
+    bool added_ba_options_;
+    bool added_mapper_options_;
+    bool added_render_options_;
 };
 
-template <typename T>
+template<typename T>
 void OptionManager::RegisterOption(const std::string& name, const T* option) {
-  if (std::is_same<T, bool>::value) {
-    options_bool_.emplace_back(name, reinterpret_cast<const bool*>(option));
-  } else if (std::is_same<T, int>::value) {
-    options_int_.emplace_back(name, reinterpret_cast<const int*>(option));
-  } else if (std::is_same<T, double>::value) {
-    options_double_.emplace_back(name, reinterpret_cast<const double*>(option));
-  } else if (std::is_same<T, std::string>::value) {
-    options_string_.emplace_back(name,
-                                 reinterpret_cast<const std::string*>(option));
-  }
+    if (std::is_same<T, bool>::value) {
+        options_bool_.emplace_back(name, reinterpret_cast<const bool*>(option));
+    } else if (std::is_same<T, int>::value) {
+        options_int_.emplace_back(name, reinterpret_cast<const int*>(option));
+    } else if (std::is_same<T, double>::value) {
+        options_double_.emplace_back(name, reinterpret_cast<const double*>(option));
+    } else if (std::is_same<T, std::string>::value) {
+        options_string_.emplace_back(name,
+                                     reinterpret_cast<const std::string*>(option));
+    }
 }
 
 

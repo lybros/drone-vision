@@ -16,91 +16,93 @@
 #include <boost/filesystem.hpp>
 
 struct SIFTOptions {
-  int max_image_size = 3200;
+    int max_image_size = 3200;
 
-  int max_num_features = 8192;
+    int max_num_features = 8192;
 
-  int first_octave = -1;
+    int first_octave = -1;
 
-  int num_octaves = 4;
+    int num_octaves = 4;
 
-  int octave_resolution = 3;
+    int octave_resolution = 3;
 
-  double peak_threshold = 0.02 / octave_resolution;
+    double peak_threshold = 0.02 / octave_resolution;
 
-  double edge_threshold = 10.0;
+    double edge_threshold = 10.0;
 
-  int max_num_orientations = 2;
+    int max_num_orientations = 2;
 
-  enum class Normalization {
-    L1_ROOT,
-    L2,
-  };
-  Normalization normalization = Normalization::L1_ROOT;
+    enum class Normalization {
+        L1_ROOT,
+        L2,
+    };
+    Normalization normalization = Normalization::L1_ROOT;
 
-  void Check() const;
+    void Check() const;
 };
 
 class FeatureExtractor : public QThread {
- public:
-  struct Options {
-    std::string camera_model = "RADIAL";
+public:
+    struct Options {
+        std::string camera_model = "RADIAL";
 
-    bool single_camera = false;
+        bool single_camera = false;
 
-    std::string camera_params = "";
+        std::string camera_params = "";
 
-    double default_focal_length_factor = 1.2;
+        double default_focal_length_factor = 1.2;
 
-    void Check() const;
-  };
+        void Check() const;
+    };
 
-  FeatureExtractor(const Options& options, const std::string& database_path,
-                   const std::string& image_path);
+    FeatureExtractor(const Options& options, const std::string& database_path,
+                     const std::string& image_path);
 
-  void run();
-  void Stop();
+    void run();
 
- protected:
-  virtual void DoExtraction() = 0;
+    void Stop();
 
-  bool ReadImage(const std::string& image_path, Image* image, Bitmap* bitmap);
+protected:
+    virtual void DoExtraction() = 0;
 
-  bool stop_;
-  QMutex mutex_;
+    bool ReadImage(const std::string& image_path, Image* image, Bitmap* bitmap);
 
-  Options options_;
+    bool stop_;
+    QMutex mutex_;
 
-  Database database_;
+    Options options_;
 
-  std::string database_path_;
+    Database database_;
 
-  std::string image_path_;
+    std::string database_path_;
 
-  Camera last_camera_;
+    std::string image_path_;
 
-  camera_t last_camera_id_;
+    Camera last_camera_;
+
+    camera_t last_camera_id_;
 };
 
 
 class SiftGPUFeatureExtractor : public FeatureExtractor {
- public:
-  SiftGPUFeatureExtractor(const Options& options,
-                          const SIFTOptions& sift_options,
-                          const std::string& database_path,
-                          const std::string& image_path);
+public:
+    SiftGPUFeatureExtractor(const Options& options,
+                            const SIFTOptions& sift_options,
+                            const std::string& database_path,
+                            const std::string& image_path);
 
-  ~SiftGPUFeatureExtractor();
+    ~SiftGPUFeatureExtractor();
 
- private:
-  void TearDown();
-  void DoExtraction() override;
+private:
+    void TearDown();
 
-  SIFTOptions sift_options_;
+    void DoExtraction() override;
 
-  QThread* parent_thread_;
-  QOpenGLContext* context_;
-  QOffscreenSurface* surface_;
+    SIFTOptions sift_options_;
+
+    QThread* parent_thread_;
+    QOpenGLContext* context_;
+    QOffscreenSurface* surface_;
 };
 
 
@@ -137,9 +139,11 @@ public:
     };
 
     FeatureMatcher(const Options& options, const std::string& database_path);
+
     ~FeatureMatcher();
 
     void run();
+
     virtual void Stop();
 
 protected:
@@ -155,15 +159,21 @@ protected:
     virtual void DoMatching() = 0;
 
     void SetupWorkers();
+
     void SetupData();
+
     bool IsStopped();
+
     void PrintElapsedTime(const Timer& timer);
 
     const FeatureKeypoints& CacheKeypoints(const image_t image_id);
+
     const FeatureDescriptors& CacheDescriptors(const image_t image_id);
+
     void CleanCache(const std::unordered_set<image_t>& keep_image_ids);
 
     void UploadKeypoints(const int index, const image_t image_id);
+
     void UploadDescriptors(const int index, const image_t image_id);
 
     void ExtractMatchesFromBuffer(const size_t num_matches,
@@ -171,9 +181,11 @@ protected:
 
     void MatchImagePairs(
             const std::vector<std::pair<image_t, image_t>>& image_pairs);
+
     void MatchImagePairGuided(
             const image_t image_id1, const image_t image_id2,
             TwoViewGeometry* two_view_geometry);
+
     static TwoViewGeometry VerifyImagePair(const GeometricVerificationData data,
                                            const bool multiple_models);
 

@@ -3,12 +3,12 @@
 const std::string RadialCameraModel::params_info = RadialCameraModel::InitializeParamsInfo();
 const std::vector<size_t> RadialCameraModel::focal_length_idxs = RadialCameraModel::InitializeFocalLengthIdxs();
 const std::vector<size_t> RadialCameraModel::principal_point_idxs = RadialCameraModel::InitializePrincipalPointIdxs();
-const std::vector<size_t> RadialCameraModel::extra_params_idxs =  RadialCameraModel::InitializeExtraParamsIdxs();
+const std::vector<size_t> RadialCameraModel::extra_params_idxs = RadialCameraModel::InitializeExtraParamsIdxs();
 
 const std::string PinholeCameraModel::params_info = PinholeCameraModel::InitializeParamsInfo();
 const std::vector<size_t> PinholeCameraModel::focal_length_idxs = PinholeCameraModel::InitializeFocalLengthIdxs();
 const std::vector<size_t> PinholeCameraModel::principal_point_idxs = PinholeCameraModel::InitializePrincipalPointIdxs();
-const std::vector<size_t> PinholeCameraModel::extra_params_idxs =  PinholeCameraModel::InitializeExtraParamsIdxs();
+const std::vector<size_t> PinholeCameraModel::extra_params_idxs = PinholeCameraModel::InitializeExtraParamsIdxs();
 
 int CameraModelNameToId(const std::string& name) {
     std::string uppercast_name = name;
@@ -125,7 +125,7 @@ bool CameraModelHasBogusParams(const int model_id,
     }
     if (model_id == PinholeCameraModel::model_id) {
         return PinholeCameraModel::HasBogusParams(params, width, height, min_focal_length_ratio, max_focal_length_ratio,
-                                                 max_extra_param);
+                                                  max_extra_param);
     }
     return false;
 }
@@ -213,13 +213,13 @@ double CameraModelImageToWorldThreshold(const int model_id,
 }
 
 
-Track::Track() {}
+Track::Track() { }
 
 TrackElement::TrackElement()
-        : image_id(kInvalidImageId), point2D_idx(kInvalidPoint2DIdx) {}
+        : image_id(kInvalidImageId), point2D_idx(kInvalidPoint2DIdx) { }
 
 TrackElement::TrackElement(const image_t image_id, const point2D_t point2D_idx)
-        : image_id(image_id), point2D_idx(point2D_idx) {}
+        : image_id(image_id), point2D_idx(point2D_idx) { }
 
 void Track::DeleteElement(const image_t image_id, const point2D_t point2D_idx) {
     elements_.erase(
@@ -272,7 +272,7 @@ void Track::Reserve(const size_t num_elements) {
 void Track::Compress() { elements_.shrink_to_fit(); }
 
 
-Point_3D::Point_3D() : xyz_(0.0, 0.0, 0.0), color_(0, 0, 0), error_(-1.0) {}
+Point_3D::Point_3D() : xyz_(0.0, 0.0, 0.0), color_(0, 0, 0), error_(-1.0) { }
 
 const Eigen::Vector3d& Point_3D::XYZ() const { return xyz_; }
 
@@ -320,7 +320,7 @@ Camera::Camera()
           model_id_(kInvalidCameraModelId),
           width_(0),
           height_(0),
-          prior_focal_length_(false) {}
+          prior_focal_length_(false) { }
 
 std::string Camera::ModelName() const { return CameraModelIdToName(model_id_); }
 
@@ -581,7 +581,7 @@ namespace {
 }
 
 
-VisibilityPyramid::VisibilityPyramid() : VisibilityPyramid(0, 0, 0) {}
+VisibilityPyramid::VisibilityPyramid() : VisibilityPyramid(0, 0, 0) { }
 
 VisibilityPyramid::VisibilityPyramid(const size_t num_levels,
                                      const size_t width, const size_t height)
@@ -653,7 +653,7 @@ size_t VisibilityPyramid::MaxScore() const { return max_score_; }
 
 
 Point2D::Point2D()
-        : xy_(Eigen::Vector2d::Zero()), point3D_id_(kInvalidPoint3DId) {}
+        : xy_(Eigen::Vector2d::Zero()), point3D_id_(kInvalidPoint3DId) { }
 
 const Eigen::Vector2d& Point2D::XY() const { return xy_; }
 
@@ -685,7 +685,7 @@ Image::Image()
           qvec_(1.0, 0.0, 0.0, 0.0),
           tvec_(0.0, 0.0, 0.0),
           qvec_prior_(kNaN, kNaN, kNaN, kNaN),
-          tvec_prior_(kNaN, kNaN, kNaN) {}
+          tvec_prior_(kNaN, kNaN, kNaN) { }
 
 void Image::SetUp(const class Camera& camera) {
     point3D_visibility_pyramid_ = VisibilityPyramid(
@@ -786,7 +786,7 @@ void Image::SetName(const std::string& name) { name_ = name; }
 camera_t Image::CameraId() const { return camera_id_; }
 
 void Image::SetCameraId(const camera_t camera_id) {
-  camera_id_ = camera_id;
+    camera_id_ = camera_id;
 }
 
 bool Image::HasCamera() const { return camera_id_ != kInvalidCameraId; }
@@ -796,7 +796,7 @@ bool Image::IsRegistered() const { return registered_; }
 void Image::SetRegistered(const bool registered) { registered_ = registered; }
 
 point2D_t Image::NumPoints2D() const {
-  return static_cast<point2D_t>(points2D_.size());
+    return static_cast<point2D_t>(points2D_.size());
 }
 
 point2D_t Image::NumPoints3D() const { return num_points3D_; }
@@ -804,19 +804,19 @@ point2D_t Image::NumPoints3D() const { return num_points3D_; }
 point2D_t Image::NumObservations() const { return num_observations_; }
 
 void Image::SetNumObservations(const point2D_t num_observations) {
-  num_observations_ = num_observations;
+    num_observations_ = num_observations;
 }
 
 point2D_t Image::NumCorrespondences() const { return num_correspondences_; }
 
 void Image::SetNumCorrespondences(const point2D_t num_correspondences) {
-  num_correspondences_ = num_correspondences;
+    num_correspondences_ = num_correspondences;
 }
 
 point2D_t Image::NumVisiblePoints3D() const { return num_visible_points3D_; }
 
 size_t Image::Point3DVisibilityScore() const {
-  return point3D_visibility_pyramid_.Score();
+    return point3D_visibility_pyramid_.Score();
 }
 
 const Eigen::Vector4d& Image::Qvec() const { return qvec_; }
@@ -834,7 +834,7 @@ const Eigen::Vector4d& Image::QvecPrior() const { return qvec_prior_; }
 Eigen::Vector4d& Image::QvecPrior() { return qvec_prior_; }
 
 double Image::QvecPrior(const size_t idx) const {
-  return qvec_prior_(idx);
+    return qvec_prior_(idx);
 }
 
 double& Image::QvecPrior(const size_t idx) { return qvec_prior_(idx); }
@@ -858,7 +858,7 @@ const Eigen::Vector3d& Image::TvecPrior() const { return tvec_prior_; }
 Eigen::Vector3d& Image::TvecPrior() { return tvec_prior_; }
 
 double Image::TvecPrior(const size_t idx) const {
-  return tvec_prior_(idx);
+    return tvec_prior_(idx);
 }
 
 double& Image::TvecPrior(const size_t idx) { return tvec_prior_(idx); }
@@ -868,15 +868,15 @@ bool Image::HasTvecPrior() const { return !IsNaN(tvec_prior_.sum()); }
 void Image::SetTvecPrior(const Eigen::Vector3d& tvec) { tvec_prior_ = tvec; }
 
 const class Point2D& Image::Point2D(const point2D_t point2D_idx) const {
-  return points2D_.at(point2D_idx);
+    return points2D_.at(point2D_idx);
 }
 
 class Point2D& Image::Point2D(const point2D_t point2D_idx) {
-  return points2D_.at(point2D_idx);
+    return points2D_.at(point2D_idx);
 }
 
 const std::vector<class Point2D>& Image::Points2D() const { return points2D_; }
 
 bool Image::IsPoint3DVisible(const point2D_t point2D_idx) const {
-  return num_correspondences_have_point3D_.at(point2D_idx) > 0;
+    return num_correspondences_have_point3D_.at(point2D_idx) > 0;
 }

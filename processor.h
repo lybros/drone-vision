@@ -173,6 +173,7 @@ public:
     bool AdjustGlobalBundle(const BundleAdjuster::Options& ba_options);
 
     size_t FilterImages(const Options& options);
+
     size_t FilterPoints(const Options& options);
 
     size_t NumTotalRegImages() const;
@@ -188,6 +189,7 @@ private:
                                          const image_t image_id) const;
 
     void RegisterImageEvent(const image_t image_id);
+
     void DeRegisterImageEvent(const image_t image_id);
 
     bool EstimateInitialTwoViewGeometry(const Options& options,

@@ -23,7 +23,7 @@ QMatrix4x4 EigenToQMatrix(const Eigen::Matrix4f& matrix) {
 QImage BitmapToQImageRGB(const Bitmap& bitmap) {
     QImage pixmap(bitmap.Width(), bitmap.Height(), QImage::Format_RGB32);
     for (int y = 0; y < pixmap.height(); ++y) {
-        QRgb* pixmap_line = (QRgb*)pixmap.scanLine(y);
+        QRgb* pixmap_line = (QRgb*) pixmap.scanLine(y);
         for (int x = 0; x < pixmap.width(); ++x) {
             Eigen::Vector3ub rgb;
             if (bitmap.GetPixel(x, y, &rgb)) {
@@ -138,7 +138,7 @@ PointColormapBase::PointColormapBase()
           max(0.0f),
           range(0.0f),
           min_q(0.0f),
-          max_q(1.0f) {}
+          max_q(1.0f) { }
 
 void PointColormapBase::UpdateScale(std::vector<float>* values) {
     if (values->empty()) {
@@ -167,7 +167,7 @@ void PointColormapPhotometric::Prepare(
         std::unordered_map<camera_t, Camera>& cameras,
         std::unordered_map<image_t, Image>& images,
         std::unordered_map<point3D_t, Point_3D>& points3D,
-        std::vector<image_t>& reg_image_ids) {}
+        std::vector<image_t>& reg_image_ids) { }
 
 Eigen::Vector3f PointColormapPhotometric::ComputeColor(
         const point3D_t point3D_id, const Point_3D& point3D) {
@@ -176,7 +176,7 @@ Eigen::Vector3f PointColormapPhotometric::ComputeColor(
 }
 
 
-PointPainter::PointPainter() : num_geoms_(0) {}
+PointPainter::PointPainter() : num_geoms_(0) { }
 
 PointPainter::~PointPainter() {
     vao_.destroy();
@@ -237,7 +237,7 @@ void PointPainter::Render(const QMatrix4x4& pmv_matrix,
     shader_program_.setUniformValue("u_pmv_matrix", pmv_matrix);
     shader_program_.setUniformValue("u_point_size", point_size);
 
-    glDrawArrays(GL_POINTS, 0, (GLsizei)num_geoms_);
+    glDrawArrays(GL_POINTS, 0, (GLsizei) num_geoms_);
 
     // Make sure the VAO is not changed from the outside
     vao_.release();
@@ -248,7 +248,7 @@ void PointPainter::Render(const QMatrix4x4& pmv_matrix,
 }
 
 
-LinePainter::LinePainter() : num_geoms_(0) {}
+LinePainter::LinePainter() : num_geoms_(0) { }
 
 LinePainter::~LinePainter() {
     vao_.destroy();
@@ -313,7 +313,7 @@ void LinePainter::Render(const QMatrix4x4& pmv_matrix, const int width,
                                     QVector2D(1.0f / width, 1.0f / height));
     shader_program_.setUniformValue("u_line_width", line_width);
 
-    glDrawArrays(GL_LINES, 0, (GLsizei)(2 * num_geoms_));
+    glDrawArrays(GL_LINES, 0, (GLsizei) (2 * num_geoms_));
 
     vao_.release();
 
@@ -323,7 +323,7 @@ void LinePainter::Render(const QMatrix4x4& pmv_matrix, const int width,
 }
 
 
-TrianglePainter::TrianglePainter() : num_geoms_(0) {}
+TrianglePainter::TrianglePainter() : num_geoms_(0) { }
 
 TrianglePainter::~TrianglePainter() {
     vao_.destroy();
@@ -382,7 +382,7 @@ void TrianglePainter::Render(const QMatrix4x4& pmv_matrix) {
 
     shader_program_.setUniformValue("u_pmv_matrix", pmv_matrix);
 
-    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(3 * num_geoms_));
+    glDrawArrays(GL_TRIANGLES, 0, (GLsizei) (3 * num_geoms_));
 
     vao_.release();
 
@@ -705,7 +705,7 @@ void BasicImageViewerWidget::ShowOrHide() {
 }
 
 MatchesImageViewerWidget::MatchesImageViewerWidget(QWidget* parent)
-        : BasicImageViewerWidget(parent, "matches") {}
+        : BasicImageViewerWidget(parent, "matches") { }
 
 void MatchesImageViewerWidget::Show(const std::string& path1,
                                     const std::string& path2,
@@ -935,7 +935,7 @@ namespace {
 
     void FrameBufferToQImage(QImage& image) {
         if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-            uint* p = (uint*)image.bits();
+            uint* p = (uint*) image.bits();
             uint* end = p + image.width() * image.height();
             while (p < end) {
                 uint a = *p << 24;
@@ -944,7 +944,7 @@ namespace {
             }
         } else {
             for (int y = 0; y < image.height(); y++) {
-                uint* q = (uint*)image.scanLine(y);
+                uint* q = (uint*) image.scanLine(y);
                 for (int x = 0; x < image.width(); ++x) {
                     const uint pixel = *q;
                     *q = ((pixel << 16) & 0xff0000) | ((pixel >> 16) & 0xff) |
@@ -1869,7 +1869,7 @@ MatchesTab::MatchesTab(QWidget* parent, OptionManager* options,
         : QWidget(parent),
           options_(options),
           database_(database),
-          matches_viewer_(new MatchesImageViewerWidget(parent)) {}
+          matches_viewer_(new MatchesImageViewerWidget(parent)) { }
 
 void MatchesTab::Clear() {
     table_widget_->clearContents();
