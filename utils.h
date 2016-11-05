@@ -15,6 +15,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/chrono.hpp>
+#include <random>
 
 #ifdef __clang__
 #pragma clang diagnostic push

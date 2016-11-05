@@ -6,10 +6,10 @@ if(POLICY CMP0043)
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_PREFIX_PATH /home/kolina93/Qt/5.6/gcc_64/lib/cmake)
+set(CMAKE_PREFIX_PATH $ENV{HOME}/Qt/5.7/clang_64/lib/cmake/)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-find_package(Eigen3 REQUIRED)
+#find_package(Eigen3 REQUIRED)
 find_package(FreeImage REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
