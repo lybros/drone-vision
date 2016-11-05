@@ -1858,11 +1858,6 @@ void NewProjectWidget::Create() {
         return;
     }
 
-    /*if (!boost::filesystem::is_directory(boost::filesystem::path(ProjectParentPath()))) {
-        QMessageBox::critical(this, "", tr("You must choose existent directory for project!"));
-        return;
-    }*/
-
     if (!PathsValid()) {
         QMessageBox::critical(this, "", tr("Invalid paths."));
         return;
