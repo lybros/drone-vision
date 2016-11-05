@@ -249,6 +249,8 @@ public:
 
     std::shared_ptr<boost::program_options::options_description> desc;
 
+    std::shared_ptr<std::string> project_name;
+
     std::shared_ptr<std::string> project_path;
     std::shared_ptr<std::string> database_path;
     std::shared_ptr<std::string> image_path;

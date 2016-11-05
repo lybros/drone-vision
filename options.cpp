@@ -522,6 +522,8 @@ OptionManager::OptionManager() {
     database_path.reset(new std::string());
     image_path.reset(new std::string());
 
+    project_name.reset(new std::string());
+
     extraction_options.reset(new ExtractionOptions());
     match_options.reset(new MatchOptions());
     exhaustive_match_options.reset(new ExhaustiveMatchOptions());

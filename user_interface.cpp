@@ -1788,6 +1788,15 @@ NewProjectWidget::NewProjectWidget(MainWindow* parent, OptionManager* options)
     setWindowModality(Qt::ApplicationModal);
     setWindowTitle("New project");
 
+    project_name_text_ = new QLineEdit(this);
+    project_name_text_->setText(QString::fromStdString(*options_->project_name));
+
+    QPushButton* project_path_select = new QPushButton(tr("Select"), this);
+    connect(project_path_select, &QPushButton::released, this,
+            &NewProjectWidget::SelectProjectPath);
+    project_path_text_ = new QLineEdit(this);
+    project_path_text_->setText(QString::fromStdString(*options_->project_path));
+
     QPushButton* image_path_select = new QPushButton(tr("Select"), this);
     connect(image_path_select, &QPushButton::released, this,
             &NewProjectWidget::SelectImagePath);
@@ -1800,19 +1809,43 @@ NewProjectWidget::NewProjectWidget(MainWindow* parent, OptionManager* options)
 
     QGridLayout* grid = new QGridLayout(this);
 
-    grid->addWidget(new QLabel(tr("Images"), this), 1, 0);
-    grid->addWidget(image_path_text_, 1, 1);
-    grid->addWidget(image_path_select, 1, 2);
+    grid->addWidget(new QLabel(tr("Project name"), this), 0, 0);
+    grid->addWidget(project_name_text_, 0, 1);
 
-    grid->addWidget(create_button, 2, 2);
+    grid->addWidget(new QLabel(tr("Project folder"), this), 1, 0);
+    grid->addWidget(project_path_text_, 1, 1);
+    grid->addWidget(project_path_select, 1, 3);
+
+    grid->addWidget(new QLabel(tr("Images folder"), this), 2, 0);
+    grid->addWidget(image_path_text_, 2, 1);
+    grid->addWidget(image_path_select, 2, 3);
+
+    grid->addWidget(create_button, 3, 3);
 }
 
-bool NewProjectWidget::IsValid() {
-    return boost::filesystem::is_directory(ImagePath());
+bool NewProjectWidget::PathsValid() {
+    return boost::filesystem::is_directory(ImagePath()) &&
+            boost::filesystem::is_directory(ProjectParentPath());
+}
+
+std::string NewProjectWidget::ProjectName() const {
+    return project_name_text_->text().toUtf8().constData();
+}
+
+std::string NewProjectWidget::ProjectParentPath() const {
+    return EnsureTrailingSlash(project_path_text_->text().toUtf8().constData());
+}
+
+std::string NewProjectWidget::ProjectPath() const {
+    return  ProjectParentPath() + EnsureTrailingSlash(ProjectName());
 }
 
 std::string NewProjectWidget::ImagePath() const {
     return EnsureTrailingSlash(image_path_text_->text().toUtf8().constData());
+}
+
+void NewProjectWidget::SetProjectPath(const std::string& path) {
+    project_path_text_->setText(QString::fromStdString(path));
 }
 
 void NewProjectWidget::SetImagePath(const std::string& path) {
@@ -1820,33 +1853,55 @@ void NewProjectWidget::SetImagePath(const std::string& path) {
 }
 
 void NewProjectWidget::Create() {
-    if (!IsValid()) {
-        QMessageBox::critical(this, "", tr("Invalid paths."));
-    } else {
-        if (main_window_->mapper_controller->NumModels() > 0) {
-            if (!main_window_->OverwriteReconstruction()) {
-                return;
-            }
-        }
-        boost::uuids::basic_random_generator<boost::mt19937> gen;
-        boost::uuids::uuid u = gen();
-
-        std::string s1 = boost::uuids::to_string(u);
-        boost::filesystem::path directory = boost::filesystem::temp_directory_path() / boost::filesystem::path(s1);
-        boost::filesystem::create_directory(directory);
-        *options_->database_path = (directory / boost::filesystem::path("base.db")).string();
-        *options_->image_path = ImagePath();
-
-        Database database;
-        database.Open(*options_->database_path);
-
-        hide();
+    if (ProjectName() == "") {
+        QMessageBox::critical(this, "", tr("You must set project name!"));
+        return;
     }
+
+    if (!PathsValid()) {
+        QMessageBox::critical(this, "", tr("Invalid paths."));
+        return;
+    }
+
+    boost::filesystem::path path(ProjectPath());
+
+    if (boost::filesystem::is_directory(path)) {
+        QMessageBox::critical(this, "", tr("Project name corresponds with existent directory.\nPlease choose another project name / project directory"));
+        return;
+    }
+
+    boost::filesystem::create_directory(path);
+
+    if (main_window_->mapper_controller->NumModels() > 0) {
+        if (!main_window_->OverwriteReconstruction()) {
+            return;
+        }
+    }
+
+    *options_->project_name = ProjectName();
+    *options_->project_path = ProjectPath();
+    *options_->database_path = ProjectPath() + "base.db";
+    *options_->image_path = ImagePath();
+
+    Database database;
+    database.Open(*options_->database_path);
+
+    main_window_->WriteProjectConfiguration();
+
+    main_window_->UpdateProjectInfoStatusBar();
+
+    hide();
+}
+
+void NewProjectWidget::SelectProjectPath() {
+    project_path_text_->setText(QFileDialog::getExistingDirectory(
+            this, tr("Select a directory for project..."), DefaultDirectory(),
+            QFileDialog::ShowDirsOnly));
 }
 
 void NewProjectWidget::SelectImagePath() {
     image_path_text_->setText(QFileDialog::getExistingDirectory(
-            this, tr("Select image path..."), DefaultDirectory(),
+            this, tr("Select a directory with images..."), DefaultDirectory(),
             QFileDialog::ShowDirsOnly));
 }
 
@@ -2589,8 +2644,8 @@ MainWindow::MainWindow(const std::string& binary_path)
         : options_(),
           binary_path_(binary_path),
           working_directory_(),
-          import_watcher_(nullptr),
-          export_watcher_(nullptr),
+          import_model_watcher_(nullptr),
+          export_model_watcher_(nullptr),
           render_counter_(0),
           window_closed_(false) {
     resize(1024, 600);
@@ -2661,6 +2716,7 @@ void MainWindow::CreateWidgets() {
 
     new_project_widget_ = new NewProjectWidget(this, &options_);
     new_project_widget_->SetImagePath(*options_.image_path);
+    new_project_widget_->SetProjectPath(*options_.project_path);
 
     database_management_widget_ = new DatabaseManagementWidget(this, &options_);
     model_manager_widget_ = new ModelManagerWidget(this);
@@ -2673,15 +2729,19 @@ void MainWindow::CreateActions() {
     connect(action_new_project_, &QAction::triggered, this,
             &MainWindow::NewProject);
 
-    action_import_ =
+    action_import_model_ =
             new QAction(QIcon(":/media/import.png"), tr("Import model"), this);
-    connect(action_import_, &QAction::triggered, this, &MainWindow::Import);
-    blocking_actions_.push_back(action_import_);
+    connect(action_import_model_, &QAction::triggered, this, &MainWindow::ImportModel);
+    blocking_actions_.push_back(action_import_model_);
 
-    action_export_ =
+    action_export_model_ =
             new QAction(QIcon(":/media/export.png"), tr("Export model"), this);
-    connect(action_export_, &QAction::triggered, this, &MainWindow::Export);
-    blocking_actions_.push_back(action_export_);
+    connect(action_export_model_, &QAction::triggered, this, &MainWindow::ExportModel);
+    blocking_actions_.push_back(action_export_model_);
+
+    action_open_project_ = new QAction(QIcon(":media/project-open.png"), tr("Open existent project"), this);
+    connect(action_open_project_, &QAction::triggered, this, &MainWindow::OpenProject);
+    blocking_actions_.push_back(action_open_project_);
 
     action_quit_ = new QAction(tr("Quit"), this);
     connect(action_quit_, &QAction::triggered, this, &MainWindow::close);
@@ -2759,11 +2819,15 @@ void MainWindow::CreateActions() {
 }
 
 void MainWindow::CreateToolbar() {
-    file_toolbar_ = addToolBar(tr("File"));
-    file_toolbar_->addAction(action_new_project_);
-    file_toolbar_->addAction(action_import_);
-    file_toolbar_->addAction(action_export_);
-    file_toolbar_->setIconSize(QSize(16, 16));
+    project_toolbar_ = addToolBar(tr("Project"));
+    project_toolbar_->addAction(action_new_project_);
+    project_toolbar_->addAction(action_open_project_);
+    project_toolbar_->setIconSize(QSize(16, 16));
+
+    import_export_toolbar_ = addToolBar(tr("Model import/export"));
+    import_export_toolbar_->addAction(action_import_model_);
+    import_export_toolbar_->addAction(action_export_model_);
+    import_export_toolbar_->setIconSize(QSize(16,16));
 
     preprocessing_toolbar_ = addToolBar(tr("Processing"));
     preprocessing_toolbar_->addAction(action_feature_extraction_);
@@ -2786,7 +2850,12 @@ void MainWindow::CreateToolbar() {
 
 void MainWindow::CreateStatusbar() {
     QFont font;
-    font.setPointSize(11);
+    font.setPointSize(12);
+
+    project_info_label_ = new QLabel("Project not opened", this);
+    project_info_label_->setFont(font);
+    project_info_label_->setAlignment(Qt::AlignCenter);
+    statusBar()->addWidget(project_info_label_, 1);
 
     statusbar_timer_label_ = new QLabel("Time 00:00:00:00", this);
     statusbar_timer_label_->setFont(font);
@@ -2816,13 +2885,13 @@ void MainWindow::CreateControllers() {
 }
 
 void MainWindow::CreateFutures() {
-    import_watcher_ = new QFutureWatcher<void>(this);
-    connect(import_watcher_, &QFutureWatcher<void>::finished, this,
-            &MainWindow::ImportFinished);
+    import_model_watcher_ = new QFutureWatcher<void>(this);
+    connect(import_model_watcher_, &QFutureWatcher<void>::finished, this,
+            &MainWindow::ImportModelFinished);
 
-    export_watcher_ = new QFutureWatcher<void>(this);
-    connect(export_watcher_, &QFutureWatcher<void>::finished, this,
-            &MainWindow::ExportFinished);
+    export_model_watcher_ = new QFutureWatcher<void>(this);
+    connect(export_model_watcher_, &QFutureWatcher<void>::finished, this,
+            &MainWindow::ExportModelFinished);
 }
 
 void MainWindow::CreateProgressBar() {
@@ -2848,7 +2917,7 @@ void MainWindow::NewProject() {
     new_project_widget_->raise();
 }
 
-void MainWindow::Import() {
+void MainWindow::ImportModel() {
     if (!OverwriteReconstruction()) {
         return;
     }
@@ -2877,7 +2946,7 @@ void MainWindow::Import() {
     progress_bar_->raise();
     progress_bar_->show();
 
-    import_watcher_->setFuture(QtConcurrent::run([this, path]() {
+    import_model_watcher_->setFuture(QtConcurrent::run([this, path]() {
         const size_t model_idx = this->mapper_controller->AddModel();
         this->mapper_controller->Model(model_idx).ImportPLY(path, false);
         this->options_.render_options->min_track_len = 0;
@@ -2886,12 +2955,12 @@ void MainWindow::Import() {
     }));
 }
 
-void MainWindow::ImportFinished() {
+void MainWindow::ImportModelFinished() {
     RenderSelectedModel();
     progress_bar_->hide();
 }
 
-void MainWindow::Export() {
+void MainWindow::ExportModel() {
     if (!IsSelectedModelValid()) {
         return;
     }
@@ -2913,7 +2982,7 @@ void MainWindow::Export() {
     progress_bar_->raise();
     progress_bar_->show();
 
-    export_watcher_->setFuture(QtConcurrent::run([this, path, default_filter]() {
+    export_model_watcher_->setFuture(QtConcurrent::run([this, path]() {
         const Reconstruction& model = mapper_controller->Model(SelectedModelIdx());
         try {
             model.ExportPLY(path);
@@ -2923,7 +2992,75 @@ void MainWindow::Export() {
     }));
 }
 
-void MainWindow::ExportFinished() { progress_bar_->hide(); }
+void MainWindow::ExportModelFinished() { progress_bar_->hide(); }
+
+void MainWindow::OpenProject() {
+    std::string path;
+
+    while(true) {
+        path = QFileDialog::getExistingDirectory(
+                        this, tr("Select a directory with project"),
+                        "", QFileDialog::ShowDirsOnly)
+                        .toUtf8()
+                        .constData();
+        if (path == "") {
+            return;
+        }
+        if (IsValidProjectDirectory(path)) {
+            break;
+        } else {
+            QMessageBox::critical(this, "", tr("You must choose a directory with a project!"));
+        }
+    }
+
+    progress_bar_->setLabelText(tr("Opening project"));
+    progress_bar_->raise();
+    progress_bar_->show();
+
+    *(this->options_.project_path) = path;
+    *(this->options_.database_path) = path + "/base.db";
+
+    ReadProjectConfiguration(path);
+
+    UpdateProjectInfoStatusBar();
+
+    progress_bar_->hide();
+}
+
+bool MainWindow::IsValidProjectDirectory(const std::string& path) {
+    return boost::filesystem::exists(path + "/base.db") &&
+           boost::filesystem::exists(path + "/config");
+}
+
+void MainWindow::ReadProjectConfiguration(const std::string& project_path) {
+    std::ifstream file(project_path + "/config");
+
+    std::string project_name_line;
+    std::getline(file, project_name_line);
+
+    std::string images_line;
+    std::getline(file, images_line);
+
+    *(this->options_.project_name) = project_name_line.substr(
+            std::string("project_name:").length(),
+            project_name_line.length() - std::string("project_name:").length());
+    *(this->options_.image_path) = images_line.substr(
+            std::string("image_path:").length(),
+            images_line.length() - std::string("image_path:").length());
+
+    file.close();
+}
+
+void MainWindow::WriteProjectConfiguration() {
+    std::ofstream file;
+    std::string filename = *options_.project_path + "config";
+    file.open(filename.c_str(), std::ios::trunc);
+
+    file << "project_name:" << *options_.project_name << std::endl;
+    file << "image_path:" << *options_.image_path << std::endl;
+
+    file.close();
+}
 
 void MainWindow::FeatureExtraction() {
     if (options_.Check()) {
@@ -3210,6 +3347,17 @@ void MainWindow::UpdateWindowTitle() {
         }
         setWindowTitle(QString::fromStdString("3D reconstruction - " + project_title));
     }
+}
+
+void MainWindow::UpdateProjectInfoStatusBar() {
+    if (*options_.project_name == "") {
+        return;
+    }
+
+    project_info_label_->setText(
+            QString::fromStdString(*options_.project_name) +
+            " | " +
+            QString::fromStdString(*options_.project_path));
 }
 
 void MainWindow::SurfaceReconstructModel() {

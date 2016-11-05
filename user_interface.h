@@ -494,15 +494,20 @@ class NewProjectWidget : public QWidget {
 public:
     NewProjectWidget(MainWindow* parent, OptionManager* options);
 
-    bool IsValid();
+    bool PathsValid();
 
+    std::string ProjectName() const;
+    std::string ProjectParentPath() const;
+    std::string ProjectPath() const;
     std::string ImagePath() const;
 
+    void SetProjectPath(const std::string& path);
     void SetImagePath(const std::string& path);
 
 private:
     void Create();
 
+    void SelectProjectPath();
     void SelectImagePath();
 
     QString DefaultDirectory();
@@ -514,6 +519,8 @@ private:
     bool prev_selected_;
 
     QLineEdit* image_path_text_;
+    QLineEdit* project_path_text_;
+    QLineEdit* project_name_text_;
 };
 
 
@@ -679,6 +686,11 @@ public:
 
     std::unique_ptr<IncrementalMapperController> mapper_controller;
 
+    void ReadProjectConfiguration(const std::string&);
+    void WriteProjectConfiguration();
+
+    void UpdateProjectInfoStatusBar();
+
 protected:
     void showEvent(QShowEvent* event);
 
@@ -707,13 +719,17 @@ private:
 
     void NewProject();
 
-    void Import();
+    void ImportModel();
 
-    void ImportFinished();
+    void ImportModelFinished();
 
-    void Export();
+    void ExportModel();
 
-    void ExportFinished();
+    void ExportModelFinished();
+
+    void OpenProject();
+
+    bool IsValidProjectDirectory(const std::string&);
 
     void FeatureExtraction();
 
@@ -771,7 +787,8 @@ private:
     DatabaseManagementWidget* database_management_widget_;
     ModelManagerWidget* model_manager_widget_;
 
-    QToolBar* file_toolbar_;
+    QToolBar* project_toolbar_;
+    QToolBar* import_export_toolbar_;
     QToolBar* preprocessing_toolbar_;
     QToolBar* reconstruction_toolbar_;
     QToolBar* render_toolbar_;
@@ -779,9 +796,12 @@ private:
     QTimer* statusbar_timer_;
     QLabel* statusbar_timer_label_;
 
+    QLabel* project_info_label_;
+
     QAction* action_new_project_;
-    QAction* action_import_;
-    QAction* action_export_;
+    QAction* action_open_project_;
+    QAction* action_import_model_;
+    QAction* action_export_model_;
     QAction* action_quit_;
 
     QAction* action_feature_extraction_;
@@ -802,8 +822,8 @@ private:
 
     QProgressDialog* progress_bar_;
 
-    QFutureWatcher<void>* import_watcher_;
-    QFutureWatcher<void>* export_watcher_;
+    QFutureWatcher<void>* import_model_watcher_;
+    QFutureWatcher<void>* export_model_watcher_;
 
     std::vector<QAction*> blocking_actions_;
 
