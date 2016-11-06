@@ -22,7 +22,8 @@ find_package(GLUT REQUIRED)
 find_package(Glew REQUIRED)
 find_package(Threads REQUIRED)
 find_package(JPEG REQUIRED)
-qt5_add_resources(QT_RESOURCES resources.qrc)
+
+qt5_add_resources(QT_RESOURCES res/resources.qrc)
 
 include_directories(
         ${Qt5Core_INCLUDE_DIRS}
@@ -43,18 +44,9 @@ IF (OPENMP_FOUND)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 ENDIF (OPENMP_FOUND)
 
-add_subdirectory(sqlite)
-add_subdirectory(sift_gpu)
-add_subdirectory(pmvs)
-add_subdirectory(poisson_triangulation)
+add_subdirectory(3rdparty/sqlite)
+add_subdirectory(3rdparty/sift_gpu)
+add_subdirectory(3rdparty/pmvs)
+add_subdirectory(3rdparty/poisson_triangulation)
 
-set(SOURCE_FILES main.cpp user_interface.h user_interface.cpp controllers.h controllers.cpp options.h options.cpp
-        features.h features.cpp entities.h entities.cpp utils.h utils.cpp projection.h projection.cpp estimators.h
-        estimators.cpp polygons.h coefficients.h optimization.h optimization.cpp model.h model.cpp storage.h
-        storage.cpp geometry.h geometry.cpp processor.h processor.cpp refinement.h refinement.cpp densify.h densify.cpp
-        surface_reconstruct.h surface_reconstruct.cpp)
-add_executable(3d_reconstruction ${SOURCE_FILES} ${QT_RESOURCES})
-target_link_libraries(3d_reconstruction pthread dl ${OpenCV_LIBRARIES} ${CERES_LIBRARIES} ${Boost_LIBRARIES}
-        ${FREEIMAGE_LIBRARIES} ${GLEW_LIBRARIES} ${GLUT_LIBRARY} ${OPENGL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
-        sqlite sift_gpu pmvs_lib cmvs_lib tinycthread image_lib ${JPEG_LIBRARIES} graclus_lib nlopt numeric_lib)
-qt5_use_modules(3d_reconstruction Core OpenGL)
+add_subdirectory(src)

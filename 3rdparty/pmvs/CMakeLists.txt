@@ -1,0 +1,19 @@
+include_directories(
+        ${CMAKE_SOURCE_DIR}/3rdparty/pmvs/image
+        ${CMAKE_SOURCE_DIR}/3rdparty/pmvs/numeric
+        ${CMAKE_SOURCE_DIR}/3rdparty/pmvs/pmvs
+        ${CMAKE_SOURCE_DIR}/3rdparty/pmvs/cmvs
+        ${CMAKE_SOURCE_DIR}/3rdparty/pmvs/tinycthread
+        ${CMAKE_SOURCE_DIR}/3rdparty/pmvs/graclus1.2/metisLib
+        ${CMAKE_SOURCE_DIR}/3rdparty/pmvs/cimg
+        ${CMAKE_SOURCE_DIR}/3rdparty/pmvs/stann
+        ${CMAKE_SOURCE_DIR}/3rdparty/pmvs/nlopt-2.4.2/api
+)
+
+add_subdirectory(cmvs)
+add_subdirectory(image)
+add_subdirectory(numeric)
+add_subdirectory(pmvs)
+add_subdirectory(tinycthread)
+add_subdirectory(nlopt-2.4.2)
+add_subdirectory(graclus1.2)

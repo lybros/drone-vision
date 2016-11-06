@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./release/3d_reconstruction
+./release/src/3d_reconstruction
