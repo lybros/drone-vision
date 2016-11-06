@@ -23,7 +23,9 @@ bash mac_os_install.sh
 install all requirements via [Homebrew](http://brew.sh/), you can switch on needed version with ```brew switch <formula> <version>```
 
 ### build:
-set ```<path_to_qt_cmake>``` for example ```$HOME/Qt/5.7/clang_64/lib/cmake/``` and run:
+set ```<path_to_qt_cmake>``` for example ```$HOME/Qt/5.7/clang_64/lib/cmake/```
+set ```(CMAKE_PREFIX_PATH, <path_to_qt_cmake>)``` in ```CMakeLists.txt:9```
+and run:
 ```
 mkdir release && cd release
 cmake -D CMAKE_BUILD_TYPE=RELEASE -DCMAKE_PREFIX_PATH=<path_to_qt_cmake> ..
@@ -44,3 +46,11 @@ or
 ```
 ./release/3d_reconstruction
 ```
+
+### development:
+* import code style settings for JetBrains IDEs from ```CodeStyle.xml```
+
+* use ```utils/find_obj.py``` for bruteforce matching images, usage:
+    ```
+    python find_obj.py <image_to_find> # --feature=orb --in=in/ --out=out/ by default
+    ```
