@@ -1,6 +1,6 @@
 set(SOURCE_FILES main.cpp user_interface.h user_interface.cpp controllers.h controllers.cpp options.h options.cpp
         features.h features.cpp entities.h entities.cpp utils.h utils.cpp projection.h projection.cpp estimators.h
-        estimators.cpp polygons.h coefficients.h optimization.h optimization.cpp model.h model.cpp storage.h
+        estimators.cpp optimization.h optimization.cpp model.h model.cpp storage.h
         storage.cpp geometry.h geometry.cpp processor.h processor.cpp refinement.h refinement.cpp densify.h densify.cpp
         surface_reconstruct.h surface_reconstruct.cpp)
 
