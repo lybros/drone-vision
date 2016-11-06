@@ -38,8 +38,8 @@ void SurfaceReconstructer::run() {
     }
     input.close();
     size_t pos = binary_path_.rfind("/");
-    QString program = QString::fromStdString(binary_path_.substr(0, pos) + "/"
-                                             + "poisson_triangulation/poisson_triangulation");
+    QString program = QString::fromStdString(binary_path_.substr(0, pos)
+                                             + "/../3rdparty/poisson_triangulation/poisson_triangulation");
     QStringList arguments;
     arguments << "--in" << (input_path / boost::filesystem::path("input.txt")).string().c_str()
     << "--out" << (input_path / boost::filesystem::path("output")).string().c_str() << "--verbose";
