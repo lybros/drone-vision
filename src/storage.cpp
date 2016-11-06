@@ -854,16 +854,14 @@ bool Database::ExistsDescriptors(const image_t image_id) const {
     return ExistsRowId(sql_stmt_exists_descriptors_, image_id);
 }
 
-bool Database::ExistsMatches(const image_t image_id1,
-                             const image_t image_id2) const {
-    return ExistsRowId(sql_stmt_exists_matches_,
-                       ImagePairToPairId(image_id1, image_id2));
+bool Database::ExistsMatches(const image_t image_id1, const image_t image_id2) const {
+
+    return ExistsRowId(sql_stmt_exists_matches_, ImagePairToPairId(image_id1, image_id2));
 }
 
-bool Database::ExistsInlierMatches(const image_t image_id1,
-                                   const image_t image_id2) const {
-    return ExistsRowId(sql_stmt_exists_inlier_matches_,
-                       ImagePairToPairId(image_id1, image_id2));
+bool Database::ExistsInlierMatches(const image_t image_id1, const image_t image_id2) const {
+
+    return ExistsRowId(sql_stmt_exists_inlier_matches_, ImagePairToPairId(image_id1, image_id2));
 }
 
 size_t Database::NumCameras() const { return CountRows("cameras"); }
@@ -872,21 +870,15 @@ size_t Database::NumImages() const { return CountRows("images"); }
 
 size_t Database::NumKeypoints() const { return SumColumn("rows", "keypoints"); }
 
-size_t Database::NumDescriptors() const {
-    return SumColumn("rows", "descriptors");
-}
+size_t Database::NumDescriptors() const { return SumColumn("rows", "descriptors"); }
 
 size_t Database::NumMatches() const { return SumColumn("rows", "matches"); }
 
-size_t Database::NumInlierMatches() const {
-    return SumColumn("rows", "inlier_matches");
-}
+size_t Database::NumInlierMatches() const { return SumColumn("rows", "inlier_matches"); }
 
 size_t Database::NumMatchedImagePairs() const { return CountRows("matches"); }
 
-size_t Database::NumVerifiedImagePairs() const {
-    return CountRows("inlier_matches");
-}
+size_t Database::NumVerifiedImagePairs() const { return CountRows("inlier_matches"); }
 
 Camera Database::ReadCamera(const camera_t camera_id) const {
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_read_camera_, 1, camera_id));

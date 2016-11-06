@@ -352,9 +352,7 @@ void SiftGPUFeatureExtractor::DoExtraction() {
             std::cout << "  Features:       " << num_features << std::endl;
 
             database_.EndTransaction();
-        } else {
-            std::cerr << "  ERROR: Could not extract features." << std::endl;
-        }
+        } else { std::cerr << "  ERROR: Could not extract features." << std::endl; }
     }
 
     TearDown();
@@ -363,8 +361,10 @@ void SiftGPUFeatureExtractor::DoExtraction() {
 
 namespace {
     FeatureDescriptors ExtractTopScaleDescriptors(
-            const FeatureKeypoints& keypoints, const FeatureDescriptors& descriptors,
+            const FeatureKeypoints& keypoints,
+            const FeatureDescriptors& descriptors,
             const size_t num_features) {
+
         FeatureDescriptors top_scale_descriptors;
 
         if (static_cast<size_t>(descriptors.rows()) <= num_features) {
@@ -372,6 +372,7 @@ namespace {
         } else {
             std::vector<std::pair<size_t, float>> scales;
             scales.reserve(static_cast<size_t>(keypoints.size()));
+
             for (size_t i = 0; i < keypoints.size(); ++i) {
                 scales.emplace_back(i, keypoints[i].scale);
             }
@@ -486,57 +487,49 @@ void FeatureMatcher::PrintElapsedTime(const Timer& timer) {
 }
 
 const FeatureKeypoints& FeatureMatcher::CacheKeypoints(const image_t image_id) {
+
     if (keypoints_cache_.count(image_id) == 0) {
         keypoints_cache_[image_id] = database_.ReadKeypoints(image_id);
     }
     return keypoints_cache_.at(image_id);
 }
 
-const FeatureDescriptors& FeatureMatcher::CacheDescriptors(
-        const image_t image_id) {
+const FeatureDescriptors& FeatureMatcher::CacheDescriptors(const image_t image_id) {
+
     if (descriptors_cache_.count(image_id) == 0) {
         descriptors_cache_[image_id] = database_.ReadDescriptors(image_id);
     }
     return descriptors_cache_.at(image_id);
 }
 
-void FeatureMatcher::CleanCache(
-        const std::unordered_set<image_t>& keep_image_ids) {
+void FeatureMatcher::CleanCache(const std::unordered_set<image_t>& keep_image_ids) {
     for (auto it = keypoints_cache_.begin(); it != keypoints_cache_.end();) {
         if (keep_image_ids.count(it->first) == 0) {
             it = keypoints_cache_.erase(it);
-        } else {
-            ++it;
-        }
+        } else { ++it; }
     }
 
     for (auto it = descriptors_cache_.begin(); it != descriptors_cache_.end();) {
         if (keep_image_ids.count(it->first) == 0) {
             it = descriptors_cache_.erase(it);
-        } else {
-            ++it;
-        }
+        } else { ++it; }
     }
 }
 
 void FeatureMatcher::UploadKeypoints(const int index, const image_t image_id) {
     const FeatureKeypoints& keypoints = keypoints_cache_.at(image_id);
-    sift_match_gpu_->SetFeautreLocation(
-            index, reinterpret_cast<const float*>(keypoints.data()), 2);
+    sift_match_gpu_->SetFeautreLocation(index, reinterpret_cast<const float*>(keypoints.data()), 2);
 }
 
-void FeatureMatcher::UploadDescriptors(const int index,
-                                       const image_t image_id) {
+void FeatureMatcher::UploadDescriptors(const int index, const image_t image_id) {
     if (prev_uploaded_image_ids_[index] != image_id) {
         const FeatureDescriptors& descriptors = descriptors_cache_.at(image_id);
-        sift_match_gpu_->SetDescriptors(index, descriptors.rows(),
-                                        descriptors.data());
+        sift_match_gpu_->SetDescriptors(index, descriptors.rows(), descriptors.data());
         prev_uploaded_image_ids_[index] = image_id;
     }
 }
 
-void FeatureMatcher::ExtractMatchesFromBuffer(const size_t num_matches,
-                                              FeatureMatches* matches) const {
+void FeatureMatcher::ExtractMatchesFromBuffer(const size_t num_matches, FeatureMatches* matches) const {
     matches->resize(num_matches);
     for (size_t i = 0; i < num_matches; ++i) {
         (*matches)[i].point2D_idx1 = static_cast<point2D_t>(matches_buffer_[2 * i]);
@@ -545,8 +538,8 @@ void FeatureMatcher::ExtractMatchesFromBuffer(const size_t num_matches,
     }
 }
 
-void FeatureMatcher::MatchImagePairs(
-        const std::vector<std::pair<image_t, image_t>>& image_pairs) {
+void FeatureMatcher::MatchImagePairs(const std::vector<std::pair<image_t, image_t>>& image_pairs) {
+
     std::vector<std::pair<bool, bool>> exists_mask;
     exists_mask.reserve(image_pairs.size());
     std::unordered_set<image_t> image_ids;
@@ -564,8 +557,8 @@ void FeatureMatcher::MatchImagePairs(
             continue;
         }
 
-        const image_pair_t pair_id =
-                Database::ImagePairToPairId(image_pair.first, image_pair.second);
+        const image_pair_t pair_id = Database::ImagePairToPairId(image_pair.first, image_pair.second);
+
         if (pair_ids.count(pair_id) > 0) {
             exists_mask.emplace_back(true, true);
             continue;
@@ -573,10 +566,8 @@ void FeatureMatcher::MatchImagePairs(
 
         pair_ids.insert(pair_id);
 
-        const bool exists_matches =
-                database_.ExistsMatches(image_pair.first, image_pair.second);
-        const bool exists_inlier_matches =
-                database_.ExistsInlierMatches(image_pair.first, image_pair.second);
+        const bool exists_matches = database_.ExistsMatches(image_pair.first, image_pair.second);
+        const bool exists_inlier_matches = database_.ExistsInlierMatches(image_pair.first, image_pair.second);
 
         exists_all = exists_all && exists_matches && exists_inlier_matches;
         exists_mask.emplace_back(exists_matches, exists_inlier_matches);
@@ -586,8 +577,7 @@ void FeatureMatcher::MatchImagePairs(
             image_ids.insert(image_pair.second);
         }
 
-        if (!exists_matches ||
-            (!exists_inlier_matches && options_.guided_matching)) {
+        if (!exists_matches || (!exists_inlier_matches && options_.guided_matching)) {
             CacheDescriptors(image_pair.first);
             CacheDescriptors(image_pair.second);
         }
@@ -600,9 +590,7 @@ void FeatureMatcher::MatchImagePairs(
 
     database_.EndTransaction();
 
-    if (exists_all) {
-        return;
-    }
+    if (exists_all) { return; }
 
     CleanCache(image_ids);
 
@@ -628,21 +616,16 @@ void FeatureMatcher::MatchImagePairs(
     std::vector<std::pair<image_t, image_t>> empty_verification_results;
 
     TwoViewGeometry::Options two_view_geometry_options;
-    two_view_geometry_options.min_num_inliers =
-            static_cast<size_t>(options_.min_num_inliers);
+    two_view_geometry_options.min_num_inliers = static_cast<size_t>(options_.min_num_inliers);
     two_view_geometry_options.ransac_options.max_error = options_.max_error;
     two_view_geometry_options.ransac_options.confidence = options_.confidence;
-    two_view_geometry_options.ransac_options.max_num_trials =
-            static_cast<size_t>(options_.max_num_trials);
-    two_view_geometry_options.ransac_options.min_inlier_ratio =
-            options_.min_inlier_ratio;
+    two_view_geometry_options.ransac_options.max_num_trials = static_cast<size_t>(options_.max_num_trials);
+    two_view_geometry_options.ransac_options.min_inlier_ratio = options_.min_inlier_ratio;
 
     for (size_t i = 0; i < image_pairs.size(); ++i) {
         const auto exists = exists_mask[i];
 
-        if (exists.first && exists.second) {
-            continue;
-        }
+        if (exists.first && exists.second) { continue; }
 
         const auto image_pair = image_pairs[i];
         const image_t image_id1 = image_pair.first;
@@ -685,10 +668,14 @@ void FeatureMatcher::MatchImagePairs(
                 data.keypoints2 = &keypoints_cache_.at(image_id2);
                 data.matches = &match_result.matches;
                 data.options = &two_view_geometry_options;
+
                 std::function<TwoViewGeometry(GeometricVerificationData, bool)>
                         verifier_func = FeatureMatcher::VerifyImagePair;
+
                 verification_results.push_back(verifier_thread_pool_->AddTask(
-                        verifier_func, data, options_.multiple_models));
+                        verifier_func, data, options_.multiple_models)
+                );
+
                 verification_image_pairs.push_back(image_pair);
             } else {
                 empty_verification_results.push_back(image_pair);
@@ -700,8 +687,7 @@ void FeatureMatcher::MatchImagePairs(
 
     for (const auto& result : match_results) {
         if (result.write) {
-            database_.WriteMatches(result.image_id1, result.image_id2,
-                                   result.matches);
+            database_.WriteMatches(result.image_id1, result.image_id2, result.matches);
         }
     }
 
@@ -710,6 +696,7 @@ void FeatureMatcher::MatchImagePairs(
 
         auto result = verification_results[i].get();
         if (result.inlier_matches.size() >= min_num_inliers) {
+
             if (options_.guided_matching) {
                 const image_t image_id1 = image_pair.first;
                 const image_t image_id2 = image_pair.second;
@@ -717,41 +704,42 @@ void FeatureMatcher::MatchImagePairs(
             }
             database_.WriteInlierMatches(image_pair.first, image_pair.second, result);
         } else {
-            database_.WriteInlierMatches(image_pair.first, image_pair.second,
-                                         TwoViewGeometry());
+            database_.WriteInlierMatches(image_pair.first, image_pair.second, TwoViewGeometry());
         }
     }
 
     for (auto& result : empty_verification_results) {
-        database_.WriteInlierMatches(result.first, result.second,
-                                     TwoViewGeometry());
+        database_.WriteInlierMatches(result.first, result.second, TwoViewGeometry());
     }
 
     database_.EndTransaction();
 }
 
-void FeatureMatcher::MatchImagePairGuided(const image_t image_id1,
-                                          const image_t image_id2,
-                                          TwoViewGeometry* two_view_geometry) {
+void FeatureMatcher::MatchImagePairGuided(
+        const image_t image_id1,
+        const image_t image_id2,
+        TwoViewGeometry* two_view_geometry) {
+
     Eigen::Matrix<float, 3, 3, Eigen::RowMajor> F;
     Eigen::Matrix<float, 3, 3, Eigen::RowMajor> H;
     float* F_ptr = nullptr;
     float* H_ptr = nullptr;
     if (two_view_geometry->config == TwoViewGeometry::CALIBRATED ||
         two_view_geometry->config == TwoViewGeometry::UNCALIBRATED) {
+
         F = two_view_geometry->F.cast<float>();
         F_ptr = F.data();
+
     } else if (two_view_geometry->config == TwoViewGeometry::PLANAR ||
                two_view_geometry->config == TwoViewGeometry::PANORAMIC ||
-               two_view_geometry->config ==
-               TwoViewGeometry::PLANAR_OR_PANORAMIC) {
+               two_view_geometry->config == TwoViewGeometry::PLANAR_OR_PANORAMIC) {
+
         H = two_view_geometry->H.cast<float>();
         H_ptr = H.data();
+
     }
 
-    if (F_ptr == nullptr && H_ptr == nullptr) {
-        return;
-    }
+    if (F_ptr == nullptr && H_ptr == nullptr) { return; }
 
     UploadDescriptors(0, image_id1);
     UploadDescriptors(1, image_id2);
@@ -767,39 +755,43 @@ void FeatureMatcher::MatchImagePairGuided(const image_t image_id1,
             static_cast<float>(options_.max_ratio),
             static_cast<float>(options_.max_error * options_.max_error),
             static_cast<float>(options_.max_error * options_.max_error),
-            options_.cross_check);
+            options_.cross_check
+    );
 
-    if (num_matches <=
-        static_cast<int>(two_view_geometry->inlier_matches.size())) {
-        return;
-    }
+    if (num_matches <= static_cast<int>(two_view_geometry->inlier_matches.size())) { return; }
 
     ExtractMatchesFromBuffer(num_matches, &two_view_geometry->inlier_matches);
 }
 
-TwoViewGeometry FeatureMatcher::VerifyImagePair(
-        const GeometricVerificationData data, const bool multiple_models) {
+TwoViewGeometry FeatureMatcher::VerifyImagePair(const GeometricVerificationData data, const bool multiple_models) {
+
     TwoViewGeometry two_view_geometry;
     const auto points1 = FeatureKeypointsToPointsVector(*data.keypoints1);
     const auto points2 = FeatureKeypointsToPointsVector(*data.keypoints2);
+
     if (multiple_models) {
-        two_view_geometry.EstimateMultiple(*data.camera1, points1, *data.camera2,
-                                           points2, *data.matches, *data.options);
+        two_view_geometry.EstimateMultiple(
+                *data.camera1,
+                points1,
+                *data.camera2,
+                points2,
+                *data.matches,
+                *data.options
+        );
     } else {
-        two_view_geometry.Estimate(*data.camera1, points1, *data.camera2, points2,
-                                   *data.matches, *data.options);
+        two_view_geometry.Estimate(*data.camera1, points1, *data.camera2, points2, *data.matches, *data.options);
     }
     return two_view_geometry;
 }
 
-void ExhaustiveFeatureMatcher::ExhaustiveOptions::Check() const {
-}
+void ExhaustiveFeatureMatcher::ExhaustiveOptions::Check() const { }
 
 ExhaustiveFeatureMatcher::ExhaustiveFeatureMatcher(
-        const Options& options, const ExhaustiveOptions& exhaustive_options,
-        const std::string& database_path)
-        : FeatureMatcher(options, database_path),
-          exhaustive_options_(exhaustive_options) {
+        const Options& options,
+        const ExhaustiveOptions& exhaustive_options,
+        const std::string& database_path
+) : FeatureMatcher(options, database_path),
+    exhaustive_options_(exhaustive_options) {
     exhaustive_options_.Check();
 }
 
@@ -814,31 +806,25 @@ void ExhaustiveFeatureMatcher::DoMatching() {
     }
 
     const size_t block_size = static_cast<size_t>(exhaustive_options_.block_size);
-    const size_t num_blocks = static_cast<size_t>(
-            std::ceil(static_cast<double>(image_ids.size()) / block_size));
+    const size_t num_blocks = static_cast<size_t>(std::ceil(static_cast<double>(image_ids.size()) / block_size));
 
     std::vector<std::pair<image_t, image_t>> image_pairs;
 
-    for (size_t start_idx1 = 0; start_idx1 < image_ids.size();
-         start_idx1 += block_size) {
-        const size_t end_idx1 =
-                std::min(image_ids.size(), start_idx1 + block_size) - 1;
-        for (size_t start_idx2 = 0; start_idx2 < image_ids.size();
-             start_idx2 += block_size) {
-            const size_t end_idx2 =
-                    std::min(image_ids.size(), start_idx2 + block_size) - 1;
+    for (size_t start_idx1 = 0; start_idx1 < image_ids.size(); start_idx1 += block_size) {
 
-            if (IsStopped()) {
-                return;
-            }
+        const size_t end_idx1 = std::min(image_ids.size(), start_idx1 + block_size) - 1;
+
+        for (size_t start_idx2 = 0; start_idx2 < image_ids.size(); start_idx2 += block_size) {
+            const size_t end_idx2 = std::min(image_ids.size(), start_idx2 + block_size) - 1;
+
+            if (IsStopped()) { return; }
 
             Timer timer;
             timer.Start();
 
             std::cout << boost::format("Matching block [%d/%d, %d/%d]") %
                          (start_idx1 / block_size + 1) % num_blocks %
-                         (start_idx2 / block_size + 1) % num_blocks
-            << std::flush;
+                         (start_idx2 / block_size + 1) % num_blocks << std::flush;
 
             image_pairs.clear();
 
@@ -846,10 +832,9 @@ void ExhaustiveFeatureMatcher::DoMatching() {
                 for (size_t idx2 = start_idx2; idx2 <= end_idx2; ++idx2) {
                     const size_t block_id1 = idx1 % block_size;
                     const size_t block_id2 = idx2 % block_size;
-                    if ((idx1 > idx2 && block_id1 <= block_id2) ||
-                        (idx1 < idx2 &&
-                         block_id1 < block_id2)) {  // Avoid duplicate pairs
-                        image_pairs.emplace_back(image_ids[idx1], image_ids[idx2]);
+
+                    if ((idx1 > idx2 && block_id1 <= block_id2) || (idx1 < idx2 && block_id1 < block_id2)) {
+                        image_pairs.emplace_back(image_ids[idx1], image_ids[idx2]); // Avoid duplicate pairs
                     }
                 }
             }
@@ -865,10 +850,9 @@ void ExhaustiveFeatureMatcher::DoMatching() {
 }
 
 std::vector<std::pair<image_t, image_t>>
-ExhaustiveFeatureMatcher::PreemptivelyFilterImagePairs(
-        const std::vector<std::pair<image_t, image_t>>& image_pairs) {
-    const size_t num_features =
-            static_cast<size_t>(exhaustive_options_.preemptive_num_features);
+ExhaustiveFeatureMatcher::PreemptivelyFilterImagePairs(const std::vector<std::pair<image_t, image_t>>& image_pairs) {
+
+    const size_t num_features = static_cast<size_t>(exhaustive_options_.preemptive_num_features);
 
     std::unordered_map<image_t, FeatureDescriptors> top_descriptors;
 
@@ -883,36 +867,40 @@ ExhaustiveFeatureMatcher::PreemptivelyFilterImagePairs(
 
     for (const auto image_pair : image_pairs) {
         if (top_descriptors.count(image_pair.first) == 0) {
-            top_descriptors.emplace(
-                    image_pair.first,
-                    ExtractTopScaleDescriptors(CacheKeypoints(image_pair.first),
-                                               CacheDescriptors(image_pair.first),
-                                               num_features));
+
+            top_descriptors.emplace(image_pair.first, ExtractTopScaleDescriptors(
+                    CacheKeypoints(image_pair.first),
+                    CacheDescriptors(image_pair.first),
+                    num_features)
+            );
         }
         if (top_descriptors.count(image_pair.second) == 0) {
-            top_descriptors.emplace(
-                    image_pair.second,
-                    ExtractTopScaleDescriptors(CacheKeypoints(image_pair.second),
-                                               CacheDescriptors(image_pair.second),
-                                               num_features));
+
+            top_descriptors.emplace(image_pair.second, ExtractTopScaleDescriptors(
+                    CacheKeypoints(image_pair.second),
+                    CacheDescriptors(image_pair.second),
+                    num_features)
+            );
         }
 
         if (image_pair.first != prev_image_id1) {
             const auto& descriptors1 = top_descriptors[image_pair.first];
-            sift_match_gpu_->SetDescriptors(0, descriptors1.rows(),
-                                            descriptors1.data());
+            sift_match_gpu_->SetDescriptors(0, descriptors1.rows(), descriptors1.data());
             prev_image_id1 = image_pair.first;
         }
         if (image_pair.second != prev_image_id2) {
             const auto& descriptors2 = top_descriptors[image_pair.second];
-            sift_match_gpu_->SetDescriptors(1, descriptors2.rows(),
-                                            descriptors2.data());
+            sift_match_gpu_->SetDescriptors(1, descriptors2.rows(), descriptors2.data());
             prev_image_id2 = image_pair.second;
         }
 
         const int num_matches = sift_match_gpu_->GetSiftMatch(
-                options_.max_num_matches, (int (*)[2]) matches_buffer_.data(),
-                options_.max_distance, options_.max_ratio, options_.cross_check);
+                options_.max_num_matches,
+                (int (*)[2]) matches_buffer_.data(),
+                options_.max_distance,
+                options_.max_ratio,
+                options_.cross_check
+        );
 
         if (num_matches >= exhaustive_options_.preemptive_min_num_matches) {
             filtered_image_pairs.push_back(image_pair);
@@ -921,9 +909,7 @@ ExhaustiveFeatureMatcher::PreemptivelyFilterImagePairs(
 
     database_.EndTransaction();
 
-    std::cout << boost::format(" P(%d/%d)") % filtered_image_pairs.size() %
-                 image_pairs.size()
-    << std::flush;
+    std::cout << boost::format(" P(%d/%d)") % filtered_image_pairs.size() % image_pairs.size() << std::flush;
 
     return filtered_image_pairs;
 }

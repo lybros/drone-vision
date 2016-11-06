@@ -533,21 +533,16 @@ struct FeatureMatch {
 };
 
 typedef std::vector<FeatureKeypoint> FeatureKeypoints;
-typedef Eigen::Matrix<uint8_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-        FeatureDescriptors;
+typedef Eigen::Matrix<uint8_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> FeatureDescriptors;
 typedef std::vector<FeatureMatch> FeatureMatches;
 
-std::vector<Eigen::Vector2d> FeatureKeypointsToPointsVector(
-        const FeatureKeypoints& keypoints);
+std::vector<Eigen::Vector2d> FeatureKeypointsToPointsVector(const FeatureKeypoints& keypoints);
 
-Eigen::MatrixXf L2NormalizeFeatureDescriptors(
-        const Eigen::MatrixXf& descriptors);
+Eigen::MatrixXf L2NormalizeFeatureDescriptors(const Eigen::MatrixXf& descriptors);
 
-Eigen::MatrixXf L1RootNormalizeFeatureDescriptors(
-        const Eigen::MatrixXf& descriptors);
+Eigen::MatrixXf L1RootNormalizeFeatureDescriptors(const Eigen::MatrixXf& descriptors);
 
-FeatureDescriptors FeatureDescriptorsToUnsignedByte(
-        const Eigen::MatrixXf& descriptors);
+FeatureDescriptors FeatureDescriptorsToUnsignedByte(const Eigen::MatrixXf& descriptors);
 
 
 class VisibilityPyramid {
