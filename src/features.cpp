@@ -533,8 +533,7 @@ void FeatureMatcher::ExtractMatchesFromBuffer(const size_t num_matches, FeatureM
     matches->resize(num_matches);
     for (size_t i = 0; i < num_matches; ++i) {
         (*matches)[i].point2D_idx1 = static_cast<point2D_t>(matches_buffer_[2 * i]);
-        (*matches)[i].point2D_idx2 =
-                static_cast<point2D_t>(matches_buffer_[2 * i + 1]);
+        (*matches)[i].point2D_idx2 = static_cast<point2D_t>(matches_buffer_[2 * i + 1]);
     }
 }
 
@@ -542,8 +541,10 @@ void FeatureMatcher::MatchImagePairs(const std::vector<std::pair<image_t, image_
 
     std::vector<std::pair<bool, bool>> exists_mask;
     exists_mask.reserve(image_pairs.size());
+
     std::unordered_set<image_t> image_ids;
     image_ids.reserve(image_pairs.size());
+
     std::unordered_set<image_pair_t> pair_ids;
     pair_ids.reserve(image_pairs.size());
 
@@ -648,7 +649,9 @@ void FeatureMatcher::MatchImagePairs(const std::vector<std::pair<image_t, image_
                     options_.max_num_matches,
                     reinterpret_cast<int (*)[2]>(matches_buffer_.data()),
                     static_cast<float>(options_.max_distance),
-                    static_cast<float>(options_.max_ratio), options_.cross_check);
+                    static_cast<float>(options_.max_ratio),
+                    options_.cross_check
+            );
 
             if (num_matches >= options_.min_num_inliers) {
                 ExtractMatchesFromBuffer(num_matches, &match_result.matches);
@@ -672,8 +675,8 @@ void FeatureMatcher::MatchImagePairs(const std::vector<std::pair<image_t, image_
                 std::function<TwoViewGeometry(GeometricVerificationData, bool)>
                         verifier_func = FeatureMatcher::VerifyImagePair;
 
-                verification_results.push_back(verifier_thread_pool_->AddTask(
-                        verifier_func, data, options_.multiple_models)
+                verification_results.push_back(
+                        verifier_thread_pool_->AddTask(verifier_func, data, options_.multiple_models)
                 );
 
                 verification_image_pairs.push_back(image_pair);
@@ -833,8 +836,9 @@ void ExhaustiveFeatureMatcher::DoMatching() {
                     const size_t block_id1 = idx1 % block_size;
                     const size_t block_id2 = idx2 % block_size;
 
+                    // to Avoid duplicate pairs
                     if ((idx1 > idx2 && block_id1 <= block_id2) || (idx1 < idx2 && block_id1 < block_id2)) {
-                        image_pairs.emplace_back(image_ids[idx1], image_ids[idx2]); // Avoid duplicate pairs
+                        image_pairs.emplace_back(image_ids[idx1], image_ids[idx2]);
                     }
                 }
             }

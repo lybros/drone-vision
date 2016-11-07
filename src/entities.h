@@ -549,8 +549,7 @@ class VisibilityPyramid {
 public:
     VisibilityPyramid();
 
-    VisibilityPyramid(const size_t num_levels, const size_t width,
-                      const size_t height);
+    VisibilityPyramid(const size_t num_levels, const size_t width, const size_t height);
 
     void SetPoint(const double x, const double y);
 
@@ -567,8 +566,7 @@ public:
     size_t MaxScore() const;
 
 private:
-    void CellForPoint(const double x, const double y, size_t* cx,
-                      size_t* cy) const;
+    void CellForPoint(const double x, const double y, size_t* cx, size_t* cy) const;
 
     size_t width_;
     size_t height_;

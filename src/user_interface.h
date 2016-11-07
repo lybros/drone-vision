@@ -53,13 +53,13 @@ class PointColormapBase {
 public:
     PointColormapBase();
 
-    virtual void Prepare(std::unordered_map<camera_t, Camera>& cameras,
-                         std::unordered_map<image_t, Image>& images,
-                         std::unordered_map<point3D_t, Point_3D>& points3D,
-                         std::vector<image_t>& reg_image_ids) = 0;
+    virtual void Prepare(
+            std::unordered_map<camera_t, Camera>& cameras,
+            std::unordered_map<image_t, Image>& images,
+            std::unordered_map<point3D_t, Point_3D>& points3D,
+            std::vector<image_t>& reg_image_ids) = 0;
 
-    virtual Eigen::Vector3f ComputeColor(const point3D_t point3D_id,
-                                         const Point_3D& point3D) = 0;
+    virtual Eigen::Vector3f ComputeColor(const point3D_t point3D_id, const Point_3D& point3D) = 0;
 
     void UpdateScale(std::vector<float>* values);
 
@@ -83,9 +83,13 @@ public:
     struct Data {
         Data() : x(0), y(0), z(0), r(0), g(0), b(0), a(0) { }
 
-        Data(const float x_, const float y_, const float z_, const float r_,
-             const float g_, const float b_, const float a_)
-                : x(x_), y(y_), z(z_), r(r_), g(g_), b(b_), a(a_) { }
+        Data(const float x_,
+             const float y_,
+             const float z_,
+             const float r_,
+             const float g_,
+             const float b_,
+             const float a_) : x(x_), y(y_), z(z_), r(r_), g(g_), b(b_), a(a_) { }
 
         float x, y, z;
         float r, g, b, a;
@@ -115,8 +119,7 @@ public:
     struct Data {
         Data() { }
 
-        Data(const PointPainter::Data& p1, const PointPainter::Data& p2)
-                : point1(p1), point2(p2) { }
+        Data(const PointPainter::Data& p1, const PointPainter::Data& p2) : point1(p1), point2(p2) { }
 
         PointPainter::Data point1;
         PointPainter::Data point2;
@@ -126,8 +129,7 @@ public:
 
     void Upload(const std::vector<LinePainter::Data>& data);
 
-    void Render(const QMatrix4x4& pmv_matrix, const int width, const int height,
-                const float line_width);
+    void Render(const QMatrix4x4& pmv_matrix, const int width, const int height, const float line_width);
 
 private:
     QOpenGLShaderProgram shader_program_;
@@ -140,13 +142,13 @@ private:
 
 class PointColormapPhotometric : public PointColormapBase {
 public:
-    void Prepare(std::unordered_map<camera_t, Camera>& cameras,
-                 std::unordered_map<image_t, Image>& images,
-                 std::unordered_map<point3D_t, Point_3D>& points3D,
-                 std::vector<image_t>& reg_image_ids);
+    void Prepare(
+            std::unordered_map<camera_t, Camera>& cameras,
+            std::unordered_map<image_t, Image>& images,
+            std::unordered_map<point3D_t, Point_3D>& points3D,
+            std::vector<image_t>& reg_image_ids);
 
-    Eigen::Vector3f ComputeColor(const point3D_t point3D_id,
-                                 const Point_3D& point3D);
+    Eigen::Vector3f ComputeColor(const point3D_t point3D_id, const Point_3D& point3D);
 };
 
 
@@ -159,9 +161,9 @@ public:
     struct Data {
         Data() { }
 
-        Data(const PointPainter::Data& p1, const PointPainter::Data& p2,
-             const PointPainter::Data& p3)
-                : point1(p1), point2(p2), point3(p3) { }
+        Data(const PointPainter::Data& p1,
+             const PointPainter::Data& p2,
+             const PointPainter::Data& p3) : point1(p1), point2(p2), point3(p3) { }
 
         PointPainter::Data point1;
         PointPainter::Data point2;
@@ -186,8 +188,7 @@ class OpenGLWindow;
 
 class PointViewerWidget : public QWidget {
 public:
-    PointViewerWidget(QWidget* parent, OpenGLWindow* opengl_window,
-                      OptionManager* option);
+    PointViewerWidget(QWidget* parent, OpenGLWindow* opengl_window, OptionManager* option);
 
     void Show(const point3D_t point3D_id);
 
@@ -229,8 +230,7 @@ class BasicImageViewerWidget : public QWidget {
 public:
     BasicImageViewerWidget(QWidget* parent, const std::string& switch_text);
 
-    void Show(const std::string& path, const FeatureKeypoints& keypoints,
-              const std::vector<bool>& tri_mask);
+    void Show(const std::string& path, const FeatureKeypoints& keypoints, const std::vector<bool>& tri_mask);
 
 protected:
     void closeEvent(QCloseEvent* event);
@@ -267,15 +267,16 @@ class MatchesImageViewerWidget : public BasicImageViewerWidget {
 public:
     MatchesImageViewerWidget(QWidget* parent);
 
-    void Show(const std::string& path1, const std::string& path2,
+    void Show(const std::string& path1,
+              const std::string& path2,
               const FeatureKeypoints& keypoints1,
-              const FeatureKeypoints& keypoints2, const FeatureMatches& matches);
+              const FeatureKeypoints& keypoints2,
+              const FeatureMatches& matches);
 };
 
 class ImageViewerWidget : public BasicImageViewerWidget {
 public:
-    ImageViewerWidget(QWidget* parent, OpenGLWindow* opengl_window,
-                      OptionManager* options);
+    ImageViewerWidget(QWidget* parent, OpenGLWindow* opengl_window, OptionManager* options);
 
     void Show(const image_t image_id);
 
@@ -360,11 +361,9 @@ public:
 
     void ChangeImageSize(const float delta);
 
-    void RotateView(const float x, const float y, const float prev_x,
-                    const float prev_y);
+    void RotateView(const float x, const float y, const float prev_x, const float prev_y);
 
-    void TranslateView(const float x, const float y, const float prev_x,
-                       const float prev_y);
+    void TranslateView(const float x, const float y, const float prev_x, const float prev_y);
 
     void ResetView();
 
@@ -497,17 +496,22 @@ public:
     bool PathsValid();
 
     std::string ProjectName() const;
+
     std::string ProjectParentPath() const;
+
     std::string ProjectPath() const;
+
     std::string ImagePath() const;
 
     void SetProjectPath(const std::string& path);
+
     void SetImagePath(const std::string& path);
 
 private:
     void Create();
 
     void SelectProjectPath();
+
     void SelectImagePath();
 
     QString DefaultDirectory();
@@ -687,6 +691,7 @@ public:
     std::unique_ptr<IncrementalMapperController> mapper_controller;
 
     void ReadProjectConfiguration(const std::string&);
+
     void WriteProjectConfiguration();
 
     void UpdateProjectInfoStatusBar();

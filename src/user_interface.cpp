@@ -1825,7 +1825,7 @@ NewProjectWidget::NewProjectWidget(MainWindow* parent, OptionManager* options)
 
 bool NewProjectWidget::PathsValid() {
     return boost::filesystem::is_directory(ImagePath()) &&
-            boost::filesystem::is_directory(ProjectParentPath());
+           boost::filesystem::is_directory(ProjectParentPath());
 }
 
 std::string NewProjectWidget::ProjectName() const {
@@ -1837,7 +1837,7 @@ std::string NewProjectWidget::ProjectParentPath() const {
 }
 
 std::string NewProjectWidget::ProjectPath() const {
-    return  ProjectParentPath() + EnsureTrailingSlash(ProjectName());
+    return ProjectParentPath() + EnsureTrailingSlash(ProjectName());
 }
 
 std::string NewProjectWidget::ImagePath() const {
@@ -1866,7 +1866,8 @@ void NewProjectWidget::Create() {
     boost::filesystem::path path(ProjectPath());
 
     if (boost::filesystem::is_directory(path)) {
-        QMessageBox::critical(this, "", tr("Project name corresponds with existent directory.\nPlease choose another project name / project directory"));
+        QMessageBox::critical(this, "",
+                              tr("Project name corresponds with existent directory.\nPlease choose another project name / project directory"));
         return;
     }
 
@@ -2723,19 +2724,15 @@ void MainWindow::CreateWidgets() {
 }
 
 void MainWindow::CreateActions() {
-    action_new_project_ =
-            new QAction(QIcon(":/media/project-new.png"), tr("New project"), this);
+    action_new_project_ = new QAction(QIcon(":/media/project-new.png"), tr("New project"), this);
     action_new_project_->setShortcuts(QKeySequence::New);
-    connect(action_new_project_, &QAction::triggered, this,
-            &MainWindow::NewProject);
+    connect(action_new_project_, &QAction::triggered, this, &MainWindow::NewProject);
 
-    action_import_model_ =
-            new QAction(QIcon(":/media/import.png"), tr("Import model"), this);
+    action_import_model_ = new QAction(QIcon(":/media/import.png"), tr("Import model"), this);
     connect(action_import_model_, &QAction::triggered, this, &MainWindow::ImportModel);
     blocking_actions_.push_back(action_import_model_);
 
-    action_export_model_ =
-            new QAction(QIcon(":/media/export.png"), tr("Export model"), this);
+    action_export_model_ = new QAction(QIcon(":/media/export.png"), tr("Export model"), this);
     connect(action_export_model_, &QAction::triggered, this, &MainWindow::ExportModel);
     blocking_actions_.push_back(action_export_model_);
 
@@ -2746,76 +2743,69 @@ void MainWindow::CreateActions() {
     action_quit_ = new QAction(tr("Quit"), this);
     connect(action_quit_, &QAction::triggered, this, &MainWindow::close);
 
-    action_feature_extraction_ = new QAction(
-            QIcon(":/media/feature-extraction.png"), tr("Extract features"), this);
-    connect(action_feature_extraction_, &QAction::triggered, this,
-            &MainWindow::FeatureExtraction);
+    action_feature_extraction_ = new QAction(QIcon(":/media/feature-extraction.png"), tr("Extract features"), this);
+    connect(action_feature_extraction_, &QAction::triggered, this, &MainWindow::FeatureExtraction);
     blocking_actions_.push_back(action_feature_extraction_);
 
-    action_feature_matching_ = new QAction(QIcon(":/media/feature-matching.png"),
-                                           tr("Match features"), this);
-    connect(action_feature_matching_, &QAction::triggered, this,
-            &MainWindow::FeatureMatching);
+    action_feature_matching_ = new QAction(QIcon(":/media/feature-matching.png"), tr("Match features"), this);
+    connect(action_feature_matching_, &QAction::triggered, this, &MainWindow::FeatureMatching);
     blocking_actions_.push_back(action_feature_matching_);
 
-    action_database_management_ = new QAction(
-            QIcon(":/media/database-management.png"), tr("Manage database"), this);
-    connect(action_database_management_, &QAction::triggered, this,
-            &MainWindow::DatabaseManagement);
+    action_database_management_ = new QAction(QIcon(":/media/database-management.png"), tr("Manage database"), this);
+    connect(action_database_management_, &QAction::triggered, this, &MainWindow::DatabaseManagement);
     blocking_actions_.push_back(action_database_management_);
 
-    action_reconstruction_start_ =
-            new QAction(QIcon(":/media/reconstruction-start.png"),
-                        tr("Start / resume reconstruction"), this);
-    connect(action_reconstruction_start_, &QAction::triggered, this,
-            &MainWindow::ReconstructionStart);
+    action_reconstruction_start_ = new QAction(
+            QIcon(":/media/reconstruction-start.png"),
+            tr("Start / resume reconstruction"), this
+    );
+    connect(action_reconstruction_start_, &QAction::triggered, this, &MainWindow::ReconstructionStart);
     blocking_actions_.push_back(action_reconstruction_start_);
 
-    action_reconstruction_pause_ =
-            new QAction(QIcon(":/media/reconstruction-pause.png"),
-                        tr("Pause reconstruction"), this);
-    connect(action_reconstruction_pause_, &QAction::triggered, this,
-            &MainWindow::ReconstructionPause);
+    action_reconstruction_pause_ = new QAction(
+            QIcon(":/media/reconstruction-pause.png"),
+            tr("Pause reconstruction"), this
+    );
+    connect(action_reconstruction_pause_, &QAction::triggered, this, &MainWindow::ReconstructionPause);
     action_reconstruction_pause_->setEnabled(false);
     blocking_actions_.push_back(action_reconstruction_pause_);
 
-    action_reconstruction_reset_ =
-            new QAction(QIcon(":/media/reconstruction-reset.png"),
-                        tr("Reset reconstruction"), this);
-    connect(action_reconstruction_reset_, &QAction::triggered, this,
-            &MainWindow::OverwriteReconstruction);
+    action_reconstruction_reset_ = new QAction(
+            QIcon(":/media/reconstruction-reset.png"),
+            tr("Reset reconstruction"), this
+    );
+    connect(action_reconstruction_reset_, &QAction::triggered, this, &MainWindow::OverwriteReconstruction);
 
-    action_render_reset_view_ = new QAction(
-            QIcon(":/media/render-reset-view.png"), tr("Reset view"), this);
-    connect(action_render_reset_view_, &QAction::triggered, opengl_window_,
-            &OpenGLWindow::ResetView);
+    action_render_reset_view_ = new QAction(QIcon(":/media/render-reset-view.png"), tr("Reset view"), this);
+    connect(action_render_reset_view_, &QAction::triggered, opengl_window_, &OpenGLWindow::ResetView);
 
-    connect(model_manager_widget_, static_cast<void (QComboBox::*)(int)>(
-                    &QComboBox::currentIndexChanged),
-            this, &MainWindow::SelectModelIdx);
+    connect(model_manager_widget_,
+            static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, &MainWindow::SelectModelIdx
+    );
 
-    action_surface_reconstruct_ =
-            new QAction(QIcon(":/media/model-stats.png"), tr("Reconstruct surface model"), this);
-    action_densify_ =
-            new QAction(QIcon(":/media/undistort.png"), tr("Densify model"), this);
-    connect(action_densify_, &QAction::triggered, this,
-            &MainWindow::DensifyModel);
+    action_surface_reconstruct_ = new QAction(
+            QIcon(":/media/model-stats.png"),
+            tr("Reconstruct surface model"), this
+    );
+    action_densify_ = new QAction(QIcon(":/media/undistort.png"), tr("Densify model"), this);
+    connect(action_densify_, &QAction::triggered, this, &MainWindow::DensifyModel);
     connect(action_surface_reconstruct_, &QAction::triggered, this, &MainWindow::SurfaceReconstructModel);
     blocking_actions_.push_back(action_densify_);
     blocking_actions_.push_back(action_surface_reconstruct_);
 
     action_render_ = new QAction(tr("Render"), this);
-    connect(action_render_, &QAction::triggered, this, &MainWindow::Render,
-            Qt::BlockingQueuedConnection);
+    connect(action_render_, &QAction::triggered, this, &MainWindow::Render, Qt::BlockingQueuedConnection);
 
     action_render_now_ = new QAction(tr("Render now"), this);
-    connect(action_render_now_, &QAction::triggered, this, &MainWindow::RenderNow,
-            Qt::BlockingQueuedConnection);
+    connect(action_render_now_, &QAction::triggered, this, &MainWindow::RenderNow, Qt::BlockingQueuedConnection);
 
-    action_reconstruction_finish_ =
-            new QAction(tr("Finish reconstruction"), this);
-    connect(action_reconstruction_finish_, &QAction::triggered, this,
-            &MainWindow::ReconstructionFinish, Qt::BlockingQueuedConnection);
+    action_reconstruction_finish_ = new QAction(tr("Finish reconstruction"), this);
+    connect(action_reconstruction_finish_,
+            &QAction::triggered, this,
+            &MainWindow::ReconstructionFinish,
+            Qt::BlockingQueuedConnection
+    );
 }
 
 void MainWindow::CreateToolbar() {
@@ -2827,7 +2817,7 @@ void MainWindow::CreateToolbar() {
     import_export_toolbar_ = addToolBar(tr("Model import/export"));
     import_export_toolbar_->addAction(action_import_model_);
     import_export_toolbar_->addAction(action_export_model_);
-    import_export_toolbar_->setIconSize(QSize(16,16));
+    import_export_toolbar_->setIconSize(QSize(16, 16));
 
     preprocessing_toolbar_ = addToolBar(tr("Processing"));
     preprocessing_toolbar_->addAction(action_feature_extraction_);
@@ -2865,8 +2855,7 @@ void MainWindow::CreateStatusbar() {
     connect(statusbar_timer_, &QTimer::timeout, this, &MainWindow::UpdateTimer);
     statusbar_timer_->start(1000);
 
-    opengl_window_->statusbar_status_label =
-            new QLabel("0 Images - 0 Points", this);
+    opengl_window_->statusbar_status_label = new QLabel("0 Images - 0 Points", this);
     opengl_window_->statusbar_status_label->setFont(font);
     opengl_window_->statusbar_status_label->setAlignment(Qt::AlignCenter);
     statusBar()->addWidget(opengl_window_->statusbar_status_label, 1);
@@ -2886,12 +2875,10 @@ void MainWindow::CreateControllers() {
 
 void MainWindow::CreateFutures() {
     import_model_watcher_ = new QFutureWatcher<void>(this);
-    connect(import_model_watcher_, &QFutureWatcher<void>::finished, this,
-            &MainWindow::ImportModelFinished);
+    connect(import_model_watcher_, &QFutureWatcher<void>::finished, this, &MainWindow::ImportModelFinished);
 
     export_model_watcher_ = new QFutureWatcher<void>(this);
-    connect(export_model_watcher_, &QFutureWatcher<void>::finished, this,
-            &MainWindow::ExportModelFinished);
+    connect(export_model_watcher_, &QFutureWatcher<void>::finished, this, &MainWindow::ExportModelFinished);
 }
 
 void MainWindow::CreateProgressBar() {
@@ -2908,8 +2895,7 @@ void MainWindow::CreateProgressBar() {
 
 void MainWindow::CenterProgressBar() {
     const QPoint global = mapToGlobal(rect().center());
-    progress_bar_->move(global.x() - progress_bar_->width() / 2,
-                        global.y() - progress_bar_->height() / 2);
+    progress_bar_->move(global.x() - progress_bar_->width() / 2, global.y() - progress_bar_->height() / 2);
 }
 
 void MainWindow::NewProject() {
@@ -2918,18 +2904,11 @@ void MainWindow::NewProject() {
 }
 
 void MainWindow::ImportModel() {
-    if (!OverwriteReconstruction()) {
-        return;
-    }
+    if (!OverwriteReconstruction()) { return; }
 
-    std::string path =
-            QFileDialog::getOpenFileName(this, tr("Select source..."), "")
-                    .toUtf8()
-                    .constData();
+    std::string path = QFileDialog::getOpenFileName(this, tr("Select source..."), "").toUtf8().constData();
 
-    if (path == "") {
-        return;
-    }
+    if (path == "") { return; }
 
     if (!boost::filesystem::is_regular_file(path)) {
         QMessageBox::critical(this, "", tr("Invalid file"));
@@ -2937,8 +2916,7 @@ void MainWindow::ImportModel() {
     }
 
     if (!HasFileExtension(path, ".ply")) {
-        QMessageBox::critical(this, "",
-                              tr("Invalid file format (supported formats: PLY)"));
+        QMessageBox::critical(this, "", tr("Invalid file format (supported formats: PLY)"));
         return;
     }
 
@@ -2961,22 +2939,18 @@ void MainWindow::ImportModelFinished() {
 }
 
 void MainWindow::ExportModel() {
-    if (!IsSelectedModelValid()) {
-        return;
-    }
+    if (!IsSelectedModelValid()) { return; }
 
     QString default_filter("PLY (*.ply)");
-    const std::string path =
-            QFileDialog::getSaveFileName(
-                    this, tr("Select project file"), "",
-                    "PLY (*.ply)",
-                    &default_filter)
-                    .toUtf8()
-                    .constData();
+    const std::string path = QFileDialog::getSaveFileName(
+            this,
+            tr("Select project file"),
+            "",
+            "PLY (*.ply)",
+            &default_filter
+    ).toUtf8().constData();
 
-    if (path == "") {
-        return;
-    }
+    if (path == "") { return; }
 
     progress_bar_->setLabelText(tr("Exporting model"));
     progress_bar_->raise();
@@ -2997,15 +2971,16 @@ void MainWindow::ExportModelFinished() { progress_bar_->hide(); }
 void MainWindow::OpenProject() {
     std::string path;
 
-    while(true) {
+    while (true) {
         path = QFileDialog::getExistingDirectory(
-                        this, tr("Select a directory with project"),
-                        "", QFileDialog::ShowDirsOnly)
-                        .toUtf8()
-                        .constData();
-        if (path == "") {
-            return;
-        }
+                this,
+                tr("Select a directory with project"),
+                "",
+                QFileDialog::ShowDirsOnly
+        ).toUtf8().constData();
+
+        if (path == "") { return; }
+
         if (IsValidProjectDirectory(path)) {
             break;
         } else {
@@ -3143,8 +3118,7 @@ void MainWindow::ReconstructionStart() {
     }
 
     if (mapper_controller->IsFinished() && HasSelectedModel()) {
-        QMessageBox::critical(this, "",
-                              tr("Reset reconstruction before starting."));
+        QMessageBox::critical(this, "", tr("Reset reconstruction before starting."));
         return;
     }
 
@@ -3183,9 +3157,8 @@ void MainWindow::ReconstructionReset() {
 }
 
 void MainWindow::Render() {
-    if (mapper_controller->NumModels() == 0) {
-        return;
-    }
+
+    if (mapper_controller->NumModels() == 0) { return; }
 
     const Reconstruction& model = mapper_controller->Model(SelectedModelIdx());
 
@@ -3202,7 +3175,6 @@ void MainWindow::Render() {
     }
 
     render_counter_ += 1;
-
     RenderNow();
 }
 
@@ -3212,6 +3184,7 @@ void MainWindow::RenderNow() {
 }
 
 void MainWindow::RenderSelectedModel() {
+
     if (mapper_controller->NumModels() == 0) {
         RenderClear();
         return;
@@ -3236,8 +3209,11 @@ void MainWindow::RenderClear() {
 void MainWindow::SelectModelIdx(const size_t) { RenderSelectedModel(); }
 
 size_t MainWindow::SelectedModelIdx() {
+
     size_t model_idx = model_manager_widget_->ModelIdx();
+
     if (model_idx == ModelManagerWidget::kNewestModelIdx) {
+
         if (mapper_controller->NumModels() > 0) {
             model_idx = mapper_controller->NumModels() - 1;
         }
@@ -3246,8 +3222,11 @@ size_t MainWindow::SelectedModelIdx() {
 }
 
 bool MainWindow::HasSelectedModel() {
+
     const size_t model_idx = model_manager_widget_->ModelIdx();
+
     if (model_idx == ModelManagerWidget::kNewestModelIdx) {
+
         if (mapper_controller->NumModels() == 0) {
             return false;
         }
@@ -3270,8 +3249,12 @@ void MainWindow::DensifyModel() {
     }
 
     boost::filesystem::path output_path = boost::filesystem::path(*options_.database_path).parent_path();
-    ImageDensifier* densifier = new ImageDensifier(mapper_controller->Model(0), *options_.image_path,
-                                                   output_path.string(), binary_path_);
+    ImageDensifier* densifier = new ImageDensifier(
+            mapper_controller->Model(0),
+            *options_.image_path,
+            output_path.string(),
+            binary_path_
+    );
     densifier->start();
     QProgressDialog* progress_bar_ = new QProgressDialog(this);
     progress_bar_->setWindowModality(Qt::ApplicationModal);
@@ -3315,13 +3298,11 @@ void MainWindow::UpdateTimer() {
     const int minutes = (elapsed_time / 60) % 60;
     const int hours = (elapsed_time / 3600) % 24;
     const int days = elapsed_time / 86400;
-    statusbar_timer_label_->setText(QString().sprintf(
-            "Time %02d:%02d:%02d:%02d", days, hours, minutes, seconds));
+    statusbar_timer_label_->setText(QString().sprintf("Time %02d:%02d:%02d:%02d", days, hours, minutes, seconds));
 }
 
 void MainWindow::ShowInvalidProjectError() {
-    QMessageBox::critical(this, "",
-                          tr("You must create or open a valid project."));
+    QMessageBox::critical(this, "", tr("You must create or open a valid project."));
 }
 
 void MainWindow::EnableBlockingActions() {
@@ -3342,27 +3323,27 @@ void MainWindow::UpdateWindowTitle() {
     } else {
         std::string project_title = *options_.project_path;
         if (project_title.size() > 80) {
-            project_title =
-                    "..." + project_title.substr(project_title.size() - 77, 77);
+            project_title = "..." + project_title.substr(project_title.size() - 77, 77);
         }
         setWindowTitle(QString::fromStdString("3D reconstruction - " + project_title));
     }
 }
 
 void MainWindow::UpdateProjectInfoStatusBar() {
-    if (*options_.project_name == "") {
-        return;
-    }
+
+    if (*options_.project_name == "") { return; }
 
     project_info_label_->setText(
             QString::fromStdString(*options_.project_name) +
             " | " +
-            QString::fromStdString(*options_.project_path));
+            QString::fromStdString(*options_.project_path)
+    );
 }
 
 void MainWindow::SurfaceReconstructModel() {
-    boost::filesystem::path output_path = boost::filesystem::path(*options_.database_path).parent_path()
-                                          / boost::filesystem::path("pmvs/models");
+    boost::filesystem::path output_path =
+            boost::filesystem::path(*options_.database_path).parent_path() / boost::filesystem::path("pmvs/models");
+
     SurfaceReconstructer* reconstructer = new SurfaceReconstructer(output_path.string(), binary_path_);
     reconstructer->start();
     QProgressDialog* progress_bar_ = new QProgressDialog(this);
