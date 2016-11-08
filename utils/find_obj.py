@@ -8,16 +8,17 @@ Note, that you will need the https://github.com/Itseez/opencv_contrib repo for S
 USAGE
     python find_obj.py [
         --feature=<sift|surf|orb|akaze|brisk>[-flann]
-        --in=<input_images_dir>
+        --fwd=<input_images_dir>
+        --bck=<input_images_dir>
         --out=<output_images_dir>]
         [ <image_to_find> ]
 
     --feature - Feature to use. Can be sift, surf, orb or brisk. Append '-flann'
                to feature name to use Flann-based matcher instead bruteforce.
-    --in - image that you want to find on images from <input_images_dir>
+    --fwd - input images dir
+    --bck - if not null compare all from fwd with bck
     --out - directory will contain comparing images with matches
-
-    return best match
+    pos arg - image that you want to find on images from <input_images_dir> [use if --bck=null]
 """
 
 import os
@@ -139,6 +140,9 @@ def find_obj(img1, img2, detector, matcher, img1name='img1', img2name='img2'):
         return np.array([]), 0
 
     H, status = cv2.findHomography(p1, p2, cv2.RANSAC, 5.0)
+    if H is None or status is None:
+        return np.array([]), 0
+
     print '{0} / {1}  inliers/matched'.format(np.sum(status), len(status))
     return explore_match(img1, img2, kp_pairs, status, H), np.sum(status) / len(status)
 
@@ -161,13 +165,13 @@ if __name__ == '__main__':
 
 
     total = Timer("TOTAL")
-    opts, args = getopt.getopt(sys.argv[1:], '', ['feature='])
+    opts, args = getopt.getopt(sys.argv[1:], '', ['feature=', 'bck=', 'fwd=', 'out='])
     opts = dict(opts)
     feature_name = opts.get('--feature', 'orb')
-    in_dir = opts.get('--in', 'in/')
+    forward_dir = opts.get('--fwd', 'fwd/')
+    back_dir = opts.get('--bck', '')
     out_dir = opts.get('--out', 'out/')
-
-    if len(args) < 1:
+    if not back_dir and len(args) < 1:
         print 'positional argument image is required'
         sys.exit(1)
 
@@ -175,8 +179,10 @@ if __name__ == '__main__':
         'score': 0,
         'image': None
     }
-    img_to_find = read_image(args[0])
+    forward_images = os.listdir(forward_dir)
+    back_images = os.listdir(back_dir) if back_dir else [args[0]]
     detector, matcher = init_feature(feature_name)
+    matrics = []
 
     if detector is None:
         print 'unknown feature:', feature_name
@@ -184,20 +190,28 @@ if __name__ == '__main__':
 
     print 'using', feature_name, '\n', '-' * 50
 
-    for img_name in os.listdir(in_dir):
-        timer = Timer("procces {0}".format(img_name))
+    for img1_name in forward_images:
 
-        vis, score = find_obj(img_to_find, read_image(os.path.join(in_dir, img_name)),
-                              detector, matcher, args[0], img_name)
-        print 'score: {:.3f}'.format(score)
-        timer.finish()
+        img1 = read_image(os.path.join(forward_dir, img1_name))
+        results = []
 
-        if score > res['score']:
-            res['score'] = score
-            res['image'] = img_name
+        for img2_name in back_images:
+            timer = Timer("procces ({0} & {1})".format(img1_name, img2_name))
 
-        if vis.any():
-            cv2.imwrite(os.path.join(out_dir, img_name), vis)
+            img2 = read_image(os.path.join(back_dir, img2_name))
+            vis, score = find_obj(img1, img2, detector, matcher, img1_name, img2_name)
+            print 'score: {:.3f}'.format(score)
+            timer.finish()
+            results.append(score)
 
-    print 'best match with image {0} with score={1}'.format(res['image'], res['score'])
+            if score > res['score']:
+                res['score'] = score
+                res['image'] = img2_name
+
+            if vis.any():
+                cv2.imwrite(os.path.join(out_dir, img1_name + img2_name), vis)
+
+        print 'best match with image {0} with score={1}'.format(res['image'], res['score'])
+        matrics.append(results)
+
     total.finish()
