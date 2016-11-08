@@ -147,6 +147,13 @@ def find_obj(img1, img2, detector, matcher, img1name='img1', img2name='img2'):
     return explore_match(img1, img2, kp_pairs, status, H), np.sum(status) / len(status)
 
 
+def drawHitMap(x, y, z, dir):
+    import plotly.plotly as py
+    import plotly.graph_objs as go
+
+    py.image.save_as({'data': [go.Heatmap(x=x, y=y, z=z)]}, os.path.join(dir, 'heatmap'), format='png')
+
+
 if __name__ == '__main__':
     print __doc__
 
@@ -214,4 +221,5 @@ if __name__ == '__main__':
         print 'best match with image {0} with score={1}'.format(res['image'], res['score'])
         matrics.append(results)
 
+    drawHitMap(x=back_images, y=forward_images, z=matrics, dir=out_dir)
     total.finish()
