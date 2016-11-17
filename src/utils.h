@@ -8,6 +8,8 @@
 #include <future>
 #include <iomanip>
 
+#include <QString>
+
 #include <Eigen/Geometry>
 #include <Eigen/Eigenvalues>
 #include <Eigen/Core>
@@ -66,6 +68,8 @@ const point2D_t kInvalidPoint2DIdx = std::numeric_limits<point2D_t>::max();
 const point3D_t kInvalidPoint3DId = std::numeric_limits<point3D_t>::max();
 
 std::string EnsureTrailingSlash(const std::string& str);
+// TODO(uladbohdan): to replace std::string version of EnsureTrailingSlash() with QString version.
+QString EnsureTrailingSlash(const QString& str);
 
 bool HasFileExtension(const std::string& file_name, const std::string& ext);
 
