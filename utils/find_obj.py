@@ -45,13 +45,13 @@ class Timer:
 def init_feature(name):
     chunks = name.split('-')
     if chunks[0] == 'sift':
-        detector = cv2.xfeatures2d.SIFT_create()
+        detector = cv2.xfeatures2d.SIFT_create(200)
         norm = cv2.NORM_L2
     elif chunks[0] == 'surf':
         detector = cv2.xfeatures2d.SURF_create(800)
         norm = cv2.NORM_L2
     elif chunks[0] == 'orb':
-        detector = cv2.ORB_create(400)
+        detector = cv2.ORB_create(200)
         norm = cv2.NORM_HAMMING
     elif chunks[0] == 'akaze':
         detector = cv2.AKAZE_create()
@@ -147,11 +147,11 @@ def find_obj(img1, img2, detector, matcher, img1name='img1', img2name='img2'):
     return explore_match(img1, img2, kp_pairs, status, H), np.sum(status) / len(status)
 
 
-def drawHitMap(x, y, z, dir):
+def drawHitMap(x, y, z, filename):
     import plotly.plotly as py
     import plotly.graph_objs as go
 
-    py.image.save_as({'data': [go.Heatmap(x=x, y=y, z=z)]}, os.path.join(dir, 'heatmap'), format='png')
+    py.image.save_as({'data': [go.Heatmap(x=x, y=y, z=z)]}, filename, format='png')
 
 
 if __name__ == '__main__':
@@ -221,5 +221,6 @@ if __name__ == '__main__':
         print 'best match with image {0} with score={1}'.format(res['image'], res['score'])
         matrics.append(results)
 
-    drawHitMap(x=back_images, y=forward_images, z=matrics, dir=out_dir)
+    drawHitMap(x=back_images, y=forward_images, z=matrics,
+               filename=os.path.join(out_dir, '{}_heatmap'.format(feature_name)))
     total.finish()
