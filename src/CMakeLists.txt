@@ -1,8 +1,13 @@
-set(SOURCE_FILES main.cpp user_interface.h user_interface.cpp controllers.h controllers.cpp options.h options.cpp
+set(SOURCE_FILES main.cpp controllers.h controllers.cpp options.h options.cpp
         features.h features.cpp entities.h entities.cpp utils.h utils.cpp projection.h projection.cpp estimators.h
         estimators.cpp optimization.h optimization.cpp model.h model.cpp storage.h
         storage.cpp geometry.h geometry.cpp processor.h processor.cpp refinement.h refinement.cpp densify.h densify.cpp
-        surface_reconstruct.h surface_reconstruct.cpp)
+        surface_reconstruct.h surface_reconstruct.cpp
+        ui/main_window.cpp ui/main_window.h
+        ui/opengl_window.cpp ui/opengl_window.h
+        ui/new_project_widget.cpp ui/new_project_widget.h
+        ui/database_management_widget.cpp ui/database_management_widget.h
+        ui/model_manager_widget.cpp ui/model_manager_widget.h)
 
 add_executable(3d_reconstruction ${SOURCE_FILES} ${QT_RESOURCES})
 
