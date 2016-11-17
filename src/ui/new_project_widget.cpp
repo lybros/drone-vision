@@ -42,24 +42,25 @@ NewProjectWidget::NewProjectWidget(MainWindow* parent, OptionManager* options)
 }
 
 bool NewProjectWidget::PathsValid() {
-    return boost::filesystem::is_directory(ImagePath()) &&
-           boost::filesystem::is_directory(ProjectParentPath());
+    return QDir(ImagePath()).exists() &&
+            QDir(ProjectParentPath()).exists() &&
+            QFileInfo(ProjectParentPath()).isWritable();
 }
 
-std::string NewProjectWidget::ProjectName() const {
-    return project_name_text_->text().toUtf8().constData();
+QString NewProjectWidget::ProjectName() const {
+    return project_name_text_->text();
 }
 
-std::string NewProjectWidget::ProjectParentPath() const {
-    return EnsureTrailingSlash(project_path_text_->text().toUtf8().constData());
+QString NewProjectWidget::ProjectParentPath() const {
+    return EnsureTrailingSlash(project_path_text_->text());
 }
 
-std::string NewProjectWidget::ProjectPath() const {
-    return  ProjectParentPath() + EnsureTrailingSlash(ProjectName());
+QString NewProjectWidget::ProjectPath() const {
+    return ProjectParentPath() + EnsureTrailingSlash(ProjectName());
 }
 
-std::string NewProjectWidget::ImagePath() const {
-    return EnsureTrailingSlash(image_path_text_->text().toUtf8().constData());
+QString NewProjectWidget::ImagePath() const {
+    return EnsureTrailingSlash(image_path_text_->text());
 }
 
 void NewProjectWidget::SetProjectPath(const std::string& path) {
@@ -81,14 +82,12 @@ void NewProjectWidget::Create() {
         return;
     }
 
-    boost::filesystem::path path(ProjectPath());
-
-    if (boost::filesystem::is_directory(path)) {
+    if (QDir(ProjectPath()).exists()) {
         QMessageBox::critical(this, "", tr("Project name corresponds with existent directory.\nPlease choose another project name / project directory"));
         return;
     }
 
-    boost::filesystem::create_directory(path);
+    QDir(ProjectParentPath()).mkdir(ProjectName());
 
     if (main_window_->mapper_controller->NumModels() > 0) {
         if (!main_window_->OverwriteReconstruction()) {
@@ -96,10 +95,10 @@ void NewProjectWidget::Create() {
         }
     }
 
-    *options_->project_name = ProjectName();
-    *options_->project_path = ProjectPath();
-    *options_->database_path = ProjectPath() + "base.db";
-    *options_->image_path = ImagePath();
+    *options_->project_name = ProjectName().toStdString();
+    *options_->project_path = ProjectPath().toStdString();
+    *options_->database_path = (ProjectPath() + QString("base.db")).toStdString();
+    *options_->image_path = ImagePath().toStdString();
 
     Database database;
     database.Open(*options_->database_path);
@@ -124,14 +123,13 @@ void NewProjectWidget::SelectImagePath() {
 }
 
 QString NewProjectWidget::DefaultDirectory() {
-    std::string directory_path = "";
+    QString directory_path = "";
     if (!prev_selected_ && !options_->project_path->empty()) {
-        const boost::filesystem::path parent_path =
-                boost::filesystem::path(*options_->project_path).parent_path();
-        if (boost::filesystem::is_directory(parent_path)) {
-            directory_path = parent_path.string();
-        }
+        // Starting checking with project_path, than moving up.
+        directory_path = QString::fromStdString(*options_->project_path);
+        // Updating directory_path if cdUp() is successful.
+        QDir(directory_path).cdUp();
     }
     prev_selected_ = true;
-    return QString::fromStdString(directory_path);
+    return directory_path;
 }

@@ -12,6 +12,10 @@ std::string EnsureTrailingSlash(const std::string& str) {
     return str;
 }
 
+QString EnsureTrailingSlash(const QString& str) {
+    return QString::fromStdString(EnsureTrailingSlash(str.toStdString()));
+}
+
 bool HasFileExtension(const std::string& file_name, const std::string& ext) {
     std::string ext_lower = ext;
     boost::to_lower(ext_lower);

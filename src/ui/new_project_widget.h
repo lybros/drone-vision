@@ -4,6 +4,7 @@
 #include "main_window.h"
 
 #include <QtWidgets>
+#include <QString>
 
 class MainWindow;
 
@@ -13,10 +14,10 @@ public:
 
     bool PathsValid();
 
-    std::string ProjectName() const;
-    std::string ProjectParentPath() const;
-    std::string ProjectPath() const;
-    std::string ImagePath() const;
+    QString ProjectName() const;
+    QString ProjectParentPath() const;
+    QString ProjectPath() const;
+    QString ImagePath() const;
 
     void SetProjectPath(const std::string& path);
     void SetImagePath(const std::string& path);
