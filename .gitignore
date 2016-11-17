@@ -29,6 +29,7 @@
 *.i*86
 *.x86_64
 *.hex
+*.pyc
 
 # Debug files
 *.dSYM/
@@ -84,3 +85,6 @@ release/
 .idea/
 images/
 models/
+/utils/out/
+/utils/fwd/
+/utils/bck/
