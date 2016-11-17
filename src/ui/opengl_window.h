@@ -3,7 +3,9 @@
 
 #include "../controllers.h"
 
-#include "database_management_widget.h"
+#include "db_widgets/database_management_widget.h"
+#include "db_widgets/point_viewer_widget.h"
+#include "db_widgets/image_viewer_widget.h"
 
 #include <QtWidgets>
 #include <QtConcurrent/QtConcurrentRun>

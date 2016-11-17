@@ -5,7 +5,7 @@
 #include "../densify.h"
 #include "../surface_reconstruct.h"
 
-#include "database_management_widget.h"
+#include "db_widgets/database_management_widget.h"
 #include "model_manager_widget.h"
 #include "new_project_widget.h"
 #include "opengl_window.h"
