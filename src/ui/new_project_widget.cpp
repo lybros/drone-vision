@@ -42,7 +42,9 @@ NewProjectWidget::NewProjectWidget(MainWindow* parent, OptionManager* options)
 }
 
 bool NewProjectWidget::PathsValid() {
-    return QDir(ImagePath()).exists() && QDir(ProjectParentPath()).exists();
+    return QDir(ImagePath()).exists() &&
+            QDir(ProjectParentPath()).exists() &&
+            QFileInfo(ProjectParentPath()).isWritable();
 }
 
 QString NewProjectWidget::ProjectName() const {
