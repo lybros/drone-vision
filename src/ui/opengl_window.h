@@ -28,21 +28,6 @@ QPixmap DrawMatches(const QPixmap& image1, const QPixmap& image2,
                     const FeatureMatches& matches,
                     const QColor& keypoints_color = Qt::red);
 
-class JetColormap {
-public:
-    static float Red(const float gray);
-
-    static float Green(const float gray);
-
-    static float Blue(const float gray);
-
-private:
-    static float Interpolate(const float val, const float y0, const float x0,
-                             const float y1, const float x1);
-
-    static float Base(const float val);
-};
-
 class PointColormapBase {
 public:
     PointColormapBase();
