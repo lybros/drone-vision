@@ -10,7 +10,6 @@ set(CMAKE_PREFIX_PATH $ENV{HOME}/Qt/5.7/clang_64/lib/cmake/)
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 #find_package(Eigen3 REQUIRED)
-find_package(FreeImage REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -30,7 +29,6 @@ include_directories(
         ${Qt5OpenGL_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
-        ${FREEIMAGE_INCLUDE_DIRS}
         ${CERES_INCLUDES}
         ${Boost_INCLUDE_DIR}
         ${GLUT_INCLUDE_DIR}
