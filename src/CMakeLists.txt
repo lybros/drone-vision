@@ -1,7 +1,7 @@
 set(SOURCE_FILES main.cpp controllers.h controllers.cpp options.h options.cpp
         features.h features.cpp entities.h entities.cpp utils.h utils.cpp projection.h projection.cpp estimators.h
         estimators.cpp optimization.h optimization.cpp model.h model.cpp storage.h
-        storage.cpp geometry.h geometry.cpp processor.h processor.cpp refinement.h refinement.cpp densify.h densify.cpp
+        storage.cpp geometry.h geometry.cpp refinement.h refinement.cpp densify.h densify.cpp
         surface_reconstruct.h surface_reconstruct.cpp
 
         ui/main_window.cpp ui/main_window.h
@@ -12,7 +12,10 @@ set(SOURCE_FILES main.cpp controllers.h controllers.cpp options.h options.cpp
         ui/db_widgets/database_management_widget.cpp ui/db_widgets/database_management_widget.h
         ui/db_widgets/point_viewer_widget.cpp ui/db_widgets/point_viewer_widget.h
         ui/db_widgets/image_viewer_widget.cpp ui/db_widgets/image_viewer_widget.h
-        ui/db_widgets/matches_widget.cpp ui/db_widgets/matches_widget.h)
+        ui/db_widgets/matches_widget.cpp ui/db_widgets/matches_widget.h
+
+        processor/incremental_triangulator.cpp processor/incremental_triangulator.h
+        processor/incremental_mapper.cpp processor/incremental_mapper.h)
 
 add_executable(3d_reconstruction ${SOURCE_FILES} ${QT_RESOURCES})
 
