@@ -282,23 +282,19 @@ void MainWindow::ImportModel() {
         return;
     }
 
-    std::string path =
-            QFileDialog::getOpenFileName(this, tr("Select source..."), "")
-                    .toUtf8()
-                    .constData();
+    QString path = QFileDialog::getOpenFileName(this, tr("Select source..."), "");
 
-    if (path == "") {
+    if (path.isEmpty()) {
         return;
     }
 
-    if (!boost::filesystem::is_regular_file(path)) {
+    if (!QDir(path).exists()) {
         QMessageBox::critical(this, "", tr("Invalid file"));
         return;
     }
 
-    if (!HasFileExtension(path, ".ply")) {
-        QMessageBox::critical(this, "",
-                              tr("Invalid file format (supported formats: PLY)"));
+    if (!HasFileExtension(path.toStdString(), ".ply")) {
+        QMessageBox::critical(this, "", tr("Invalid file format (supported formats: PLY)"));
         return;
     }
 
@@ -308,7 +304,7 @@ void MainWindow::ImportModel() {
 
     import_model_watcher_->setFuture(QtConcurrent::run([this, path]() {
         const size_t model_idx = this->mapper_controller->AddModel();
-        this->mapper_controller->Model(model_idx).ImportPLY(path, false);
+        this->mapper_controller->Model(model_idx).ImportPLY(path.toStdString(), false);
         this->options_.render_options->min_track_len = 0;
         model_manager_widget_->UpdateModels(mapper_controller->Models());
         model_manager_widget_->SetModelIdx(model_idx);
@@ -355,15 +351,13 @@ void MainWindow::ExportModel() {
 void MainWindow::ExportModelFinished() { progress_bar_->hide(); }
 
 void MainWindow::OpenProject() {
-    std::string path;
+    QString path;
 
     while(true) {
         path = QFileDialog::getExistingDirectory(
                 this, tr("Select a directory with project"),
-                "", QFileDialog::ShowDirsOnly)
-                .toUtf8()
-                .constData();
-        if (path == "") {
+                "", QFileDialog::ShowDirsOnly);
+        if (path.isEmpty()) {
             return;
         }
         if (IsValidProjectDirectory(path)) {
@@ -377,8 +371,8 @@ void MainWindow::OpenProject() {
     progress_bar_->raise();
     progress_bar_->show();
 
-    *(this->options_.project_path) = path;
-    *(this->options_.database_path) = path + "/base.db";
+    *(this->options_.project_path) = path.toStdString();
+    *(this->options_.database_path) = (path + "/base.db").toStdString();
 
     ReadProjectConfiguration(path);
 
@@ -387,13 +381,13 @@ void MainWindow::OpenProject() {
     progress_bar_->hide();
 }
 
-bool MainWindow::IsValidProjectDirectory(const std::string& path) {
-    return boost::filesystem::exists(path + "/base.db") &&
-           boost::filesystem::exists(path + "/config");
+bool MainWindow::IsValidProjectDirectory(const QString& path) {
+    return QFileInfo(EnsureTrailingSlash(path) + "base.db").exists() &&
+            QFileInfo(EnsureTrailingSlash(path) + "config").exists();
 }
 
-void MainWindow::ReadProjectConfiguration(const std::string& project_path) {
-    std::ifstream file(project_path + "/config");
+void MainWindow::ReadProjectConfiguration(const QString& project_path) {
+    std::ifstream file((project_path + "/config").toStdString());
 
     std::string project_name_line;
     std::getline(file, project_name_line);
@@ -629,9 +623,12 @@ void MainWindow::DensifyModel() {
         return;
     }
 
-    boost::filesystem::path output_path = boost::filesystem::path(*options_.database_path).parent_path();
+    QString output_path = QString::fromStdString(*options_.database_path);
+    QDir(output_path).cdUp();
+    EnsureTrailingSlash(output_path);
+
     ImageDensifier* densifier = new ImageDensifier(mapper_controller->Model(0), *options_.image_path,
-                                                   output_path.string(), binary_path_);
+                                                   output_path.toStdString(), binary_path_);
     densifier->start();
     QProgressDialog* progress_bar_ = new QProgressDialog(this);
     progress_bar_->setWindowModality(Qt::ApplicationModal);
@@ -646,8 +643,7 @@ void MainWindow::DensifyModel() {
                 if (densifier->IsSuccessfull()) {
                     const size_t model_idx = this->mapper_controller->AddModel();
                     for (auto option: densifier->ResultFiles()) {
-                        const std::string path = ((output_path / boost::filesystem::path("pmvs/models"))
-                                                  / boost::filesystem::path(option + ".ply")).string();
+                        const std::string path = output_path.toStdString() + "pmvs/models/" + option + ".ply";
                         this->mapper_controller->Model(model_idx).ImportPLY(path, false);
                     }
                     model_manager_widget_->UpdateModels(mapper_controller->Models());
@@ -721,9 +717,12 @@ void MainWindow::UpdateProjectInfoStatusBar() {
 }
 
 void MainWindow::SurfaceReconstructModel() {
-    boost::filesystem::path output_path = boost::filesystem::path(*options_.database_path).parent_path()
-                                          / boost::filesystem::path("pmvs/models");
-    SurfaceReconstructer* reconstructer = new SurfaceReconstructer(output_path.string(), binary_path_);
+    QString output_path = QString::fromStdString(*options_.database_path);
+    QDir(output_path).cdUp();
+    EnsureTrailingSlash(output_path);
+    output_path += "pmvs/models/";
+
+    SurfaceReconstructer* reconstructer = new SurfaceReconstructer(output_path.toStdString(), binary_path_);
     reconstructer->start();
     QProgressDialog* progress_bar_ = new QProgressDialog(this);
     progress_bar_->setWindowModality(Qt::ApplicationModal);
@@ -737,7 +736,7 @@ void MainWindow::SurfaceReconstructModel() {
             [this, progress_bar_, reconstructer, output_path]() {
                 if (reconstructer->IsSuccessfull()) {
                     const size_t model_idx = this->mapper_controller->AddModel();
-                    const std::string path = (output_path / boost::filesystem::path("output.ply")).string();
+                    const std::string path = output_path.toStdString() + "output.ply";
                     this->mapper_controller->Model(model_idx).ImportPLY(path, false);
                     model_manager_widget_->UpdateModels(mapper_controller->Models());
                     model_manager_widget_->SetModelIdx(model_idx);
