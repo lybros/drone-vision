@@ -12,8 +12,6 @@
 
 #include <QtWidgets>
 
-#include <boost/filesystem.hpp>
-
 class NewProjectWidget;
 
 class MainWindow : public QMainWindow {
@@ -24,7 +22,7 @@ public:
 
     std::unique_ptr<IncrementalMapperController> mapper_controller;
 
-    void ReadProjectConfiguration(const std::string&);
+    void ReadProjectConfiguration(const QString&);
     void WriteProjectConfiguration();
 
     void UpdateProjectInfoStatusBar();
@@ -67,7 +65,7 @@ private:
 
     void OpenProject();
 
-    bool IsValidProjectDirectory(const std::string&);
+    bool IsValidProjectDirectory(const QString& path);
 
     void FeatureExtraction();
 
