@@ -28,11 +28,9 @@ public:
 
     const class Point_3D& Point3D(const point3D_t point3D_id) const;
 
-    const std::pair<size_t, size_t>& ImagePair(
-            const image_pair_t pair_id) const;
+    const std::pair<size_t, size_t>& ImagePair(const image_pair_t pair_id) const;
 
-    std::pair<size_t, size_t>& ImagePair(const image_t image_id1,
-                                         const image_t image_id2);
+    std::pair<size_t, size_t>& ImagePair(const image_t image_id1, const image_t image_id2);
 
     class Camera& Camera(const camera_t camera_id);
 
@@ -42,8 +40,7 @@ public:
 
     std::pair<size_t, size_t>& ImagePair(const image_pair_t pair_id);
 
-    const std::pair<size_t, size_t>& ImagePair(
-            const image_t image_id1, const image_t image_id2) const;
+    const std::pair<size_t, size_t>& ImagePair(const image_t image_id1, const image_t image_id2) const;
 
     const std::unordered_map<camera_t, class Camera>& Cameras() const;
 
@@ -53,8 +50,7 @@ public:
 
     const std::unordered_map<point3D_t, class Point_3D>& Points3D() const;
 
-    const std::unordered_map<image_pair_t, std::pair<size_t, size_t>>&
-            ImagePairs() const;
+    const std::unordered_map<image_pair_t, std::pair<size_t, size_t>>& ImagePairs() const;
 
     std::unordered_set<point3D_t> Point3DIds() const;
 
@@ -80,8 +76,7 @@ public:
 
     void AddObservation(const point3D_t point3D_id, const TrackElement& track_el);
 
-    point3D_t MergePoints3D(const point3D_t point3D_id1,
-                            const point3D_t point3D_id2);
+    point3D_t MergePoints3D(const point3D_t point3D_id1, const point3D_t point3D_id2);
 
     void DeletePoint3D(const point3D_t point3D_id);
 
