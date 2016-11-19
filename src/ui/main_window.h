@@ -1,7 +1,7 @@
 #ifndef INC_3D_RECONSTRUCTION_MAINWINDOW_H
 #define INC_3D_RECONSTRUCTION_MAINWINDOW_H
 
-#include "../controllers.h"
+#include "../processor/incremental_mapper_controller.h"
 #include "../densify.h"
 #include "../surface_reconstruct.h"
 
