@@ -1,4 +1,4 @@
-#include "model.h"
+#include "reconstruction.h"
 
 Reconstruction::Reconstruction()
         : scene_graph_(nullptr), num_added_points3D_(0) { }

@@ -1,7 +1,7 @@
 set(SOURCE_FILES main.cpp options.h options.cpp features.h features.cpp entities.h entities.cpp utils.h utils.cpp
-        projection.h projection.cpp estimators.h estimators.cpp optimization.h optimization.cpp model.h model.cpp
-        storage.h storage.cpp geometry.h geometry.cpp refinement.h refinement.cpp densify.h densify.cpp
-        surface_reconstruct.h surface_reconstruct.cpp
+        projection.h projection.cpp estimators.h estimators.cpp optimization.h optimization.cpp
+        reconstruction.h reconstruction.cpp storage.h storage.cpp geometry.h geometry.cpp refinement.h refinement.cpp
+        densify.h densify.cpp surface_reconstruct.h surface_reconstruct.cpp
 
         ui/main_window.cpp ui/main_window.h
         ui/opengl_window.cpp ui/opengl_window.h

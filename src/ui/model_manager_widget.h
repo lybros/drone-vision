@@ -1,7 +1,7 @@
 #ifndef INC_3D_RECONSTRUCTION_MODEL_MANAGER_WIDGET_H
 #define INC_3D_RECONSTRUCTION_MODEL_MANAGER_WIDGET_H
 
-#include "../model.h"
+#include "../reconstruction.h"
 
 #include <QtWidgets>
 
