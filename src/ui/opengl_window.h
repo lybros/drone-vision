@@ -1,7 +1,7 @@
 #ifndef INC_3D_RECONSTRUCTION_OPENGL_WINDOW_H
 #define INC_3D_RECONSTRUCTION_OPENGL_WINDOW_H
 
-#include "../controllers.h"
+#include "../processor/incremental_mapper_controller.h"
 
 #include "db_widgets/database_management_widget.h"
 #include "db_widgets/point_viewer_widget.h"
