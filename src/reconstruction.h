@@ -3,6 +3,9 @@
 
 #include "utils.h"
 #include "storage.h"
+#include "entities/track.h"
+#include "entities/point_3d.h"
+#include "entities/point_2d.h"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -88,27 +91,39 @@ public:
 
     bool IsImageRegistered(const image_t image_id) const;
 
-    void Normalize(const double extent = 10.0, const double p0 = 0.1,
-                   const double p1 = 0.9, const bool use_images = true);
+    void Normalize(
+            const double extent = 10.0,
+            const double p0 = 0.1,
+            const double p1 = 0.9,
+            const bool use_images = true
+    );
 
     const class Image* FindImageWithName(const std::string& name) const;
 
-    size_t FilterPoints3D(const double max_reproj_error,
-                          const double min_tri_angle,
-                          const std::unordered_set<point3D_t>& point3D_ids);
+    size_t FilterPoints3D(
+            const double max_reproj_error,
+            const double min_tri_angle,
+            const std::unordered_set<point3D_t>& point3D_ids
+    );
 
-    size_t FilterPoints3DInImages(const double max_reproj_error,
-                                  const double min_tri_angle,
-                                  const std::unordered_set<image_t>& image_ids);
+    size_t FilterPoints3DInImages(
+            const double max_reproj_error,
+            const double min_tri_angle,
+            const std::unordered_set<image_t>& image_ids
+    );
 
-    size_t FilterAllPoints3D(const double max_reproj_error,
-                             const double min_tri_angle);
+    size_t FilterAllPoints3D(
+            const double max_reproj_error,
+            const double min_tri_angle
+    );
 
     size_t FilterObservationsWithNegativeDepth();
 
-    std::vector<image_t> FilterImages(const double min_focal_length_ratio,
-                                      const double max_focal_length_ratio,
-                                      const double max_extra_param);
+    std::vector<image_t> FilterImages(
+            const double min_focal_length_ratio,
+            const double max_focal_length_ratio,
+            const double max_extra_param
+    );
 
     size_t ComputeNumObservations() const;
 
@@ -122,26 +137,35 @@ public:
 
     void ExportPLY(const std::string& path) const;
 
-    void ExportBundler(const std::string& path,
-                       const std::string& list_path) const;
+    void ExportBundler(
+            const std::string& path,
+            const std::string& list_path
+    ) const;
 
     bool ExtractColors(const image_t image_id, const std::string& path);
 
 private:
     size_t FilterPoints3DWithSmallTriangulationAngle(
             const double min_tri_angle,
-            const std::unordered_set<point3D_t>& point3D_ids);
+            const std::unordered_set<point3D_t>& point3D_ids
+    );
 
     size_t FilterPoints3DWithLargeReprojectionError(
             const double max_reproj_error,
-            const std::unordered_set<point3D_t>& point3D_ids);
+            const std::unordered_set<point3D_t>& point3D_ids
+    );
 
-    void SetObservationAsTriangulated(const image_t image_id,
-                                      const point2D_t point2D_idx,
-                                      const bool is_continued_point3D);
+    void SetObservationAsTriangulated(
+            const image_t image_id,
+            const point2D_t point2D_idx,
+            const bool is_continued_point3D
+    );
 
-    void ResetTriObservations(const image_t image_id, const point2D_t point2D_idx,
-                              const bool is_deleted_point3D);
+    void ResetTriObservations(
+            const image_t image_id,
+            const point2D_t point2D_idx,
+            const bool is_deleted_point3D
+    );
 
     const SceneGraph* scene_graph_;
 

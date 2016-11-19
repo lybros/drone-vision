@@ -245,10 +245,8 @@ void IncrementalMapperController::run() {
         database.Open(*options_.database_path);
         Timer timer;
         timer.Start();
-        const size_t min_num_matches =
-                static_cast<size_t>(mapper_options.min_num_matches);
-        database_cache.Load(database, min_num_matches,
-                            mapper_options.ignore_watermarks);
+        const size_t min_num_matches = static_cast<size_t>(mapper_options.min_num_matches);
+        database_cache.Load(database, min_num_matches, mapper_options.ignore_watermarks);
         std::cout << std::endl;
         timer.PrintMinutes();
     }
@@ -259,8 +257,7 @@ void IncrementalMapperController::run() {
 
     const bool initial_model_given = !models_.empty();
 
-    for (int num_trials = 0; num_trials < mapper_options.init_num_trials;
-         ++num_trials) {
+    for (int num_trials = 0; num_trials < mapper_options.init_num_trials; ++num_trials) {
         {
             QMutexLocker control_locker(&control_mutex_);
             if (pause_ && !terminate_) {

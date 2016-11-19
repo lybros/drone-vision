@@ -497,8 +497,7 @@ void MainWindow::ReconstructionStart() {
     }
 
     if (mapper_controller->IsFinished() && HasSelectedModel()) {
-        QMessageBox::critical(this, "",
-                              tr("Reset reconstruction before starting."));
+        QMessageBox::critical(this, "", tr("Reset reconstruction before starting."));
         return;
     }
 

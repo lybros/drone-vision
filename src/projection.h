@@ -1,11 +1,10 @@
 #ifndef INC_3D_RECONSTRUCTION_PROJECTION_H
 #define INC_3D_RECONSTRUCTION_PROJECTION_H
 
-#include "entities.h"
 
 #include <Eigen/Core>
-
 #include <ceres/solver.h>
+#include "entities/camera.h"
 
 bool CheckCheirality(const Eigen::Matrix3d& R, const Eigen::Vector3d& t,
                      const std::vector<Eigen::Vector2d>& points1,

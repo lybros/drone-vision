@@ -209,13 +209,18 @@ void Reconstruction::DeRegisterImage(const image_t image_id) {
 
     image.SetRegistered(false);
 
-    reg_image_ids_.erase(std::remove(reg_image_ids_.begin(), reg_image_ids_.end(), image_id), reg_image_ids_.end());
+    reg_image_ids_.erase(
+            std::remove(
+                    reg_image_ids_.begin(),
+                    reg_image_ids_.end(),
+                    image_id
+            ),
+            reg_image_ids_.end());
 }
 
 void Reconstruction::Normalize(const double extent, const double p0, const double p1, const bool use_images) {
-    if (use_images && reg_image_ids_.size() < 2) {
-        return;
-    }
+
+    if (use_images && reg_image_ids_.size() < 2) { return; }
 
     std::unordered_map<class Image*, Eigen::Vector3d> proj_centers;
 
@@ -303,21 +308,24 @@ const class Image* Reconstruction::FindImageWithName(
 }
 
 size_t Reconstruction::FilterPoints3D(
-        const double max_reproj_error, const double min_tri_angle,
-        const std::unordered_set<point3D_t>& point3D_ids) {
+        const double max_reproj_error,
+        const double min_tri_angle,
+        const std::unordered_set<point3D_t>& point3D_ids
+) {
     size_t num_filtered = 0;
-    num_filtered +=
-            FilterPoints3DWithLargeReprojectionError(max_reproj_error, point3D_ids);
-    num_filtered +=
-            FilterPoints3DWithSmallTriangulationAngle(min_tri_angle, point3D_ids);
+    num_filtered += FilterPoints3DWithLargeReprojectionError(max_reproj_error, point3D_ids);
+    num_filtered += FilterPoints3DWithSmallTriangulationAngle(min_tri_angle, point3D_ids);
     return num_filtered;
 }
 
 size_t Reconstruction::FilterPoints3DInImages(
-        const double max_reproj_error, const double min_tri_angle,
-        const std::unordered_set<image_t>& image_ids) {
+        const double max_reproj_error,
+        const double min_tri_angle,
+        const std::unordered_set<image_t>& image_ids
+) {
     std::unordered_set<point3D_t> point3D_ids;
     for (const image_t image_id : image_ids) {
+
         const class Image& image = Image(image_id);
         for (const Point2D& point2D : image.Points2D()) {
             if (point2D.HasPoint3D()) {
@@ -904,8 +912,7 @@ const class Point_3D& Reconstruction::Point3D(const point3D_t point3D_id) const 
     return points3D_.at(point3D_id);
 }
 
-const std::pair<size_t, size_t>& Reconstruction::ImagePair(
-        const image_pair_t pair_id) const {
+const std::pair<size_t, size_t>& Reconstruction::ImagePair(const image_pair_t pair_id) const {
     return image_pairs_.at(pair_id);
 }
 
