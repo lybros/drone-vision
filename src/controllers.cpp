@@ -263,10 +263,8 @@ void IncrementalMapperController::run() {
         database.Open(*options_.database_path);
         Timer timer;
         timer.Start();
-        const size_t min_num_matches =
-                static_cast<size_t>(mapper_options.min_num_matches);
-        database_cache.Load(database, min_num_matches,
-                            mapper_options.ignore_watermarks);
+        const size_t min_num_matches = static_cast<size_t>(mapper_options.min_num_matches);
+        database_cache.Load(database, min_num_matches, mapper_options.ignore_watermarks);
         std::cout << std::endl;
         timer.PrintMinutes();
     }
@@ -277,8 +275,7 @@ void IncrementalMapperController::run() {
 
     const bool initial_model_given = !models_.empty();
 
-    for (int num_trials = 0; num_trials < mapper_options.init_num_trials;
-         ++num_trials) {
+    for (int num_trials = 0; num_trials < mapper_options.init_num_trials; ++num_trials) {
         {
             QMutexLocker control_locker(&control_mutex_);
             if (pause_ && !terminate_) {
@@ -465,8 +462,7 @@ void IncrementalMapperController::run() {
             RenderNow();
         }
 
-        const size_t max_num_models =
-                static_cast<size_t>(mapper_options.max_num_models);
+        const size_t max_num_models = static_cast<size_t>(mapper_options.max_num_models);
         if (initial_model_given || !mapper_options.multiple_models ||
             models_.size() >= max_num_models ||
             mapper.NumTotalRegImages() >= database_cache.NumImages() - 1) {
@@ -488,13 +484,11 @@ size_t IncrementalMapperController::NumModels() const {
     return models_.size();
 }
 
-const std::vector<std::unique_ptr<Reconstruction>>&
-IncrementalMapperController::Models() const {
+const std::vector<std::unique_ptr<Reconstruction>>& IncrementalMapperController::Models() const {
     return models_;
 }
 
-const Reconstruction& IncrementalMapperController::Model(
-        const size_t idx) const {
+const Reconstruction& IncrementalMapperController::Model(const size_t idx) const {
     return *models_.at(idx);
 }
 

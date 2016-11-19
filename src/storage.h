@@ -2,13 +2,14 @@
 #define INC_3D_RECONSTRUCTION_STORAGE_H
 
 #include "utils.h"
-#include "entities.h"
+#include "entities/image.h"
 #include "geometry.h"
+#include "entities/point_3d.h"
+#include "entities/point_2d.h"
 #include "../3rdparty/sqlite/sqlite3.h"
 
 #include <unordered_map>
 #include <unordered_set>
-
 #include <boost/format.hpp>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
@@ -242,14 +243,11 @@ public:
 
     size_t NumVerifiedImagePairs() const;
 
-    static image_pair_t ImagePairToPairId(const image_t image_id1,
-                                          const image_t image_id2);
+    static image_pair_t ImagePairToPairId(const image_t image_id1, const image_t image_id2);
 
-    static void PairIdToImagePair(const image_pair_t pair_id,
-                                  image_t* image_id1, image_t* image_id2);
+    static void PairIdToImagePair(const image_pair_t pair_id, image_t* image_id1, image_t* image_id2);
 
-    static bool SwapImagePair(const image_t image_id1,
-                              const image_t image_id2);
+    static bool SwapImagePair(const image_t image_id1, const image_t image_id2);
 
     Camera ReadCamera(const camera_t camera_id) const;
 
@@ -265,13 +263,11 @@ public:
 
     FeatureDescriptors ReadDescriptors(const image_t image_id) const;
 
-    FeatureMatches ReadMatches(const image_t image_id1,
-                               const image_t image_id2) const;
+    FeatureMatches ReadMatches(const image_t image_id1, const image_t image_id2) const;
 
     std::vector<std::pair<image_pair_t, FeatureMatches>> ReadAllMatches() const;
 
-    TwoViewGeometry ReadInlierMatches(const image_t image_id1,
-                                      const image_t image_id2) const;
+    TwoViewGeometry ReadInlierMatches(const image_t image_id1, const image_t image_id2) const;
 
     std::vector<std::pair<image_pair_t, TwoViewGeometry>> ReadAllInlierMatches()
             const;
@@ -280,22 +276,21 @@ public:
             std::vector<std::pair<image_t, image_t>>* image_pairs,
             std::vector<int>* num_inliers) const;
 
-    camera_t WriteCamera(const Camera& camera,
-                         const bool use_camera_id = false) const;
+    camera_t WriteCamera(const Camera& camera, const bool use_camera_id = false) const;
 
     image_t WriteImage(const Image& image, const bool use_image_id = false) const;
 
-    void WriteKeypoints(const image_t image_id,
-                        const FeatureKeypoints& keypoints) const;
+    void WriteKeypoints(const image_t image_id, const FeatureKeypoints& keypoints) const;
 
-    void WriteDescriptors(const image_t image_id,
-                          const FeatureDescriptors& descriptors) const;
+    void WriteDescriptors(const image_t image_id, const FeatureDescriptors& descriptors) const;
 
-    void WriteMatches(const image_t image_id1, const image_t image_id2,
-                      const FeatureMatches& matches) const;
+    void WriteMatches(const image_t image_id1, const image_t image_id2, const FeatureMatches& matches) const;
 
-    void WriteInlierMatches(const image_t image_id1, const image_t image_id2,
-                            const TwoViewGeometry& two_view_geometry) const;
+    void WriteInlierMatches(
+            const image_t image_id1,
+            const image_t image_id2,
+            const TwoViewGeometry& two_view_geometry
+    ) const;
 
     void UpdateCamera(const Camera& camera);
 

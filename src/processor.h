@@ -2,7 +2,7 @@
 #define INC_3D_RECONSTRUCTION_PROCESSOR_H
 
 #include "storage.h"
-#include "model.h"
+#include "reconstruction.h"
 #include "optimization.h"
 #include "refinement.h"
 

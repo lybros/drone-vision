@@ -1,4 +1,4 @@
-#include "model.h"
+#include "reconstruction.h"
 
 Reconstruction::Reconstruction()
         : scene_graph_(nullptr), num_added_points3D_(0) { }
@@ -96,8 +96,7 @@ void Reconstruction::AddImage(const class Image& image) {
     images_[image.ImageId()] = image;
 }
 
-point3D_t Reconstruction::AddPoint3D(const Eigen::Vector3d& xyz,
-                                     const Track& track) {
+point3D_t Reconstruction::AddPoint3D(const Eigen::Vector3d& xyz, const Track& track) {
     const point3D_t point3D_id = ++num_added_points3D_;
 
     class Point_3D& point3D = points3D_[point3D_id];
@@ -113,15 +112,13 @@ point3D_t Reconstruction::AddPoint3D(const Eigen::Vector3d& xyz,
     const bool kIsContinuedPoint3D = false;
 
     for (const auto& track_el : track.Elements()) {
-        SetObservationAsTriangulated(track_el.image_id, track_el.point2D_idx,
-                                     kIsContinuedPoint3D);
+        SetObservationAsTriangulated(track_el.image_id, track_el.point2D_idx, kIsContinuedPoint3D);
     }
 
     return point3D_id;
 }
 
-void Reconstruction::AddObservation(const point3D_t point3D_id,
-                                    const TrackElement& track_el) {
+void Reconstruction::AddObservation(const point3D_t point3D_id, const TrackElement& track_el) {
     class Image& image = Image(track_el.image_id);
 
     image.SetPoint3DForPoint2D(track_el.point2D_idx, point3D_id);
@@ -130,12 +127,10 @@ void Reconstruction::AddObservation(const point3D_t point3D_id,
     point3D.Track().AddElement(track_el);
 
     const bool kIsContinuedPoint3D = true;
-    SetObservationAsTriangulated(track_el.image_id, track_el.point2D_idx,
-                                 kIsContinuedPoint3D);
+    SetObservationAsTriangulated(track_el.image_id, track_el.point2D_idx, kIsContinuedPoint3D);
 }
 
-point3D_t Reconstruction::MergePoints3D(const point3D_t point3D_id1,
-                                        const point3D_t point3D_id2) {
+point3D_t Reconstruction::MergePoints3D(const point3D_t point3D_id1, const point3D_t point3D_id2) {
     const class Point_3D& point3D1 = Point3D(point3D_id1);
     const class Point_3D& point3D2 = Point3D(point3D_id2);
 
@@ -169,8 +164,7 @@ void Reconstruction::DeletePoint3D(const point3D_t point3D_id) {
     const bool kIsDeletedPoint3D = true;
 
     for (const auto& track_el : track.Elements()) {
-        ResetTriObservations(track_el.image_id, track_el.point2D_idx,
-                             kIsDeletedPoint3D);
+        ResetTriObservations(track_el.image_id, track_el.point2D_idx, kIsDeletedPoint3D);
     }
 
     for (const auto& track_el : track.Elements()) {
@@ -181,8 +175,7 @@ void Reconstruction::DeletePoint3D(const point3D_t point3D_id) {
     points3D_.erase(point3D_id);
 }
 
-void Reconstruction::DeleteObservation(const image_t image_id,
-                                       const point2D_t point2D_idx) {
+void Reconstruction::DeleteObservation(const image_t image_id, const point2D_t point2D_idx) {
     class Image& image = Image(image_id);
     const point3D_t point3D_id = image.Point2D(point2D_idx).Point3DId();
     class Point_3D& point3D = Point3D(point3D_id);
@@ -221,15 +214,17 @@ void Reconstruction::DeRegisterImage(const image_t image_id) {
     image.SetRegistered(false);
 
     reg_image_ids_.erase(
-            std::remove(reg_image_ids_.begin(), reg_image_ids_.end(), image_id),
+            std::remove(
+                    reg_image_ids_.begin(),
+                    reg_image_ids_.end(),
+                    image_id
+            ),
             reg_image_ids_.end());
 }
 
-void Reconstruction::Normalize(const double extent, const double p0,
-                               const double p1, const bool use_images) {
-    if (use_images && reg_image_ids_.size() < 2) {
-        return;
-    }
+void Reconstruction::Normalize(const double extent, const double p0, const double p1, const bool use_images) {
+
+    if (use_images && reg_image_ids_.size() < 2) { return; }
 
     std::unordered_map<class Image*, Eigen::Vector3d> proj_centers;
 
@@ -317,21 +312,24 @@ const class Image* Reconstruction::FindImageWithName(
 }
 
 size_t Reconstruction::FilterPoints3D(
-        const double max_reproj_error, const double min_tri_angle,
-        const std::unordered_set<point3D_t>& point3D_ids) {
+        const double max_reproj_error,
+        const double min_tri_angle,
+        const std::unordered_set<point3D_t>& point3D_ids
+) {
     size_t num_filtered = 0;
-    num_filtered +=
-            FilterPoints3DWithLargeReprojectionError(max_reproj_error, point3D_ids);
-    num_filtered +=
-            FilterPoints3DWithSmallTriangulationAngle(min_tri_angle, point3D_ids);
+    num_filtered += FilterPoints3DWithLargeReprojectionError(max_reproj_error, point3D_ids);
+    num_filtered += FilterPoints3DWithSmallTriangulationAngle(min_tri_angle, point3D_ids);
     return num_filtered;
 }
 
 size_t Reconstruction::FilterPoints3DInImages(
-        const double max_reproj_error, const double min_tri_angle,
-        const std::unordered_set<image_t>& image_ids) {
+        const double max_reproj_error,
+        const double min_tri_angle,
+        const std::unordered_set<image_t>& image_ids
+) {
     std::unordered_set<point3D_t> point3D_ids;
     for (const image_t image_id : image_ids) {
+
         const class Image& image = Image(image_id);
         for (const Point2D& point2D : image.Points2D()) {
             if (point2D.HasPoint3D()) {
@@ -926,8 +924,7 @@ const class Point_3D& Reconstruction::Point3D(const point3D_t point3D_id) const 
     return points3D_.at(point3D_id);
 }
 
-const std::pair<size_t, size_t>& Reconstruction::ImagePair(
-        const image_pair_t pair_id) const {
+const std::pair<size_t, size_t>& Reconstruction::ImagePair(const image_pair_t pair_id) const {
     return image_pairs_.at(pair_id);
 }
 

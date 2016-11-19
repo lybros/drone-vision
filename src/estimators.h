@@ -2,7 +2,6 @@
 #define INC_3D_RECONSTRUCTION_ESTIMATORS_H
 
 #include "utils.h"
-#include "entities.h"
 #include "projection.h"
 
 #include <future>

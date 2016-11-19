@@ -17,8 +17,7 @@ class IncrementalMapperController : public QThread {
 public:
     IncrementalMapperController(const OptionManager& options);
 
-    IncrementalMapperController(const OptionManager& options,
-                                class Reconstruction* initial_model);
+    IncrementalMapperController(const OptionManager& options, class Reconstruction* initial_model);
 
     void run();
 

@@ -2,7 +2,7 @@
 #define INC_3D_RECONSTRUCTION_OPTIMIZATION_H
 
 #include "utils.h"
-#include "model.h"
+#include "reconstruction.h"
 
 #include <unordered_set>
 #include <unordered_map>

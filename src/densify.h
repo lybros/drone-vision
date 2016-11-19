@@ -1,7 +1,7 @@
 #ifndef INC_3D_RECONSTRUCTION_DENSIFY_H
 #define INC_3D_RECONSTRUCTION_DENSIFY_H
 
-#include "model.h"
+#include "reconstruction.h"
 
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
