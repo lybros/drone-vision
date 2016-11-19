@@ -2,13 +2,14 @@
 #define INC_3D_RECONSTRUCTION_STORAGE_H
 
 #include "utils.h"
-#include "entities.h"
+#include "entities/image.h"
 #include "geometry.h"
+#include "entities/point_3d.h"
+#include "entities/point_2d.h"
 #include "../3rdparty/sqlite/sqlite3.h"
 
 #include <unordered_map>
 #include <unordered_set>
-
 #include <boost/format.hpp>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
@@ -288,7 +289,8 @@ public:
     void WriteInlierMatches(
             const image_t image_id1,
             const image_t image_id2,
-            const TwoViewGeometry& two_view_geometry) const;
+            const TwoViewGeometry& two_view_geometry
+    ) const;
 
     void UpdateCamera(const Camera& camera);
 

@@ -1,4 +1,4 @@
-#include "user_interface.h"
+#include "ui/main_window.h"
 #include "../3rdparty/pmvs/pmvs/option.h"
 #include "../3rdparty/pmvs/pmvs/findMatch.h"
 #include "../3rdparty/pmvs/cmvs/bundle.h"

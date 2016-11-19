@@ -2,7 +2,8 @@
 #define INC_3D_RECONSTRUCTION_OPTIONS_H
 
 #include "features.h"
-#include "processor.h"
+#include "processor/incremental_triangulator.h"
+#include "processor/incremental_mapper.h"
 
 #include <string>
 

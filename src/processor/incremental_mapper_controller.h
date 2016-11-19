@@ -1,7 +1,7 @@
 #ifndef INC_3D_RECONSTRUCTION_CONTROLLERS_H
 #define INC_3D_RECONSTRUCTION_CONTROLLERS_H
 
-#include "options.h"
+#include "../options.h"
 
 #include <memory>
 #include <iostream>
@@ -17,8 +17,7 @@ class IncrementalMapperController : public QThread {
 public:
     IncrementalMapperController(const OptionManager& options);
 
-    IncrementalMapperController(const OptionManager& options,
-                                class Reconstruction* initial_model);
+    IncrementalMapperController(const OptionManager& options, class Reconstruction* initial_model);
 
     void run();
 

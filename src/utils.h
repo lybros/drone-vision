@@ -8,6 +8,8 @@
 #include <future>
 #include <iomanip>
 
+#include <QString>
+
 #include <Eigen/Geometry>
 #include <Eigen/Eigenvalues>
 #include <Eigen/Core>
@@ -60,12 +62,13 @@ typedef uint64_t point3D_t;
 
 const camera_t kInvalidCameraId = std::numeric_limits<camera_t>::max();
 const image_t kInvalidImageId = std::numeric_limits<image_t>::max();
-const image_pair_t kInvalidImagePairId =
-        std::numeric_limits<image_pair_t>::max();
+const image_pair_t kInvalidImagePairId = std::numeric_limits<image_pair_t>::max();
 const point2D_t kInvalidPoint2DIdx = std::numeric_limits<point2D_t>::max();
 const point3D_t kInvalidPoint3DId = std::numeric_limits<point3D_t>::max();
 
 std::string EnsureTrailingSlash(const std::string& str);
+// TODO(uladbohdan): to replace std::string version of EnsureTrailingSlash() with QString version.
+QString EnsureTrailingSlash(const QString& str);
 
 bool HasFileExtension(const std::string& file_name, const std::string& ext);
 

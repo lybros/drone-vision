@@ -1,4 +1,4 @@
-#include "model.h"
+#include "reconstruction.h"
 
 Reconstruction::Reconstruction() : scene_graph_(nullptr), num_added_points3D_(0) { }
 
@@ -93,8 +93,7 @@ void Reconstruction::AddImage(const class Image& image) {
     images_[image.ImageId()] = image;
 }
 
-point3D_t Reconstruction::AddPoint3D(const Eigen::Vector3d& xyz,
-                                     const Track& track) {
+point3D_t Reconstruction::AddPoint3D(const Eigen::Vector3d& xyz, const Track& track) {
     const point3D_t point3D_id = ++num_added_points3D_;
 
     class Point_3D& point3D = points3D_[point3D_id];
@@ -128,8 +127,7 @@ void Reconstruction::AddObservation(const point3D_t point3D_id, const TrackEleme
     SetObservationAsTriangulated(track_el.image_id, track_el.point2D_idx, kIsContinuedPoint3D);
 }
 
-point3D_t Reconstruction::MergePoints3D(const point3D_t point3D_id1,
-                                        const point3D_t point3D_id2) {
+point3D_t Reconstruction::MergePoints3D(const point3D_t point3D_id1, const point3D_t point3D_id2) {
     const class Point_3D& point3D1 = Point3D(point3D_id1);
     const class Point_3D& point3D2 = Point3D(point3D_id2);
 
@@ -175,8 +173,7 @@ void Reconstruction::DeletePoint3D(const point3D_t point3D_id) {
     points3D_.erase(point3D_id);
 }
 
-void Reconstruction::DeleteObservation(const image_t image_id,
-                                       const point2D_t point2D_idx) {
+void Reconstruction::DeleteObservation(const image_t image_id, const point2D_t point2D_idx) {
     class Image& image = Image(image_id);
     const point3D_t point3D_id = image.Point2D(point2D_idx).Point3DId();
     class Point_3D& point3D = Point3D(point3D_id);
@@ -205,8 +202,7 @@ void Reconstruction::RegisterImage(const image_t image_id) {
 void Reconstruction::DeRegisterImage(const image_t image_id) {
     class Image& image = Image(image_id);
 
-    for (point2D_t point2D_idx = 0; point2D_idx < image.NumPoints2D();
-         ++point2D_idx) {
+    for (point2D_t point2D_idx = 0; point2D_idx < image.NumPoints2D(); ++point2D_idx) {
         if (image.Point2D(point2D_idx).HasPoint3D()) {
             DeleteObservation(image_id, point2D_idx);
         }
@@ -214,7 +210,13 @@ void Reconstruction::DeRegisterImage(const image_t image_id) {
 
     image.SetRegistered(false);
 
-    reg_image_ids_.erase(std::remove(reg_image_ids_.begin(), reg_image_ids_.end(), image_id), reg_image_ids_.end());
+    reg_image_ids_.erase(
+            std::remove(
+                    reg_image_ids_.begin(),
+                    reg_image_ids_.end(),
+                    image_id
+            ),
+            reg_image_ids_.end());
 }
 
 void Reconstruction::Normalize(const double extent, const double p0, const double p1, const bool use_images) {
@@ -328,6 +330,7 @@ size_t Reconstruction::FilterPoints3DInImages(
     std::unordered_set<point3D_t> point3D_ids;
 
     for (const image_t image_id : image_ids) {
+
         const class Image& image = Image(image_id);
 
         for (const Point2D& point2D : image.Points2D()) {
@@ -469,8 +472,7 @@ void Reconstruction::ImportPLY(const std::string& path, bool append_to_existing)
         if (line.size() >= 6 && line.substr(0, 6) == "format") {
             if (line == "format ascii 1.0") {
                 is_binary = false;
-            } else if (line == "format binary_little_endian 1.0" ||
-                       line == "format binary_big_endian 1.0") {
+            } else if (line == "format binary_little_endian 1.0" || line == "format binary_big_endian 1.0") {
                 is_binary = true;
             }
         }

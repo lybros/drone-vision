@@ -1,17 +1,16 @@
 #ifndef INC_3D_RECONSTRUCTION_FEATURES_H
 #define INC_3D_RECONSTRUCTION_FEATURES_H
 
-#include "entities.h"
 #include "storage.h"
+#include "entities/point_3d.h"
+#include "entities/point_2d.h"
 #include "../3rdparty/sift_gpu/SiftGPU.h"
 
 #include <iostream>
-
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOffscreenSurface>
-
 #include <boost/format.hpp>
 #include <boost/filesystem.hpp>
 
