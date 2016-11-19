@@ -458,18 +458,10 @@ void IncrementalMapperController::run() {
     exit(0);
 }
 
-size_t IncrementalMapperController::NumModels() const {
-    return models_.size();
-}
+size_t IncrementalMapperController::NumModels() const { return models_.size(); }
 
-const std::vector<std::unique_ptr<Reconstruction>>& IncrementalMapperController::Models() const {
-    return models_;
-}
+const std::vector<std::unique_ptr<Reconstruction>>& IncrementalMapperController::Models() const { return models_; }
 
-const Reconstruction& IncrementalMapperController::Model(const size_t idx) const {
-    return *models_.at(idx);
-}
+const Reconstruction& IncrementalMapperController::Model(const size_t idx) const { return *models_.at(idx); }
 
-Reconstruction& IncrementalMapperController::Model(const size_t idx) {
-    return *models_.at(idx);
-}
+Reconstruction& IncrementalMapperController::Model(const size_t idx) { return *models_.at(idx); }

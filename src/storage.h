@@ -103,11 +103,12 @@ private:
 class SceneGraph {
 public:
     struct Correspondence {
-        Correspondence()
-                : image_id(kInvalidImageId), point2D_idx(kInvalidPoint2DIdx) { }
+        Correspondence() : image_id(kInvalidImageId), point2D_idx(kInvalidPoint2DIdx) { }
 
-        Correspondence(const image_t image_id, const point2D_t point2D_idx)
-                : image_id(image_id), point2D_idx(point2D_idx) { }
+        Correspondence(
+                const image_t image_id,
+                const point2D_t point2D_idx
+        ) : image_id(image_id), point2D_idx(point2D_idx) { }
 
         image_t image_id;
 
@@ -124,34 +125,30 @@ public:
 
     point2D_t NumCorrespondencesForImage(const image_t image_id) const;
 
-    point2D_t NumCorrespondencesBetweenImages(
-            const image_t image_id1, const image_t image_id2) const;
+    point2D_t NumCorrespondencesBetweenImages(const image_t image_id1, const image_t image_id2) const;
 
-    const std::unordered_map<image_pair_t, point2D_t>&
-            NumCorrespondencesBetweenImages() const;
+    const std::unordered_map<image_pair_t, point2D_t>& NumCorrespondencesBetweenImages() const;
 
     void Finalize();
 
     void AddImage(const image_t image_id, const size_t num_points2D);
 
-    void AddCorrespondences(const image_t image_id1, const image_t image_id2,
-                            const FeatureMatches& matches);
+    void AddCorrespondences(const image_t image_id1, const image_t image_id2, const FeatureMatches& matches);
 
-    const std::vector<Correspondence>& FindCorrespondences(
-            const image_t image_id, const point2D_t point2D_idx) const;
+    const std::vector<Correspondence>& FindCorrespondences(const image_t image_id, const point2D_t point2D_idx) const;
 
     std::vector<Correspondence> FindTransitiveCorrespondences(
-            const image_t image_id, const point2D_t point2D_idx,
+            const image_t image_id,
+            const point2D_t point2D_idx,
             const size_t transitivity) const;
 
     std::vector<std::pair<point2D_t, point2D_t>> FindCorrespondencesBetweenImages(
-            const image_t image_id1, const image_t image_id2) const;
+            const image_t image_id1,
+            const image_t image_id2) const;
 
-    bool HasCorrespondences(const image_t image_id,
-                            const point2D_t point2D_idx) const;
+    bool HasCorrespondences(const image_t image_id, const point2D_t point2D_idx) const;
 
-    bool IsTwoViewObservation(const image_t image_id,
-                              const point2D_t point2D_idx) const;
+    bool IsTwoViewObservation(const image_t image_id, const point2D_t point2D_idx) const;
 
 private:
     struct Image {
@@ -167,16 +164,21 @@ private:
     std::unordered_map<image_pair_t, point2D_t> image_pairs_;
 };
 
-inline int SQLite3CallHelper(const int result_code, const std::string& filename,
-                             const int line_number) {
+inline int SQLite3CallHelper(const int result_code, const std::string& filename, const int line_number) {
+
     switch (result_code) {
         case SQLITE_OK:
         case SQLITE_ROW:
         case SQLITE_DONE:
             return result_code;
         default:
-            fprintf(stderr, "SQLite error [%s, line %i]: %s\n", filename.c_str(),
-                    line_number, sqlite3_errstr(result_code));
+            fprintf(
+                    stderr,
+                    "SQLite error [%s, line %i]: %s\n",
+                    filename.c_str(),
+                    line_number,
+                    sqlite3_errstr(result_code)
+            );
             exit(EXIT_FAILURE);
     }
 }
@@ -224,8 +226,7 @@ public:
 
     bool ExistsMatches(const image_t image_id1, const image_t image_id2) const;
 
-    bool ExistsInlierMatches(const image_t image_id1,
-                             const image_t image_id2) const;
+    bool ExistsInlierMatches(const image_t image_id1, const image_t image_id2) const;
 
     size_t NumCameras() const;
 
@@ -269,8 +270,7 @@ public:
 
     TwoViewGeometry ReadInlierMatches(const image_t image_id1, const image_t image_id2) const;
 
-    std::vector<std::pair<image_pair_t, TwoViewGeometry>> ReadAllInlierMatches()
-            const;
+    std::vector<std::pair<image_pair_t, TwoViewGeometry>> ReadAllInlierMatches() const;
 
     void ReadInlierMatchesGraph(
             std::vector<std::pair<image_t, image_t>>* image_pairs,
@@ -319,8 +319,7 @@ private:
 
     bool ExistsRowId(sqlite3_stmt* sql_stmt, const size_t row_id) const;
 
-    bool ExistsRowString(sqlite3_stmt* sql_stmt,
-                         const std::string& row_entry) const;
+    bool ExistsRowString(sqlite3_stmt* sql_stmt, const std::string& row_entry) const;
 
     size_t CountRows(const std::string& table) const;
 
@@ -394,8 +393,7 @@ public:
 
     void AddImage(const class Image& image);
 
-    void Load(const Database& database, const size_t min_num_matches,
-              const bool ignore_watermarks);
+    void Load(const Database& database, const size_t min_num_matches, const bool ignore_watermarks);
 
 private:
     class SceneGraph scene_graph_;

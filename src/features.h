@@ -238,7 +238,8 @@ private:
     virtual void DoMatching();
 
     std::vector<std::pair<image_t, image_t>> PreemptivelyFilterImagePairs(
-            const std::vector<std::pair<image_t, image_t>>& image_pairs);
+            const std::vector<std::pair<image_t, image_t>>& image_pairs
+    );
 
     ExhaustiveOptions exhaustive_options_;
 };

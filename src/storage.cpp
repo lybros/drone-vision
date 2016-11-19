@@ -233,8 +233,7 @@ bool Bitmap::ExifFocalLength(double* focal_length) {
             std::string res_unit_str;
             if (ReadExifTag(FIMD_EXIF_EXIF, "PixelXDimension", &pixel_x_dim_str) &&
                 ReadExifTag(FIMD_EXIF_EXIF, "FocalPlaneXResolution", &x_res_str) &&
-                ReadExifTag(FIMD_EXIF_EXIF, "FocalPlaneResolutionUnit",
-                            &res_unit_str)) {
+                ReadExifTag(FIMD_EXIF_EXIF, "FocalPlaneResolutionUnit", &res_unit_str)) {
                 regex = boost::regex(".*?([0-9.]+).*?");
                 if (boost::regex_search(pixel_x_dim_str.c_str(), result, regex)) {
                     const double pixel_x_dim = boost::lexical_cast<double>(result[1]);
@@ -299,8 +298,7 @@ bool Bitmap::ExifAltitude(double* altitude) {
         const boost::regex regex(".*?([0-9.]+).*?/.*?([0-9.]+).*?");
         boost::cmatch result;
         if (boost::regex_search(str.c_str(), result, regex)) {
-            *altitude = boost::lexical_cast<double>(result[1]) /
-                        boost::lexical_cast<double>(result[2]);
+            *altitude = boost::lexical_cast<double>(result[1]) / boost::lexical_cast<double>(result[2]);
             return true;
         }
     }
@@ -308,25 +306,19 @@ bool Bitmap::ExifAltitude(double* altitude) {
 }
 
 bool Bitmap::Read(const std::string& path, const bool as_rgb) {
-    if (!boost::filesystem::exists(path)) {
-        return false;
-    }
+    if (!boost::filesystem::exists(path)) { return false; }
 
     const FREE_IMAGE_FORMAT format = FreeImage_GetFileType(path.c_str(), 0);
 
-    if (format == FIF_UNKNOWN) {
-        return false;
-    }
+    if (format == FIF_UNKNOWN) { return false; }
 
     FIBITMAP* fi_bitmap = FreeImage_Load(format, path.c_str());
     data_.reset(fi_bitmap, &FreeImage_Unload);
 
     const FREE_IMAGE_COLOR_TYPE color_type = FreeImage_GetColorType(fi_bitmap);
 
-    const bool is_grey =
-            color_type == FIC_MINISBLACK && FreeImage_GetBPP(fi_bitmap) == 8;
-    const bool is_rgb =
-            color_type == FIC_RGB && FreeImage_GetBPP(fi_bitmap) == 24;
+    const bool is_grey = color_type == FIC_MINISBLACK && FreeImage_GetBPP(fi_bitmap) == 8;
+    const bool is_rgb = color_type == FIC_RGB && FreeImage_GetBPP(fi_bitmap) == 24;
 
     if (!is_rgb && as_rgb) {
         FIBITMAP* converted_bitmap = FreeImage_ConvertTo24Bits(fi_bitmap);
@@ -343,8 +335,7 @@ bool Bitmap::Read(const std::string& path, const bool as_rgb) {
     return true;
 }
 
-bool Bitmap::Write(const std::string& path, const FREE_IMAGE_FORMAT format,
-                   const int flags) const {
+bool Bitmap::Write(const std::string& path, const FREE_IMAGE_FORMAT format, const int flags) const {
     FREE_IMAGE_FORMAT save_format;
     if (format == FIF_UNKNOWN) {
         save_format = FreeImage_GetFIFFromFilename(path.c_str());
@@ -361,29 +352,23 @@ bool Bitmap::Write(const std::string& path, const FREE_IMAGE_FORMAT format,
     return true;
 }
 
-Bitmap Bitmap::Rescale(const int new_width, const int new_height,
-                       const FREE_IMAGE_FILTER filter) {
-    FIBITMAP* rescaled =
-            FreeImage_Rescale(data_.get(), new_width, new_height, filter);
+Bitmap Bitmap::Rescale(const int new_width, const int new_height, const FREE_IMAGE_FILTER filter) {
+    FIBITMAP* rescaled = FreeImage_Rescale(data_.get(), new_width, new_height, filter);
     return Bitmap(rescaled);
 }
 
 Bitmap Bitmap::Clone() const { return Bitmap(FreeImage_Clone(data_.get())); }
 
 Bitmap Bitmap::CloneAsGrey() const {
-    if (IsGrey()) {
-        return Clone();
-    } else {
-        return Bitmap(FreeImage_ConvertToGreyscale(data_.get()));
-    }
+    if (IsGrey()) { return Clone(); }
+
+    return Bitmap(FreeImage_ConvertToGreyscale(data_.get()));
 }
 
 Bitmap Bitmap::CloneAsRGB() const {
-    if (IsRGB()) {
-        return Clone();
-    } else {
-        return Bitmap(FreeImage_ConvertTo24Bits(data_.get()));
-    }
+    if (IsRGB()) { return Clone(); }
+
+    return Bitmap(FreeImage_ConvertTo24Bits(data_.get()));
 }
 
 void Bitmap::CloneMetadata(Bitmap* target) const {
@@ -392,22 +377,22 @@ void Bitmap::CloneMetadata(Bitmap* target) const {
     FreeImage_CloneMetadata(data_.get(), target->Data());
 }
 
-bool Bitmap::ReadExifTag(const FREE_IMAGE_MDMODEL model,
-                         const std::string& tag_name,
-                         std::string* result) const {
+bool Bitmap::ReadExifTag(const FREE_IMAGE_MDMODEL model, const std::string& tag_name, std::string* result) const {
     FITAG* tag = nullptr;
     FreeImage_GetMetadata(model, data_.get(), tag_name.c_str(), &tag);
+
     if (tag == nullptr) {
         *result = "";
         return false;
-    } else {
-        if (tag_name == "FocalPlaneXResolution") {
-            *result = std::string(FreeImage_TagToString(FIMD_EXIF_INTEROP, tag));
-        } else {
-            *result = FreeImage_TagToString(model, tag);
-        }
-        return true;
     }
+
+    if (tag_name == "FocalPlaneXResolution") {
+        *result = std::string(FreeImage_TagToString(FIMD_EXIF_INTEROP, tag));
+    } else {
+        *result = FreeImage_TagToString(model, tag);
+    }
+
+    return true;
 }
 
 FIBITMAP* Bitmap::Data() { return data_.get(); }
@@ -420,13 +405,9 @@ int Bitmap::Height() const { return height_; }
 
 int Bitmap::Channels() const { return channels_; }
 
-unsigned int Bitmap::BitsPerPixel() const {
-    return FreeImage_GetBPP(data_.get());
-}
+unsigned int Bitmap::BitsPerPixel() const { return FreeImage_GetBPP(data_.get()); }
 
-unsigned int Bitmap::ScanWidth() const {
-    return FreeImage_GetPitch(data_.get());
-}
+unsigned int Bitmap::ScanWidth() const { return FreeImage_GetPitch(data_.get()); }
 
 bool Bitmap::IsRGB() const { return channels_ == 3; }
 
@@ -446,9 +427,7 @@ void SceneGraph::Finalize() {
         }
         if (it->second.num_observations == 0) {
             images_.erase(it++);
-        } else {
-            ++it;
-        }
+        } else { ++it; }
     }
 }
 
@@ -456,12 +435,9 @@ void SceneGraph::AddImage(const image_t image_id, const size_t num_points) {
     images_[image_id].corrs.resize(num_points);
 }
 
-void SceneGraph::AddCorrespondences(const image_t image_id1,
-                                    const image_t image_id2,
-                                    const FeatureMatches& matches) {
+void SceneGraph::AddCorrespondences(const image_t image_id1, const image_t image_id2, const FeatureMatches& matches) {
     if (image_id1 == image_id2) {
-        std::cout << "WARNING: Cannot use self-matches for image_id=" << image_id1
-        << std::endl;
+        std::cout << "WARNING: Cannot use self-matches for image_id=" << image_id1 << std::endl;
         return;
     }
 
@@ -471,8 +447,7 @@ void SceneGraph::AddCorrespondences(const image_t image_id1,
     image1.num_correspondences += matches.size();
     image2.num_correspondences += matches.size();
 
-    const image_pair_t pair_id =
-            Database::ImagePairToPairId(image_id1, image_id2);
+    const image_pair_t pair_id = Database::ImagePairToPairId(image_id1, image_id2);
     point2D_t& num_correspondences = image_pairs_[pair_id];
     num_correspondences += static_cast<point2D_t>(matches.size());
 
@@ -484,13 +459,13 @@ void SceneGraph::AddCorrespondences(const image_t image_id1,
         const bool valid_idx2 = point2D_idx2 < image2.corrs.size();
 
         if (valid_idx1 && valid_idx2) {
-            const bool duplicate =
-                    std::find_if(image1.corrs[point2D_idx1].begin(),
-                                 image1.corrs[point2D_idx1].end(),
-                                 [image_id2, point2D_idx2](const Correspondence& corr) {
-                                     return corr.image_id == image_id2 &&
-                                            corr.point2D_idx == point2D_idx2;
-                                 }) != image1.corrs[point2D_idx1].end();
+            const bool duplicate = std::find_if(
+                    image1.corrs[point2D_idx1].begin(),
+                    image1.corrs[point2D_idx1].end(),
+                    [image_id2, point2D_idx2](const Correspondence& corr) {
+                        return corr.image_id == image_id2 && corr.point2D_idx == point2D_idx2;
+                    }
+            ) != image1.corrs[point2D_idx1].end();
 
             if (duplicate) {
                 image1.num_correspondences -= 1;
@@ -498,10 +473,8 @@ void SceneGraph::AddCorrespondences(const image_t image_id1,
                 num_correspondences -= 1;
                 std::cout << boost::format(
                         "WARNING: Duplicate correspondence between "
-                                "point2D_idx=%d in image_id=%d and point2D_idx=%d in "
-                                "image_id=%d") %
-                             point2D_idx1 % image_id1 % point2D_idx2 % image_id2
-                << std::endl;
+                                "point2D_idx=%d in image_id=%d and point2D_idx=%d in image_id=%d"
+                ) % point2D_idx1 % image_id1 % point2D_idx2 % image_id2 << std::endl;
             } else {
                 std::vector<Correspondence>& corrs1 = image1.corrs[point2D_idx1];
                 corrs1.emplace_back(image_id2, point2D_idx2);
@@ -515,34 +488,28 @@ void SceneGraph::AddCorrespondences(const image_t image_id1,
             num_correspondences -= 1;
             if (!valid_idx1) {
                 std::cout
-                << boost::format(
-                        "WARNING: point2D_idx=%d in image_id=%d does not exist") %
-                   point2D_idx1 % image_id1
-                << std::endl;
+                << boost::format("WARNING: point2D_idx=%d in image_id=%d does not exist")
+                   % point2D_idx1 % image_id1 << std::endl;
             }
             if (!valid_idx2) {
                 std::cout
-                << boost::format(
-                        "WARNING: point2D_idx=%d in image_id=%d does not exist") %
-                   point2D_idx2 % image_id2
-                << std::endl;
+                << boost::format("WARNING: point2D_idx=%d in image_id=%d does not exist")
+                   % point2D_idx2 % image_id2 << std::endl;
             }
         }
     }
 }
 
-std::vector<SceneGraph::Correspondence>
-SceneGraph::FindTransitiveCorrespondences(const image_t image_id,
-                                          const point2D_t point2D_idx,
-                                          const size_t transitivity) const {
-    if (transitivity == 1) {
-        return FindCorrespondences(image_id, point2D_idx);
-    }
+std::vector<SceneGraph::Correspondence>SceneGraph::FindTransitiveCorrespondences(
+        const image_t image_id,
+        const point2D_t point2D_idx,
+        const size_t transitivity
+) const {
+
+    if (transitivity == 1) { return FindCorrespondences(image_id, point2D_idx); }
 
     std::vector<Correspondence> found_corrs;
-    if (!HasCorrespondences(image_id, point2D_idx)) {
-        return found_corrs;
-    }
+    if (!HasCorrespondences(image_id, point2D_idx)) { return found_corrs; }
 
     found_corrs.emplace_back(image_id, point2D_idx);
 
@@ -557,8 +524,7 @@ SceneGraph::FindTransitiveCorrespondences(const image_t image_id,
             const Correspondence ref_corr = found_corrs[i];
 
             const Image& image = images_.at(ref_corr.image_id);
-            const std::vector<Correspondence>& ref_corrs =
-                    image.corrs[ref_corr.point2D_idx];
+            const std::vector<Correspondence>& ref_corrs = image.corrs[ref_corr.point2D_idx];
 
             for (const Correspondence corr : ref_corrs) {
                 if (image_corrs[corr.image_id].count(corr.point2D_idx) == 0) {
@@ -571,9 +537,7 @@ SceneGraph::FindTransitiveCorrespondences(const image_t image_id,
         corr_queue_begin = corr_queue_end;
         corr_queue_end = found_corrs.size();
 
-        if (corr_queue_begin == corr_queue_end) {
-            break;
-        }
+        if (corr_queue_begin == corr_queue_end) { break; }
     }
 
     if (found_corrs.size() > 1) {
@@ -584,14 +548,17 @@ SceneGraph::FindTransitiveCorrespondences(const image_t image_id,
     return found_corrs;
 }
 
-std::vector<std::pair<point2D_t, point2D_t>>
-SceneGraph::FindCorrespondencesBetweenImages(const image_t image_id1,
-                                             const image_t image_id2) const {
+std::vector<std::pair<point2D_t, point2D_t>>SceneGraph::FindCorrespondencesBetweenImages(
+        const image_t image_id1,
+        const image_t image_id2
+) const {
+
     std::vector<std::pair<point2D_t, point2D_t>> found_corrs;
     const struct Image& image1 = images_.at(image_id1);
-    for (point2D_t point2D_idx1 = 0; point2D_idx1 < image1.corrs.size();
-         ++point2D_idx1) {
+    for (point2D_t point2D_idx1 = 0; point2D_idx1 < image1.corrs.size(); ++point2D_idx1) {
+
         for (const Correspondence& corr1 : image1.corrs[point2D_idx1]) {
+
             if (corr1.image_id == image_id2) {
                 found_corrs.emplace_back(point2D_idx1, corr1.point2D_idx);
             }
@@ -600,24 +567,20 @@ SceneGraph::FindCorrespondencesBetweenImages(const image_t image_id1,
     return found_corrs;
 }
 
-bool SceneGraph::IsTwoViewObservation(const image_t image_id,
-                                      const point2D_t point2D_idx) const {
+bool SceneGraph::IsTwoViewObservation(const image_t image_id, const point2D_t point2D_idx) const {
+
     const struct Image& image = images_.at(image_id);
     const std::vector<Correspondence>& corrs = image.corrs.at(point2D_idx);
-    if (corrs.size() != 1) {
-        return false;
-    }
+
+    if (corrs.size() != 1) { return false; }
     const struct Image& other_image = images_.at(corrs[0].image_id);
-    const std::vector<Correspondence>& other_corrs =
-            other_image.corrs.at(corrs[0].point2D_idx);
+    const std::vector<Correspondence>& other_corrs = other_image.corrs.at(corrs[0].point2D_idx);
     return other_corrs.size() == 1;
 }
 
 size_t SceneGraph::NumImages() const { return images_.size(); }
 
-bool SceneGraph::ExistsImage(const image_t image_id) const {
-    return images_.count(image_id) > 0;
-}
+bool SceneGraph::ExistsImage(const image_t image_id) const { return images_.count(image_id) > 0; }
 
 point2D_t SceneGraph::NumObservationsForImage(const image_t image_id) const {
     return images_.at(image_id).num_observations;
@@ -627,10 +590,8 @@ point2D_t SceneGraph::NumCorrespondencesForImage(const image_t image_id) const {
     return images_.at(image_id).num_correspondences;
 }
 
-point2D_t SceneGraph::NumCorrespondencesBetweenImages(
-        const image_t image_id1, const image_t image_id2) const {
-    const image_pair_t pair_id =
-            Database::ImagePairToPairId(image_id1, image_id2);
+point2D_t SceneGraph::NumCorrespondencesBetweenImages(const image_t image_id1, const image_t image_id2) const {
+    const image_pair_t pair_id = Database::ImagePairToPairId(image_id1, image_id2);
     if (image_pairs_.count(pair_id) == 0) {
         return 0;
     } else {
@@ -638,30 +599,25 @@ point2D_t SceneGraph::NumCorrespondencesBetweenImages(
     }
 }
 
-const std::unordered_map<image_pair_t, point2D_t>&
-SceneGraph::NumCorrespondencesBetweenImages() const {
+const std::unordered_map<image_pair_t, point2D_t>& SceneGraph::NumCorrespondencesBetweenImages() const {
     return image_pairs_;
 }
 
 const std::vector<SceneGraph::Correspondence>& SceneGraph::FindCorrespondences(
-        const image_t image_id, const point2D_t point2D_idx) const {
-    return images_.at(image_id).corrs.at(point2D_idx);
-}
+        const image_t image_id,
+        const point2D_t point2D_idx
+) const { return images_.at(image_id).corrs.at(point2D_idx); }
 
-bool SceneGraph::HasCorrespondences(const image_t image_id,
-                                    const point2D_t point2D_idx) const {
+bool SceneGraph::HasCorrespondences(const image_t image_id, const point2D_t point2D_idx) const {
     return !images_.at(image_id).corrs.at(point2D_idx).empty();
 }
 
 
 namespace {
 
-    typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-            FeatureKeypointsBlob;
-    typedef Eigen::Matrix<uint8_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-            FeatureDescriptorsBlob;
-    typedef Eigen::Matrix<point2D_t, Eigen::Dynamic, 2, Eigen::RowMajor>
-            FeatureMatchesBlob;
+    typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> FeatureKeypointsBlob;
+    typedef Eigen::Matrix<uint8_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> FeatureDescriptorsBlob;
+    typedef Eigen::Matrix<point2D_t, Eigen::Dynamic, 2, Eigen::RowMajor> FeatureMatchesBlob;
 
     void SwapFeatureMatchesBlob(FeatureMatchesBlob* matches) {
         matches->col(0).swap(matches->col(1));
@@ -714,27 +670,20 @@ namespace {
         MatrixType matrix;
 
         if (rc == SQLITE_ROW) {
-            const size_t rows =
-                    static_cast<size_t>(sqlite3_column_int64(sql_stmt, col + 0));
-            const size_t cols =
-                    static_cast<size_t>(sqlite3_column_int64(sql_stmt, col + 1));
+            const size_t rows = static_cast<size_t>(sqlite3_column_int64(sql_stmt, col + 0));
+            const size_t cols = static_cast<size_t>(sqlite3_column_int64(sql_stmt, col + 1));
 
             matrix = MatrixType(rows, cols);
 
-            const size_t num_bytes =
-                    static_cast<size_t>(sqlite3_column_bytes(sql_stmt, col + 2));
+            const size_t num_bytes = static_cast<size_t>(sqlite3_column_bytes(sql_stmt, col + 2));
 
-            memcpy(reinterpret_cast<char*>(matrix.data()),
-                   sqlite3_column_blob(sql_stmt, col + 2), num_bytes);
+            memcpy(reinterpret_cast<char*>(matrix.data()), sqlite3_column_blob(sql_stmt, col + 2), num_bytes);
         } else {
-            const typename MatrixType::Index rows =
-                    (MatrixType::RowsAtCompileTime == Eigen::Dynamic)
-                    ? 0
-                    : MatrixType::RowsAtCompileTime;
-            const typename MatrixType::Index cols =
-                    (MatrixType::ColsAtCompileTime == Eigen::Dynamic)
-                    ? 0
-                    : MatrixType::ColsAtCompileTime;
+            const typename MatrixType::Index rows = (MatrixType::RowsAtCompileTime == Eigen::Dynamic) ?
+                                                    0 : MatrixType::RowsAtCompileTime;
+
+            const typename MatrixType::Index cols = (MatrixType::ColsAtCompileTime == Eigen::Dynamic) ?
+                                                    0 : MatrixType::ColsAtCompileTime;
             matrix = MatrixType(rows, cols);
         }
 
@@ -742,14 +691,17 @@ namespace {
     }
 
     template<typename MatrixType>
-    void WriteMatrixBlob(sqlite3_stmt* sql_stmt, const MatrixType& matrix,
-                         const int col) {
+    void WriteMatrixBlob(sqlite3_stmt* sql_stmt, const MatrixType& matrix, const int col) {
         const size_t num_bytes = matrix.size() * sizeof(typename MatrixType::Scalar);
         SQLITE3_CALL(sqlite3_bind_int64(sql_stmt, col + 0, matrix.rows()));
         SQLITE3_CALL(sqlite3_bind_int64(sql_stmt, col + 1, matrix.cols()));
-        SQLITE3_CALL(sqlite3_bind_blob(sql_stmt, col + 2,
-                                       reinterpret_cast<const char*>(matrix.data()),
-                                       static_cast<int>(num_bytes), SQLITE_STATIC));
+        SQLITE3_CALL(sqlite3_bind_blob(
+                sql_stmt,
+                col + 2,
+                reinterpret_cast<const char*>(matrix.data()),
+                static_cast<int>(num_bytes),
+                SQLITE_STATIC)
+        );
     }
 
     Camera ReadCameraRow(sqlite3_stmt* sql_stmt) {
@@ -760,22 +712,17 @@ namespace {
         camera.SetWidth(static_cast<size_t>(sqlite3_column_int64(sql_stmt, 2)));
         camera.SetHeight(static_cast<size_t>(sqlite3_column_int64(sql_stmt, 3)));
 
-        const size_t num_params_bytes =
-                static_cast<size_t>(sqlite3_column_bytes(sql_stmt, 4));
+        const size_t num_params_bytes = static_cast<size_t>(sqlite3_column_bytes(sql_stmt, 4));
         camera.Params().resize(num_params_bytes / sizeof(double));
-        memcpy(camera.ParamsData(), sqlite3_column_blob(sql_stmt, 4),
-               num_params_bytes);
-
+        memcpy(camera.ParamsData(), sqlite3_column_blob(sql_stmt, 4), num_params_bytes);
         camera.SetPriorFocalLength(sqlite3_column_int64(sql_stmt, 5) != 0);
-
         return camera;
     }
 
     Image ReadImageRow(sqlite3_stmt* sql_stmt) {
         Image image;
         image.SetImageId(static_cast<image_t>(sqlite3_column_int64(sql_stmt, 0)));
-        image.SetName(std::string(
-                reinterpret_cast<const char*>(sqlite3_column_text(sql_stmt, 1))));
+        image.SetName(std::string(reinterpret_cast<const char*>(sqlite3_column_text(sql_stmt, 1))));
         image.SetCameraId(static_cast<camera_t>(sqlite3_column_int64(sql_stmt, 2)));
         image.QvecPrior(0) = sqlite3_column_double(sql_stmt, 3);
         image.QvecPrior(1) = sqlite3_column_double(sql_stmt, 4);
@@ -789,8 +736,7 @@ namespace {
 
 }
 
-const size_t Database::kMaxNumImages =
-        static_cast<size_t>(std::numeric_limits<int32_t>::max());
+const size_t Database::kMaxNumImages = static_cast<size_t>(std::numeric_limits<int32_t>::max());
 
 Database::Database() { database_ = nullptr; }
 
@@ -854,16 +800,14 @@ bool Database::ExistsDescriptors(const image_t image_id) const {
     return ExistsRowId(sql_stmt_exists_descriptors_, image_id);
 }
 
-bool Database::ExistsMatches(const image_t image_id1,
-                             const image_t image_id2) const {
-    return ExistsRowId(sql_stmt_exists_matches_,
-                       ImagePairToPairId(image_id1, image_id2));
+bool Database::ExistsMatches(const image_t image_id1, const image_t image_id2) const {
+
+    return ExistsRowId(sql_stmt_exists_matches_, ImagePairToPairId(image_id1, image_id2));
 }
 
-bool Database::ExistsInlierMatches(const image_t image_id1,
-                                   const image_t image_id2) const {
-    return ExistsRowId(sql_stmt_exists_inlier_matches_,
-                       ImagePairToPairId(image_id1, image_id2));
+bool Database::ExistsInlierMatches(const image_t image_id1, const image_t image_id2) const {
+
+    return ExistsRowId(sql_stmt_exists_inlier_matches_, ImagePairToPairId(image_id1, image_id2));
 }
 
 size_t Database::NumCameras() const { return CountRows("cameras"); }
@@ -872,21 +816,15 @@ size_t Database::NumImages() const { return CountRows("images"); }
 
 size_t Database::NumKeypoints() const { return SumColumn("rows", "keypoints"); }
 
-size_t Database::NumDescriptors() const {
-    return SumColumn("rows", "descriptors");
-}
+size_t Database::NumDescriptors() const { return SumColumn("rows", "descriptors"); }
 
 size_t Database::NumMatches() const { return SumColumn("rows", "matches"); }
 
-size_t Database::NumInlierMatches() const {
-    return SumColumn("rows", "inlier_matches");
-}
+size_t Database::NumInlierMatches() const { return SumColumn("rows", "inlier_matches"); }
 
 size_t Database::NumMatchedImagePairs() const { return CountRows("matches"); }
 
-size_t Database::NumVerifiedImagePairs() const {
-    return CountRows("inlier_matches");
-}
+size_t Database::NumVerifiedImagePairs() const { return CountRows("inlier_matches"); }
 
 Camera Database::ReadCamera(const camera_t camera_id) const {
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_read_camera_, 1, camera_id));
@@ -931,8 +869,12 @@ Image Database::ReadImage(const image_t image_id) const {
 }
 
 Image Database::ReadImageFromName(const std::string& name) const {
-    SQLITE3_CALL(sqlite3_bind_text(sql_stmt_read_image_name_, 1, name.c_str(),
-                                   static_cast<int>(name.size()), SQLITE_STATIC));
+    SQLITE3_CALL(sqlite3_bind_text(
+            sql_stmt_read_image_name_,
+            1,
+            name.c_str(),
+            static_cast<int>(name.size()), SQLITE_STATIC)
+    );
 
     Image image;
 
@@ -963,8 +905,7 @@ FeatureKeypoints Database::ReadKeypoints(const image_t image_id) const {
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_read_keypoints_, 1, image_id));
 
     const int rc = SQLITE3_CALL(sqlite3_step(sql_stmt_read_keypoints_));
-    const FeatureKeypointsBlob blob =
-            ReadMatrixBlob<FeatureKeypointsBlob>(sql_stmt_read_keypoints_, rc, 0);
+    const FeatureKeypointsBlob blob = ReadMatrixBlob<FeatureKeypointsBlob>(sql_stmt_read_keypoints_, rc, 0);
 
     SQLITE3_CALL(sqlite3_reset(sql_stmt_read_keypoints_));
 
@@ -975,22 +916,20 @@ FeatureDescriptors Database::ReadDescriptors(const image_t image_id) const {
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_read_descriptors_, 1, image_id));
 
     const int rc = SQLITE3_CALL(sqlite3_step(sql_stmt_read_descriptors_));
-    const FeatureDescriptors descriptors =
-            ReadMatrixBlob<FeatureDescriptors>(sql_stmt_read_descriptors_, rc, 0);
+    const FeatureDescriptors descriptors = ReadMatrixBlob<FeatureDescriptors>(sql_stmt_read_descriptors_, rc, 0);
 
     SQLITE3_CALL(sqlite3_reset(sql_stmt_read_descriptors_));
 
     return descriptors;
 }
 
-FeatureMatches Database::ReadMatches(image_t image_id1,
-                                     image_t image_id2) const {
+FeatureMatches Database::ReadMatches(image_t image_id1, image_t image_id2) const {
+
     const image_pair_t pair_id = ImagePairToPairId(image_id1, image_id2);
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_read_matches_, 1, pair_id));
 
     const int rc = SQLITE3_CALL(sqlite3_step(sql_stmt_read_matches_));
-    FeatureMatchesBlob blob =
-            ReadMatrixBlob<FeatureMatchesBlob>(sql_stmt_read_matches_, rc, 0);
+    FeatureMatchesBlob blob = ReadMatrixBlob<FeatureMatchesBlob>(sql_stmt_read_matches_, rc, 0);
 
     SQLITE3_CALL(sqlite3_reset(sql_stmt_read_matches_));
 
@@ -1001,17 +940,13 @@ FeatureMatches Database::ReadMatches(image_t image_id1,
     return FeatureMatchesFromBlob(blob);
 }
 
-std::vector<std::pair<image_pair_t, FeatureMatches>> Database::ReadAllMatches()
-const {
+std::vector<std::pair<image_pair_t, FeatureMatches>> Database::ReadAllMatches() const {
     std::vector<std::pair<image_pair_t, FeatureMatches>> all_matches;
 
     int rc;
-    while ((rc = SQLITE3_CALL(sqlite3_step(sql_stmt_read_matches_all_))) ==
-           SQLITE_ROW) {
-        const image_pair_t pair_id = static_cast<image_pair_t>(
-                sqlite3_column_int64(sql_stmt_read_matches_all_, 0));
-        const FeatureMatchesBlob blob =
-                ReadMatrixBlob<FeatureMatchesBlob>(sql_stmt_read_matches_all_, rc, 1);
+    while ((rc = SQLITE3_CALL(sqlite3_step(sql_stmt_read_matches_all_))) == SQLITE_ROW) {
+        const image_pair_t pair_id = static_cast<image_pair_t>(sqlite3_column_int64(sql_stmt_read_matches_all_, 0));
+        const FeatureMatchesBlob blob = ReadMatrixBlob<FeatureMatchesBlob>(sql_stmt_read_matches_all_, rc, 1);
         all_matches.emplace_back(pair_id, FeatureMatchesFromBlob(blob));
     }
 
@@ -1020,8 +955,7 @@ const {
     return all_matches;
 }
 
-TwoViewGeometry Database::ReadInlierMatches(const image_t image_id1,
-                                            const image_t image_id2) const {
+TwoViewGeometry Database::ReadInlierMatches(const image_t image_id1, const image_t image_id2) const {
     const image_pair_t pair_id = ImagePairToPairId(image_id1, image_id2);
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_read_inlier_matches_, 1, pair_id));
 
@@ -1029,11 +963,9 @@ TwoViewGeometry Database::ReadInlierMatches(const image_t image_id1,
 
     TwoViewGeometry two_view_geometry;
 
-    FeatureMatchesBlob blob =
-            ReadMatrixBlob<FeatureMatchesBlob>(sql_stmt_read_inlier_matches_, rc, 0);
+    FeatureMatchesBlob blob = ReadMatrixBlob<FeatureMatchesBlob>(sql_stmt_read_inlier_matches_, rc, 0);
 
-    two_view_geometry.config =
-            static_cast<int>(sqlite3_column_int64(sql_stmt_read_inlier_matches_, 3));
+    two_view_geometry.config = static_cast<int>(sqlite3_column_int64(sql_stmt_read_inlier_matches_, 3));
 
     SQLITE3_CALL(sqlite3_reset(sql_stmt_read_inlier_matches_));
 
@@ -1046,21 +978,19 @@ TwoViewGeometry Database::ReadInlierMatches(const image_t image_id1,
     return two_view_geometry;
 }
 
-std::vector<std::pair<image_pair_t, TwoViewGeometry>>
-Database::ReadAllInlierMatches() const {
+std::vector<std::pair<image_pair_t, TwoViewGeometry>>Database::ReadAllInlierMatches() const {
+
     std::vector<std::pair<image_pair_t, TwoViewGeometry>> results;
 
     int rc;
-    while ((rc = SQLITE3_CALL(sqlite3_step(sql_stmt_read_inlier_matches_all_))) ==
-           SQLITE_ROW) {
+    while ((rc = SQLITE3_CALL(sqlite3_step(sql_stmt_read_inlier_matches_all_))) == SQLITE_ROW) {
         const image_pair_t pair_id = static_cast<image_pair_t>(
-                sqlite3_column_int64(sql_stmt_read_inlier_matches_all_, 0));
+                sqlite3_column_int64(sql_stmt_read_inlier_matches_all_, 0)
+        );
 
         TwoViewGeometry two_view_geometry;
-        const FeatureMatchesBlob blob = ReadMatrixBlob<FeatureMatchesBlob>(
-                sql_stmt_read_inlier_matches_all_, rc, 1);
-        two_view_geometry.config = static_cast<int>(
-                sqlite3_column_int64(sql_stmt_read_inlier_matches_all_, 4));
+        const FeatureMatchesBlob blob = ReadMatrixBlob<FeatureMatchesBlob>(sql_stmt_read_inlier_matches_all_, rc, 1);
+        two_view_geometry.config = static_cast<int>(sqlite3_column_int64(sql_stmt_read_inlier_matches_all_, 4));
 
         two_view_geometry.inlier_matches = FeatureMatchesFromBlob(blob);
 
@@ -1074,31 +1004,31 @@ Database::ReadAllInlierMatches() const {
 
 void Database::ReadInlierMatchesGraph(
         std::vector<std::pair<image_t, image_t>>* image_pairs,
-        std::vector<int>* num_inliers) const {
+        std::vector<int>* num_inliers
+) const {
+
     const auto num_inlier_matches = NumInlierMatches();
     image_pairs->reserve(num_inlier_matches);
     num_inliers->reserve(num_inlier_matches);
 
     int rc;
-    while ((rc = SQLITE3_CALL(sqlite3_step(
-            sql_stmt_read_inlier_matches_graph_))) == SQLITE_ROW) {
+    while ((rc = SQLITE3_CALL(sqlite3_step(sql_stmt_read_inlier_matches_graph_))) == SQLITE_ROW) {
         image_t image_id1;
         image_t image_id2;
         const image_pair_t pair_id = static_cast<image_pair_t>(
-                sqlite3_column_int64(sql_stmt_read_inlier_matches_graph_, 0));
+                sqlite3_column_int64(sql_stmt_read_inlier_matches_graph_, 0)
+        );
         PairIdToImagePair(pair_id, &image_id1, &image_id2);
         image_pairs->emplace_back(image_id1, image_id2);
 
-        const int rows = static_cast<int>(
-                sqlite3_column_int64(sql_stmt_read_inlier_matches_graph_, 1));
+        const int rows = static_cast<int>(sqlite3_column_int64(sql_stmt_read_inlier_matches_graph_, 1));
         num_inliers->push_back(rows);
     }
 
     SQLITE3_CALL(sqlite3_reset(sql_stmt_read_inlier_matches_graph_));
 }
 
-camera_t Database::WriteCamera(const Camera& camera,
-                               const bool use_camera_id) const {
+camera_t Database::WriteCamera(const Camera& camera, const bool use_camera_id) const {
     if (use_camera_id) {
         SQLITE3_CALL(
                 sqlite3_bind_int64(sql_stmt_add_camera_, 1, camera.CameraId()));
@@ -1107,18 +1037,18 @@ camera_t Database::WriteCamera(const Camera& camera,
     }
 
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_add_camera_, 2, camera.ModelId()));
-    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_add_camera_, 3,
-                                    static_cast<sqlite3_int64>(camera.Width())));
-    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_add_camera_, 4,
-                                    static_cast<sqlite3_int64>(camera.Height())));
+    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_add_camera_, 3, static_cast<sqlite3_int64>(camera.Width())));
+    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_add_camera_, 4, static_cast<sqlite3_int64>(camera.Height())));
 
     const size_t num_params_bytes = sizeof(double) * camera.NumParams();
-    SQLITE3_CALL(sqlite3_bind_blob(sql_stmt_add_camera_, 5, camera.ParamsData(),
+    SQLITE3_CALL(sqlite3_bind_blob(sql_stmt_add_camera_,
+                                   5,
+                                   camera.ParamsData(),
                                    static_cast<int>(num_params_bytes),
-                                   SQLITE_STATIC));
+                                   SQLITE_STATIC)
+    );
 
-    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_add_camera_, 6,
-                                    camera.HasPriorFocalLength()));
+    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_add_camera_, 6, camera.HasPriorFocalLength()));
 
     SQLITE3_CALL(sqlite3_step(sql_stmt_add_camera_));
     SQLITE3_CALL(sqlite3_reset(sql_stmt_add_camera_));
@@ -1126,17 +1056,20 @@ camera_t Database::WriteCamera(const Camera& camera,
     return static_cast<camera_t>(sqlite3_last_insert_rowid(database_));
 }
 
-image_t Database::WriteImage(const Image& image,
-                             const bool use_image_id) const {
+image_t Database::WriteImage(const Image& image, const bool use_image_id) const {
     if (use_image_id) {
         SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_add_image_, 1, image.ImageId()));
     } else {
         SQLITE3_CALL(sqlite3_bind_null(sql_stmt_add_image_, 1));
     }
 
-    SQLITE3_CALL(sqlite3_bind_text(sql_stmt_add_image_, 2, image.Name().c_str(),
-                                   static_cast<int>(image.Name().size()),
-                                   SQLITE_STATIC));
+    SQLITE3_CALL(sqlite3_bind_text(
+            sql_stmt_add_image_,
+            2,
+            image.Name().c_str(),
+            static_cast<int>(image.Name().size()),
+            SQLITE_STATIC)
+    );
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_add_image_, 3, image.CameraId()));
     SQLITE3_CALL(sqlite3_bind_double(sql_stmt_add_image_, 4, image.QvecPrior(0)));
     SQLITE3_CALL(sqlite3_bind_double(sql_stmt_add_image_, 5, image.QvecPrior(1)));
@@ -1144,8 +1077,7 @@ image_t Database::WriteImage(const Image& image,
     SQLITE3_CALL(sqlite3_bind_double(sql_stmt_add_image_, 7, image.QvecPrior(3)));
     SQLITE3_CALL(sqlite3_bind_double(sql_stmt_add_image_, 8, image.TvecPrior(0)));
     SQLITE3_CALL(sqlite3_bind_double(sql_stmt_add_image_, 9, image.TvecPrior(1)));
-    SQLITE3_CALL(
-            sqlite3_bind_double(sql_stmt_add_image_, 10, image.TvecPrior(2)));
+    SQLITE3_CALL(sqlite3_bind_double(sql_stmt_add_image_, 10, image.TvecPrior(2)));
 
     SQLITE3_CALL(sqlite3_step(sql_stmt_add_image_));
     SQLITE3_CALL(sqlite3_reset(sql_stmt_add_image_));
@@ -1153,8 +1085,7 @@ image_t Database::WriteImage(const Image& image,
     return static_cast<image_t>(sqlite3_last_insert_rowid(database_));
 }
 
-void Database::WriteKeypoints(const image_t image_id,
-                              const FeatureKeypoints& keypoints) const {
+void Database::WriteKeypoints(const image_t image_id, const FeatureKeypoints& keypoints) const {
     const FeatureKeypointsBlob blob = FeatureKeypointsToBlob(keypoints);
 
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_write_keypoints_, 1, image_id));
@@ -1164,8 +1095,7 @@ void Database::WriteKeypoints(const image_t image_id,
     SQLITE3_CALL(sqlite3_reset(sql_stmt_write_keypoints_));
 }
 
-void Database::WriteDescriptors(const image_t image_id,
-                                const FeatureDescriptors& descriptors) const {
+void Database::WriteDescriptors(const image_t image_id, const FeatureDescriptors& descriptors) const {
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_write_descriptors_, 1, image_id));
     WriteMatrixBlob(sql_stmt_write_descriptors_, descriptors, 2);
 
@@ -1173,8 +1103,7 @@ void Database::WriteDescriptors(const image_t image_id,
     SQLITE3_CALL(sqlite3_reset(sql_stmt_write_descriptors_));
 }
 
-void Database::WriteMatches(const image_t image_id1, const image_t image_id2,
-                            const FeatureMatches& matches) const {
+void Database::WriteMatches(const image_t image_id1, const image_t image_id2, const FeatureMatches& matches) const {
     const image_pair_t pair_id = ImagePairToPairId(image_id1, image_id2);
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_write_matches_, 1, pair_id));
 
@@ -1191,68 +1120,63 @@ void Database::WriteMatches(const image_t image_id1, const image_t image_id2,
 }
 
 void Database::WriteInlierMatches(
-        const image_t image_id1, const image_t image_id2,
-        const TwoViewGeometry& two_view_geometry) const {
+        const image_t image_id1,
+        const image_t image_id2,
+        const TwoViewGeometry& two_view_geometry
+) const {
     const image_pair_t pair_id = ImagePairToPairId(image_id1, image_id2);
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_write_inlier_matches_, 1, pair_id));
 
-    FeatureMatchesBlob blob =
-            FeatureMatchesToBlob(two_view_geometry.inlier_matches);
+    FeatureMatchesBlob blob = FeatureMatchesToBlob(two_view_geometry.inlier_matches);
     if (SwapImagePair(image_id1, image_id2)) {
         SwapFeatureMatchesBlob(&blob);
     }
 
     WriteMatrixBlob(sql_stmt_write_inlier_matches_, blob, 2);
 
-    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_write_inlier_matches_, 5,
-                                    two_view_geometry.config));
+    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_write_inlier_matches_, 5, two_view_geometry.config));
 
     SQLITE3_CALL(sqlite3_step(sql_stmt_write_inlier_matches_));
     SQLITE3_CALL(sqlite3_reset(sql_stmt_write_inlier_matches_));
 }
 
 void Database::UpdateCamera(const Camera& camera) {
-    SQLITE3_CALL(
-            sqlite3_bind_int64(sql_stmt_update_camera_, 1, camera.ModelId()));
-    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_update_camera_, 2,
-                                    static_cast<sqlite3_int64>(camera.Width())));
-    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_update_camera_, 3,
-                                    static_cast<sqlite3_int64>(camera.Height())));
+    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_update_camera_, 1, camera.ModelId()));
+    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_update_camera_, 2, static_cast<sqlite3_int64>(camera.Width())));
+    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_update_camera_, 3, static_cast<sqlite3_int64>(camera.Height())));
 
     const size_t num_params_bytes = sizeof(double) * camera.NumParams();
-    SQLITE3_CALL(
-            sqlite3_bind_blob(sql_stmt_update_camera_, 4, camera.ParamsData(),
-                              static_cast<int>(num_params_bytes), SQLITE_STATIC));
+    SQLITE3_CALL(sqlite3_bind_blob(
+            sql_stmt_update_camera_,
+            4,
+            camera.ParamsData(),
+            static_cast<int>(num_params_bytes),
+            SQLITE_STATIC)
+    );
 
-    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_update_camera_, 5,
-                                    camera.HasPriorFocalLength()));
+    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_update_camera_, 5, camera.HasPriorFocalLength()));
 
-    SQLITE3_CALL(
-            sqlite3_bind_int64(sql_stmt_update_camera_, 6, camera.CameraId()));
+    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_update_camera_, 6, camera.CameraId()));
 
     SQLITE3_CALL(sqlite3_step(sql_stmt_update_camera_));
     SQLITE3_CALL(sqlite3_reset(sql_stmt_update_camera_));
 }
 
 void Database::UpdateImage(const Image& image) {
-    SQLITE3_CALL(
-            sqlite3_bind_text(sql_stmt_update_image_, 1, image.Name().c_str(),
-                              static_cast<int>(image.Name().size()), SQLITE_STATIC));
+    SQLITE3_CALL(sqlite3_bind_text(
+            sql_stmt_update_image_,
+            1,
+            image.Name().c_str(),
+            static_cast<int>(image.Name().size()), SQLITE_STATIC)
+    );
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_update_image_, 2, image.CameraId()));
-    SQLITE3_CALL(
-            sqlite3_bind_double(sql_stmt_update_image_, 3, image.QvecPrior(0)));
-    SQLITE3_CALL(
-            sqlite3_bind_double(sql_stmt_update_image_, 4, image.QvecPrior(1)));
-    SQLITE3_CALL(
-            sqlite3_bind_double(sql_stmt_update_image_, 5, image.QvecPrior(2)));
-    SQLITE3_CALL(
-            sqlite3_bind_double(sql_stmt_update_image_, 6, image.QvecPrior(3)));
-    SQLITE3_CALL(
-            sqlite3_bind_double(sql_stmt_update_image_, 7, image.TvecPrior(0)));
-    SQLITE3_CALL(
-            sqlite3_bind_double(sql_stmt_update_image_, 8, image.TvecPrior(1)));
-    SQLITE3_CALL(
-            sqlite3_bind_double(sql_stmt_update_image_, 9, image.TvecPrior(2)));
+    SQLITE3_CALL(sqlite3_bind_double(sql_stmt_update_image_, 3, image.QvecPrior(0)));
+    SQLITE3_CALL(sqlite3_bind_double(sql_stmt_update_image_, 4, image.QvecPrior(1)));
+    SQLITE3_CALL(sqlite3_bind_double(sql_stmt_update_image_, 5, image.QvecPrior(2)));
+    SQLITE3_CALL(sqlite3_bind_double(sql_stmt_update_image_, 6, image.QvecPrior(3)));
+    SQLITE3_CALL(sqlite3_bind_double(sql_stmt_update_image_, 7, image.TvecPrior(0)));
+    SQLITE3_CALL(sqlite3_bind_double(sql_stmt_update_image_, 8, image.TvecPrior(1)));
+    SQLITE3_CALL(sqlite3_bind_double(sql_stmt_update_image_, 9, image.TvecPrior(2)));
 
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_update_image_, 10, image.ImageId()));
 
@@ -1266,153 +1190,115 @@ void Database::PrepareSQLStatements() {
     std::string sql;
 
     sql = "SELECT 1 FROM cameras WHERE camera_id = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_exists_camera_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_exists_camera_, 0));
     sql_stmts_.push_back(sql_stmt_exists_camera_);
 
     sql = "SELECT 1 FROM images WHERE image_id = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_exists_image_id_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_exists_image_id_, 0));
     sql_stmts_.push_back(sql_stmt_exists_image_id_);
 
     sql = "SELECT 1 FROM images WHERE name = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_exists_image_name_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_exists_image_name_, 0));
     sql_stmts_.push_back(sql_stmt_exists_image_name_);
 
     sql = "SELECT 1 FROM keypoints WHERE image_id = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_exists_keypoints_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_exists_keypoints_, 0));
     sql_stmts_.push_back(sql_stmt_exists_keypoints_);
 
     sql = "SELECT 1 FROM descriptors WHERE image_id = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_exists_descriptors_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_exists_descriptors_, 0));
     sql_stmts_.push_back(sql_stmt_exists_descriptors_);
 
     sql = "SELECT 1 FROM matches WHERE pair_id = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_exists_matches_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_exists_matches_, 0));
     sql_stmts_.push_back(sql_stmt_exists_matches_);
 
     sql = "SELECT 1 FROM inlier_matches WHERE pair_id = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_exists_inlier_matches_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_exists_inlier_matches_, 0));
     sql_stmts_.push_back(sql_stmt_exists_inlier_matches_);
 
-    sql =
-            "INSERT INTO cameras(camera_id, model, width, height, params, "
-                    "prior_focal_length) VALUES(?, ?, ?, ?, ?, ?);";
-    SQLITE3_CALL(
-            sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_add_camera_, 0));
+    sql = "INSERT INTO cameras(camera_id, model, width, height, params, prior_focal_length) VALUES(?, ?, ?, ?, ?, ?);";
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_add_camera_, 0));
     sql_stmts_.push_back(sql_stmt_add_camera_);
 
-    sql =
-            "INSERT INTO images(image_id, name, camera_id, prior_qw, prior_qx, "
-                    "prior_qy, prior_qz, prior_tx, prior_ty, prior_tz) VALUES(?, ?, ?, ?, ?, "
-                    "?, ?, ?, ?, ?);";
-    SQLITE3_CALL(
-            sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_add_image_, 0));
+    sql = "INSERT INTO "
+            "images(image_id, name, camera_id, prior_qw, prior_qx, prior_qy, prior_qz, prior_tx, prior_ty, prior_tz) "
+            "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_add_image_, 0));
     sql_stmts_.push_back(sql_stmt_add_image_);
 
-    sql =
-            "UPDATE cameras SET model=?, width=?, height=?, params=?, "
-                    "prior_focal_length=? WHERE camera_id=?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_update_camera_, 0));
+    sql = "UPDATE cameras SET model=?, width=?, height=?, params=?, prior_focal_length=? WHERE camera_id=?;";
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_update_camera_, 0));
     sql_stmts_.push_back(sql_stmt_update_camera_);
 
-    sql =
-            "UPDATE images SET name=?, camera_id=?, prior_qw=?, prior_qx=?, "
-                    "prior_qy=?, prior_qz=?, prior_tx=?, prior_ty=?, prior_tz=? WHERE "
-                    "image_id=?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_update_image_, 0));
+    sql = "UPDATE images SET name=?, camera_id=?, prior_qw=?, prior_qx=?, "
+            "prior_qy=?, prior_qz=?, prior_tx=?, prior_ty=?, prior_tz=? "
+            "WHERE image_id=?;";
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_update_image_, 0));
     sql_stmts_.push_back(sql_stmt_update_image_);
 
     sql = "SELECT * FROM cameras WHERE camera_id = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_read_camera_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_read_camera_, 0));
     sql_stmts_.push_back(sql_stmt_read_camera_);
 
     sql = "SELECT * FROM cameras;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_read_cameras_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_read_cameras_, 0));
     sql_stmts_.push_back(sql_stmt_read_cameras_);
 
     sql = "SELECT * FROM images WHERE image_id = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_read_image_id_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_read_image_id_, 0));
     sql_stmts_.push_back(sql_stmt_read_image_id_);
 
     sql = "SELECT * FROM images WHERE name = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_read_image_name_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_read_image_name_, 0));
     sql_stmts_.push_back(sql_stmt_read_image_name_);
 
     sql = "SELECT * FROM images;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_read_images_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_read_images_, 0));
     sql_stmts_.push_back(sql_stmt_read_images_);
 
     sql = "SELECT rows, cols, data FROM keypoints WHERE image_id = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_read_keypoints_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_read_keypoints_, 0));
     sql_stmts_.push_back(sql_stmt_read_keypoints_);
 
     sql = "SELECT rows, cols, data FROM descriptors WHERE image_id = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_read_descriptors_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_read_descriptors_, 0));
     sql_stmts_.push_back(sql_stmt_read_descriptors_);
 
     sql = "SELECT rows, cols, data FROM matches WHERE pair_id = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_read_matches_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_read_matches_, 0));
     sql_stmts_.push_back(sql_stmt_read_matches_);
 
     sql = "SELECT * FROM matches WHERE rows > 0;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_read_matches_all_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_read_matches_all_, 0));
     sql_stmts_.push_back(sql_stmt_read_matches_all_);
 
-    sql =
-            "SELECT rows, cols, data, config FROM inlier_matches "
-                    "WHERE pair_id = ?;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_read_inlier_matches_, 0));
+    sql = "SELECT rows, cols, data, config FROM inlier_matches WHERE pair_id = ?;";
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_read_inlier_matches_, 0));
     sql_stmts_.push_back(sql_stmt_read_inlier_matches_);
 
     sql = "SELECT * FROM inlier_matches WHERE rows > 0;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_read_inlier_matches_all_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_read_inlier_matches_all_, 0));
     sql_stmts_.push_back(sql_stmt_read_inlier_matches_all_);
 
     sql = "SELECT pair_id, rows FROM inlier_matches WHERE rows > 0;";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_read_inlier_matches_graph_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_read_inlier_matches_graph_, 0));
     sql_stmts_.push_back(sql_stmt_read_inlier_matches_graph_);
 
     sql = "INSERT INTO keypoints(image_id, rows, cols, data) VALUES(?, ?, ?, ?);";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_write_keypoints_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_write_keypoints_, 0));
     sql_stmts_.push_back(sql_stmt_write_keypoints_);
 
-    sql =
-            "INSERT INTO descriptors(image_id, rows, cols, data) VALUES(?, ?, ?, ?);";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_write_descriptors_, 0));
+    sql = "INSERT INTO descriptors(image_id, rows, cols, data) VALUES(?, ?, ?, ?);";
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_write_descriptors_, 0));
     sql_stmts_.push_back(sql_stmt_write_descriptors_);
 
     sql = "INSERT INTO matches(pair_id, rows, cols, data) VALUES(?, ?, ?, ?);";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_write_matches_, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_write_matches_, 0));
     sql_stmts_.push_back(sql_stmt_write_matches_);
 
-    sql =
-            "INSERT INTO inlier_matches(pair_id, rows, cols, data, config) "
-                    "VALUES(?, ?, ?, ?, ?);";
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1,
-                                    &sql_stmt_write_inlier_matches_, 0));
+    sql = "INSERT INTO inlier_matches(pair_id, rows, cols, data, config) VALUES(?, ?, ?, ?, ?);";
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, sql.c_str(), -1, &sql_stmt_write_inlier_matches_, 0));
     sql_stmts_.push_back(sql_stmt_write_inlier_matches_);
 }
 
@@ -1432,84 +1318,76 @@ void Database::CreateTables() const {
 }
 
 void Database::CreateCameraTable() const {
-    const std::string sql =
-            "CREATE TABLE IF NOT EXISTS cameras"
-                    "   (camera_id            INTEGER  PRIMARY KEY AUTOINCREMENT  NOT NULL,"
-                    "    model                INTEGER                             NOT NULL,"
-                    "    width                INTEGER                             NOT NULL,"
-                    "    height               INTEGER                             NOT NULL,"
-                    "    params               BLOB,"
-                    "    prior_focal_length   INTEGER                             NOT NULL);";
+    const std::string sql = "CREATE TABLE IF NOT EXISTS cameras"
+            "   (camera_id            INTEGER  PRIMARY KEY AUTOINCREMENT  NOT NULL,"
+            "    model                INTEGER                             NOT NULL,"
+            "    width                INTEGER                             NOT NULL,"
+            "    height               INTEGER                             NOT NULL,"
+            "    params               BLOB,"
+            "    prior_focal_length   INTEGER                             NOT NULL);";
 
     SQLITE3_EXEC(database_, sql.c_str(), nullptr);
 }
 
 void Database::CreateImageTable() const {
-    const std::string sql =
-            (boost::format(
-                    "CREATE TABLE IF NOT EXISTS images"
-                            "   (image_id   INTEGER  PRIMARY KEY AUTOINCREMENT  NOT NULL,"
-                            "    name       TEXT                                NOT NULL UNIQUE,"
-                            "    camera_id  INTEGER                             NOT NULL,"
-                            "    prior_qw   REAL,"
-                            "    prior_qx   REAL,"
-                            "    prior_qy   REAL,"
-                            "    prior_qz   REAL,"
-                            "    prior_tx   REAL,"
-                            "    prior_ty   REAL,"
-                            "    prior_tz   REAL,"
-                            "CONSTRAINT image_id_check CHECK(image_id >= 0 and image_id < %d),"
-                            "FOREIGN KEY(camera_id) REFERENCES cameras(camera_id));"
-                            "CREATE UNIQUE INDEX IF NOT EXISTS index_name ON images(name);") %
-             kMaxNumImages)
-                    .str();
+    const std::string sql = (boost::format(
+            "CREATE TABLE IF NOT EXISTS images"
+                    "   (image_id   INTEGER  PRIMARY KEY AUTOINCREMENT  NOT NULL,"
+                    "    name       TEXT                                NOT NULL UNIQUE,"
+                    "    camera_id  INTEGER                             NOT NULL,"
+                    "    prior_qw   REAL,"
+                    "    prior_qx   REAL,"
+                    "    prior_qy   REAL,"
+                    "    prior_qz   REAL,"
+                    "    prior_tx   REAL,"
+                    "    prior_ty   REAL,"
+                    "    prior_tz   REAL,"
+                    "CONSTRAINT image_id_check CHECK(image_id >= 0 and image_id < %d),"
+                    "FOREIGN KEY(camera_id) REFERENCES cameras(camera_id));"
+                    "CREATE UNIQUE INDEX IF NOT EXISTS index_name ON images(name);") % kMaxNumImages).str();
 
     SQLITE3_EXEC(database_, sql.c_str(), nullptr);
 }
 
 void Database::CreateKeypointsTable() const {
-    const std::string sql =
-            "CREATE TABLE IF NOT EXISTS keypoints"
-                    "   (image_id  INTEGER  PRIMARY KEY  NOT NULL,"
-                    "    rows      INTEGER               NOT NULL,"
-                    "    cols      INTEGER               NOT NULL,"
-                    "    data      BLOB,"
-                    "FOREIGN KEY(image_id) REFERENCES images(image_id) ON DELETE CASCADE);";
+    const std::string sql = "CREATE TABLE IF NOT EXISTS keypoints"
+            "   (image_id  INTEGER  PRIMARY KEY  NOT NULL,"
+            "    rows      INTEGER               NOT NULL,"
+            "    cols      INTEGER               NOT NULL,"
+            "    data      BLOB,"
+            "FOREIGN KEY(image_id) REFERENCES images(image_id) ON DELETE CASCADE);";
 
     SQLITE3_EXEC(database_, sql.c_str(), nullptr);
 }
 
 void Database::CreateDescriptorsTable() const {
-    const std::string sql =
-            "CREATE TABLE IF NOT EXISTS descriptors"
-                    "   (image_id  INTEGER  PRIMARY KEY  NOT NULL,"
-                    "    rows      INTEGER               NOT NULL,"
-                    "    cols      INTEGER               NOT NULL,"
-                    "    data      BLOB,"
-                    "FOREIGN KEY(image_id) REFERENCES images(image_id) ON DELETE CASCADE);";
+    const std::string sql = "CREATE TABLE IF NOT EXISTS descriptors"
+            "   (image_id  INTEGER  PRIMARY KEY  NOT NULL,"
+            "    rows      INTEGER               NOT NULL,"
+            "    cols      INTEGER               NOT NULL,"
+            "    data      BLOB,"
+            "FOREIGN KEY(image_id) REFERENCES images(image_id) ON DELETE CASCADE);";
 
     SQLITE3_EXEC(database_, sql.c_str(), nullptr);
 }
 
 void Database::CreateMatchesTable() const {
-    const std::string sql =
-            "CREATE TABLE IF NOT EXISTS matches"
-                    "   (pair_id  INTEGER  PRIMARY KEY  NOT NULL,"
-                    "    rows     INTEGER               NOT NULL,"
-                    "    cols     INTEGER               NOT NULL,"
-                    "    data     BLOB);";
+    const std::string sql = "CREATE TABLE IF NOT EXISTS matches"
+            "   (pair_id  INTEGER  PRIMARY KEY  NOT NULL,"
+            "    rows     INTEGER               NOT NULL,"
+            "    cols     INTEGER               NOT NULL,"
+            "    data     BLOB);";
 
     SQLITE3_EXEC(database_, sql.c_str(), nullptr);
 }
 
 void Database::CreateInlierMatchesTable() const {
-    const std::string sql =
-            "CREATE TABLE IF NOT EXISTS inlier_matches"
-                    "   (pair_id  INTEGER  PRIMARY KEY  NOT NULL,"
-                    "    rows     INTEGER               NOT NULL,"
-                    "    cols     INTEGER               NOT NULL,"
-                    "    data     BLOB,"
-                    "    config   INTEGER               NOT NULL);";
+    const std::string sql = "CREATE TABLE IF NOT EXISTS inlier_matches"
+            "   (pair_id  INTEGER  PRIMARY KEY  NOT NULL,"
+            "    rows     INTEGER               NOT NULL,"
+            "    cols     INTEGER               NOT NULL,"
+            "    data     BLOB,"
+            "    config   INTEGER               NOT NULL);";
 
     SQLITE3_EXEC(database_, sql.c_str(), nullptr);
 }
@@ -1517,8 +1395,7 @@ void Database::CreateInlierMatchesTable() const {
 void Database::UpdateSchema() const {
     const std::string query_user_version_sql = "PRAGMA user_version;";
     sqlite3_stmt* query_user_version_sql_stmt;
-    SQLITE3_CALL(sqlite3_prepare_v2(database_, query_user_version_sql.c_str(), -1,
-                                    &query_user_version_sql_stmt, 0));
+    SQLITE3_CALL(sqlite3_prepare_v2(database_, query_user_version_sql.c_str(), -1, &query_user_version_sql_stmt, 0));
 
     if (SQLITE3_CALL(sqlite3_step(query_user_version_sql_stmt)) == SQLITE_ROW) {
         const int user_version = sqlite3_column_int(query_user_version_sql_stmt, 0);
@@ -1528,14 +1405,12 @@ void Database::UpdateSchema() const {
 
     SQLITE3_CALL(sqlite3_finalize(query_user_version_sql_stmt));
 
-    const std::string update_user_version_sql =
-            "PRAGMA user_version = " + std::to_string(kSchemaVersion) + ";";
+    const std::string update_user_version_sql = "PRAGMA user_version = " + std::to_string(kSchemaVersion) + ";";
     SQLITE3_EXEC(database_, update_user_version_sql.c_str(), nullptr);
 }
 
 bool Database::ExistsRowId(sqlite3_stmt* sql_stmt, const size_t row_id) const {
-    SQLITE3_CALL(
-            sqlite3_bind_int64(sql_stmt, 1, static_cast<sqlite3_int64>(row_id)));
+    SQLITE3_CALL(sqlite3_bind_int64(sql_stmt, 1, static_cast<sqlite3_int64>(row_id)));
 
     const int rc = SQLITE3_CALL(sqlite3_step(sql_stmt));
 
@@ -1546,11 +1421,8 @@ bool Database::ExistsRowId(sqlite3_stmt* sql_stmt, const size_t row_id) const {
     return exists;
 }
 
-bool Database::ExistsRowString(sqlite3_stmt* sql_stmt,
-                               const std::string& row_entry) const {
-    SQLITE3_CALL(sqlite3_bind_text(sql_stmt, 1, row_entry.c_str(),
-                                   static_cast<int>(row_entry.size()),
-                                   SQLITE_STATIC));
+bool Database::ExistsRowString(sqlite3_stmt* sql_stmt, const std::string& row_entry) const {
+    SQLITE3_CALL(sqlite3_bind_text(sql_stmt, 1, row_entry.c_str(), static_cast<int>(row_entry.size()), SQLITE_STATIC));
 
     const int rc = SQLITE3_CALL(sqlite3_step(sql_stmt));
 
@@ -1578,8 +1450,7 @@ size_t Database::CountRows(const std::string& table) const {
     return count;
 }
 
-size_t Database::SumColumn(const std::string& column,
-                           const std::string& table) const {
+size_t Database::SumColumn(const std::string& column, const std::string& table) const {
     const std::string sql = "SELECT SUM(" + column + ") FROM " + table + ";";
     sqlite3_stmt* sql_stmt;
 
@@ -1596,8 +1467,7 @@ size_t Database::SumColumn(const std::string& column,
     return sum;
 }
 
-image_pair_t Database::ImagePairToPairId(const image_t image_id1,
-                                         const image_t image_id2) {
+image_pair_t Database::ImagePairToPairId(const image_t image_id1, const image_t image_id2) {
     if (SwapImagePair(image_id1, image_id2)) {
         return kMaxNumImages * image_id2 + image_id1;
     } else {
@@ -1605,8 +1475,7 @@ image_pair_t Database::ImagePairToPairId(const image_t image_id1,
     }
 }
 
-void Database::PairIdToImagePair(const image_pair_t pair_id, image_t* image_id1,
-                                 image_t* image_id2) {
+void Database::PairIdToImagePair(const image_pair_t pair_id, image_t* image_id1, image_t* image_id2) {
     *image_id2 = static_cast<image_t>(pair_id % kMaxNumImages);
     *image_id1 = static_cast<image_t>((pair_id - *image_id2) / kMaxNumImages);
 }
@@ -1627,8 +1496,7 @@ void DatabaseCache::AddImage(const class Image& image) {
     scene_graph_.AddImage(image.ImageId(), image.NumPoints2D());
 }
 
-void DatabaseCache::Load(const Database& database, const size_t min_num_matches,
-                         const bool ignore_watermarks) {
+void DatabaseCache::Load(const Database& database, const size_t min_num_matches, const bool ignore_watermarks) {
     Timer timer;
 
     timer.Start();
@@ -1642,26 +1510,18 @@ void DatabaseCache::Load(const Database& database, const size_t min_num_matches,
         }
     }
 
-    std::cout << boost::format(" %d in %.3fs") % cameras_.size() %
-                 timer.ElapsedSeconds()
-    << std::endl;
+    std::cout << boost::format(" %d in %.3fs") % cameras_.size() % timer.ElapsedSeconds() << std::endl;
 
     timer.Restart();
     std::cout << "Loading matches..." << std::flush;
 
-    const std::vector<std::pair<image_pair_t, TwoViewGeometry>> image_pairs =
-            database.ReadAllInlierMatches();
+    const std::vector<std::pair<image_pair_t, TwoViewGeometry>> image_pairs = database.ReadAllInlierMatches();
 
-    std::cout << boost::format(" %d in %.3fs") % image_pairs.size() %
-                 timer.ElapsedSeconds()
-    << std::endl;
+    std::cout << boost::format(" %d in %.3fs") % image_pairs.size() % timer.ElapsedSeconds() << std::endl;
 
-    auto UseInlierMatchesCheck = [min_num_matches, ignore_watermarks](
-            const TwoViewGeometry& two_view_geometry) {
-        return static_cast<size_t>(two_view_geometry.inlier_matches.size()) >=
-               min_num_matches &&
-               (!ignore_watermarks ||
-                two_view_geometry.config != TwoViewGeometry::WATERMARK);
+    auto UseInlierMatchesCheck = [min_num_matches, ignore_watermarks](const TwoViewGeometry& two_view_geometry) {
+        return (static_cast<size_t>(two_view_geometry.inlier_matches.size()) >= min_num_matches) &&
+               (!ignore_watermarks || two_view_geometry.config != TwoViewGeometry::WATERMARK);
     };
 
     timer.Restart();
@@ -1686,17 +1546,14 @@ void DatabaseCache::Load(const Database& database, const size_t min_num_matches,
         for (const class Image& image : images) {
             if (connected_image_ids.count(image.ImageId()) > 0) {
                 images_.emplace(image.ImageId(), image);
-                const FeatureKeypoints keypoints =
-                        database.ReadKeypoints(image.ImageId());
-                const std::vector<Eigen::Vector2d> points =
-                        FeatureKeypointsToPointsVector(keypoints);
+                const FeatureKeypoints keypoints = database.ReadKeypoints(image.ImageId());
+                const std::vector<Eigen::Vector2d> points = FeatureKeypointsToPointsVector(keypoints);
                 images_[image.ImageId()].SetPoints2D(points);
             }
         }
 
-        std::cout << boost::format(" %d in %.3fs (connected %d)") % images.size() %
-                     timer.ElapsedSeconds() % connected_image_ids.size()
-        << std::endl;
+        std::cout << boost::format(" %d in %.3fs (connected %d)")
+                     % images.size() % timer.ElapsedSeconds() % connected_image_ids.size() << std::endl;
     }
 
     timer.Restart();
@@ -1712,8 +1569,7 @@ void DatabaseCache::Load(const Database& database, const size_t min_num_matches,
             image_t image_id1;
             image_t image_id2;
             Database::PairIdToImagePair(image_pair.first, &image_id1, &image_id2);
-            scene_graph_.AddCorrespondences(image_id1, image_id2,
-                                            image_pair.second.inlier_matches);
+            scene_graph_.AddCorrespondences(image_id1, image_id2, image_pair.second.inlier_matches);
         } else {
             num_ignored_image_pairs += 1;
         }
@@ -1722,15 +1578,12 @@ void DatabaseCache::Load(const Database& database, const size_t min_num_matches,
     scene_graph_.Finalize();
 
     for (auto& image : images_) {
-        image.second.SetNumObservations(
-                scene_graph_.NumObservationsForImage(image.first));
-        image.second.SetNumCorrespondences(
-                scene_graph_.NumCorrespondencesForImage(image.first));
+        image.second.SetNumObservations(scene_graph_.NumObservationsForImage(image.first));
+        image.second.SetNumCorrespondences(scene_graph_.NumCorrespondencesForImage(image.first));
     }
 
-    std::cout << boost::format(" in %.3fs (ignored %d)") %
-                 timer.ElapsedSeconds() % num_ignored_image_pairs
-    << std::endl;
+    std::cout << boost::format(" in %.3fs (ignored %d)")
+                 % timer.ElapsedSeconds() % num_ignored_image_pairs << std::endl;
 }
 
 
@@ -1738,39 +1591,21 @@ size_t DatabaseCache::NumCameras() const { return cameras_.size(); }
 
 size_t DatabaseCache::NumImages() const { return images_.size(); }
 
-class Camera& DatabaseCache::Camera(const camera_t camera_id) {
-    return cameras_.at(camera_id);
-}
+class Camera& DatabaseCache::Camera(const camera_t camera_id) { return cameras_.at(camera_id); }
 
-const class Camera& DatabaseCache::Camera(const camera_t camera_id) const {
-    return cameras_.at(camera_id);
-}
+const class Camera& DatabaseCache::Camera(const camera_t camera_id) const { return cameras_.at(camera_id); }
 
-class Image& DatabaseCache::Image(const image_t image_id) {
-    return images_.at(image_id);
-}
+class Image& DatabaseCache::Image(const image_t image_id) { return images_.at(image_id); }
 
-const class Image& DatabaseCache::Image(const image_t image_id) const {
-    return images_.at(image_id);
-}
+const class Image& DatabaseCache::Image(const image_t image_id) const { return images_.at(image_id); }
 
 const std::unordered_map<camera_t, class Camera>& DatabaseCache::Cameras()
-const {
-    return cameras_;
-}
+const { return cameras_; }
 
-const std::unordered_map<image_t, class Image>& DatabaseCache::Images() const {
-    return images_;
-}
+const std::unordered_map<image_t, class Image>& DatabaseCache::Images() const { return images_; }
 
-bool DatabaseCache::ExistsCamera(const camera_t camera_id) const {
-    return cameras_.count(camera_id) > 0;
-}
+bool DatabaseCache::ExistsCamera(const camera_t camera_id) const { return cameras_.count(camera_id) > 0; }
 
-bool DatabaseCache::ExistsImage(const image_t image_id) const {
-    return images_.count(image_id) > 0;
-}
+bool DatabaseCache::ExistsImage(const image_t image_id) const { return images_.count(image_id) > 0; }
 
-const class SceneGraph& DatabaseCache::SceneGraph() const {
-    return scene_graph_;
-}
+const class SceneGraph& DatabaseCache::SceneGraph() const { return scene_graph_; }
