@@ -1,7 +1,7 @@
 #include "reconstruction.h"
 
 Reconstruction::Reconstruction()
-        : scene_graph_(nullptr), num_added_points3D_(0) { }
+        : scene_graph_(nullptr), num_added_points3D_(0) {}
 
 std::unordered_set<point3D_t> Reconstruction::Point3DIds() const {
     std::unordered_set<point3D_t> point3D_ids;
@@ -36,8 +36,7 @@ void Reconstruction::Load(const DatabaseCache& database_cache) {
         }
     }
 
-    for (const auto& image_pair :
-            database_cache.SceneGraph().NumCorrespondencesBetweenImages()) {
+    for (const auto& image_pair : database_cache.SceneGraph().NumCorrespondencesBetweenImages()) {
         image_pairs_[image_pair.first] = std::make_pair(0, image_pair.second);
     }
 }
@@ -50,12 +49,10 @@ void Reconstruction::SetUp(const SceneGraph* scene_graph) {
 
     for (const auto image_id : reg_image_ids_) {
         const class Image& image = Image(image_id);
-        for (point2D_t point2D_idx = 0; point2D_idx < image.NumPoints2D();
-             ++point2D_idx) {
+        for (point2D_t point2D_idx = 0; point2D_idx < image.NumPoints2D(); ++point2D_idx) {
             if (image.Point2D(point2D_idx).HasPoint3D()) {
                 const bool kIsContinuedPoint3D = false;
-                SetObservationAsTriangulated(image_id, point2D_idx,
-                                             kIsContinuedPoint3D);
+                SetObservationAsTriangulated(image_id, point2D_idx, kIsContinuedPoint3D);
             }
         }
     }
@@ -204,8 +201,7 @@ void Reconstruction::RegisterImage(const image_t image_id) {
 void Reconstruction::DeRegisterImage(const image_t image_id) {
     class Image& image = Image(image_id);
 
-    for (point2D_t point2D_idx = 0; point2D_idx < image.NumPoints2D();
-         ++point2D_idx) {
+    for (point2D_t point2D_idx = 0; point2D_idx < image.NumPoints2D(); ++point2D_idx) {
         if (image.Point2D(point2D_idx).HasPoint3D()) {
             DeleteObservation(image_id, point2D_idx);
         }
@@ -344,10 +340,8 @@ size_t Reconstruction::FilterAllPoints3D(const double max_reproj_error,
                                          const double min_tri_angle) {
     const std::unordered_set<point3D_t>& point3D_ids = Point3DIds();
     size_t num_filtered = 0;
-    num_filtered +=
-            FilterPoints3DWithLargeReprojectionError(max_reproj_error, point3D_ids);
-    num_filtered +=
-            FilterPoints3DWithSmallTriangulationAngle(min_tri_angle, point3D_ids);
+    num_filtered += FilterPoints3DWithLargeReprojectionError(max_reproj_error, point3D_ids);
+    num_filtered += FilterPoints3DWithSmallTriangulationAngle(min_tri_angle, point3D_ids);
     return num_filtered;
 }
 
@@ -356,8 +350,7 @@ size_t Reconstruction::FilterObservationsWithNegativeDepth() {
     for (const auto image_id : reg_image_ids_) {
         const class Image& image = Image(image_id);
         const Eigen::Matrix3x4d proj_matrix = image.ProjectionMatrix();
-        for (point2D_t point2D_idx = 0; point2D_idx < image.NumPoints2D();
-             ++point2D_idx) {
+        for (point2D_t point2D_idx = 0; point2D_idx < image.NumPoints2D(); ++point2D_idx) {
             const Point2D& point2D = image.Point2D(point2D_idx);
             if (point2D.HasPoint3D()) {
                 const class Point_3D& point3D = Point3D(point2D.Point3DId());
@@ -381,8 +374,7 @@ std::vector<image_t> Reconstruction::FilterImages(
         if (image.NumPoints3D() == 0) {
             DeRegisterImage(image_id);
             filtered_image_ids.push_back(image_id);
-        } else if (camera.HasBogusParams(min_focal_length_ratio,
-                                         max_focal_length_ratio, max_extra_param)) {
+        } else if (camera.HasBogusParams(min_focal_length_ratio, max_focal_length_ratio, max_extra_param)) {
             filtered_image_ids.push_back(image_id);
         }
     }
@@ -477,8 +469,7 @@ void Reconstruction::ImportPLY(const std::string& path, bool append_to_existing)
         if (line.size() >= 6 && line.substr(0, 6) == "format") {
             if (line == "format ascii 1.0") {
                 is_binary = false;
-            } else if (line == "format binary_little_endian 1.0" ||
-                       line == "format binary_big_endian 1.0") {
+            } else if (line == "format binary_little_endian 1.0" || line == "format binary_big_endian 1.0") {
                 is_binary = true;
             }
         }
@@ -587,8 +578,7 @@ void Reconstruction::ImportPLY(const std::string& path, bool append_to_existing)
 }
 
 
-void Reconstruction::ExportBundler(const std::string& path,
-                                   const std::string& list_path) const {
+void Reconstruction::ExportBundler(const std::string& path, const std::string& list_path) const {
     std::ofstream file;
     file.open(path.c_str(), std::ios::trunc);
 
@@ -705,8 +695,7 @@ void Reconstruction::ExportPLY(const std::string& path) const {
     file.close();
 }
 
-bool Reconstruction::ExtractColors(const image_t image_id,
-                                   const std::string& path) {
+bool Reconstruction::ExtractColors(const image_t image_id, const std::string& path) {
     const class Image& image = Image(image_id);
 
     Bitmap bitmap;
@@ -764,8 +753,7 @@ size_t Reconstruction::FilterPoints3DWithSmallTriangulationAngle(
                 const image_t image_id2 = point3D.Track().Element(i2).image_id;
                 const Eigen::Vector3d proj_center2 = proj_centers.at(image_id2);
 
-                const double tri_angle = CalculateTriangulationAngle(
-                        proj_center1, proj_center2, point3D.XYZ());
+                const double tri_angle = CalculateTriangulationAngle(proj_center1, proj_center2, point3D.XYZ());
 
                 if (tri_angle >= min_tri_angle_rad) {
                     keep_point = true;

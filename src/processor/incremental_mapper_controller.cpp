@@ -1,40 +1,29 @@
-#include "controllers.h"
+#include "incremental_mapper_controller.h"
 
 namespace {
-    size_t TriangulateImage(const MapperOptions& options, const Image& image,
-                            IncrementalMapper* mapper) {
-        std::cout << "  => Continued observations: " << image.NumPoints3D()
-        << std::endl;
-        const size_t num_tris =
-                mapper->TriangulateImage(options.TriangulationOptions(), image.ImageId());
+    size_t TriangulateImage(const MapperOptions& options, const Image& image, IncrementalMapper* mapper) {
+        std::cout << "  => Continued observations: " << image.NumPoints3D() << std::endl;
+        const size_t num_tris = mapper->TriangulateImage(options.TriangulationOptions(), image.ImageId());
         std::cout << "  => Added observations: " << num_tris << std::endl;
         return num_tris;
     }
 
-    size_t CompleteAndMergeTracks(const MapperOptions& options,
-                                  IncrementalMapper* mapper) {
-        const size_t num_completed_observations =
-                mapper->CompleteTracks(options.TriangulationOptions());
-        std::cout << "  => Merged observations: " << num_completed_observations
-        << std::endl;
-        const size_t num_merged_observations =
-                mapper->MergeTracks(options.TriangulationOptions());
-        std::cout << "  => Completed observations: " << num_merged_observations
-        << std::endl;
+    size_t CompleteAndMergeTracks(const MapperOptions& options, IncrementalMapper* mapper) {
+        const size_t num_completed_observations = mapper->CompleteTracks(options.TriangulationOptions());
+        std::cout << "  => Merged observations: " << num_completed_observations << std::endl;
+        const size_t num_merged_observations = mapper->MergeTracks(options.TriangulationOptions());
+        std::cout << "  => Completed observations: " << num_merged_observations << std::endl;
         return num_completed_observations + num_merged_observations;
     }
 
     size_t FilterPoints(const MapperOptions& options, IncrementalMapper* mapper) {
-        const size_t num_filtered_observations =
-                mapper->FilterPoints(options.IncrementalMapperOptions());
-        std::cout << "  => Filtered observations: " << num_filtered_observations
-        << std::endl;
+        const size_t num_filtered_observations = mapper->FilterPoints(options.IncrementalMapperOptions());
+        std::cout << "  => Filtered observations: " << num_filtered_observations << std::endl;
         return num_filtered_observations;
     }
 
     size_t FilterImages(const MapperOptions& options, IncrementalMapper* mapper) {
-        const size_t num_filtered_images =
-                mapper->FilterImages(options.IncrementalMapperOptions());
+        const size_t num_filtered_images = mapper->FilterImages(options.IncrementalMapperOptions());
         std::cout << "  => Filtered images: " << num_filtered_images << std::endl;
         return num_filtered_images;
     }
@@ -42,8 +31,7 @@ namespace {
     void AdjustGlobalBundle(const MapperOptions& options,
                             const Reconstruction& reconstruction,
                             IncrementalMapper* mapper) {
-        BundleAdjuster::Options custom_options =
-                options.GlobalBundleAdjustmentOptions();
+        BundleAdjuster::Options custom_options = options.GlobalBundleAdjustmentOptions();
 
         const size_t num_reg_images = reconstruction.NumRegImages();
 
@@ -68,22 +56,17 @@ namespace {
             const auto report = mapper->AdjustLocalBundle(
                     options.IncrementalMapperOptions(), ba_options,
                     options.TriangulationOptions(), image_id);
-            std::cout << "  => Merged observations: " << report.num_merged_observations
-            << std::endl;
-            std::cout << "  => Completed observations: "
-            << report.num_completed_observations << std::endl;
-            std::cout << "  => Filtered observations: "
-            << report.num_filtered_observations << std::endl;
-            const double changed =
-                    (report.num_merged_observations + report.num_completed_observations +
-                     report.num_filtered_observations) /
-                    static_cast<double>(report.num_adjusted_observations);
+            std::cout << "  => Merged observations: " << report.num_merged_observations << std::endl;
+            std::cout << "  => Completed observations: " << report.num_completed_observations << std::endl;
+            std::cout << "  => Filtered observations: " << report.num_filtered_observations << std::endl;
+            const double changed = (report.num_merged_observations + report.num_completed_observations +
+                                    report.num_filtered_observations) /
+                                   static_cast<double>(report.num_adjusted_observations);
             std::cout << "  => Changed observations: " << changed << std::endl;
             if (changed < options.ba_local_max_refinement_change) {
                 break;
             }
-            ba_options.loss_function_type =
-                    BundleAdjuster::Options::LossFunctionType::TRIVIAL;
+            ba_options.loss_function_type = BundleAdjuster::Options::LossFunctionType::TRIVIAL;
         }
     }
 
@@ -93,8 +76,8 @@ namespace {
         PrintHeading1("Retriangulation");
         CompleteAndMergeTracks(options, mapper);
         std::cout << "  => Retriangulated observations: "
-        << mapper->Retriangulate(options.TriangulationOptions())
-        << std::endl;
+                  << mapper->Retriangulate(options.TriangulationOptions())
+                  << std::endl;
 
         for (int i = 0; i < options.ba_global_max_refinements; ++i) {
             const size_t num_observations = reconstruction.ComputeNumObservations();
@@ -102,8 +85,7 @@ namespace {
             AdjustGlobalBundle(options, reconstruction, mapper);
             num_changed_observations += CompleteAndMergeTracks(options, mapper);
             num_changed_observations += FilterPoints(options, mapper);
-            const double changed =
-                    static_cast<double>(num_changed_observations) / num_observations;
+            const double changed = static_cast<double>(num_changed_observations) / num_observations;
             std::cout << "  => Changed observations: " << changed << std::endl;
             if (changed < options.ba_global_max_refinement_change) {
                 break;
@@ -118,7 +100,7 @@ namespace {
         if (!reconstruction->ExtractColors(image_id, image_path)) {
             std::cout << boost::format("WARNING: Could not read image %s at path %s.") %
                          reconstruction->Image(image_id).Name() % image_path
-            << std::endl;
+                      << std::endl;
         }
     }
 
@@ -134,7 +116,7 @@ IncrementalMapperController::IncrementalMapperController(
           running_(false),
           started_(false),
           finished_(false),
-          options_(options) { }
+          options_(options) {}
 
 IncrementalMapperController::IncrementalMapperController(
         const OptionManager& options, class Reconstruction* initial_model)
@@ -381,8 +363,8 @@ void IncrementalMapperController::run() {
                               ")");
 
                 std::cout << "  => Image sees " << next_image.NumVisiblePoints3D()
-                << " / " << next_image.NumObservations() << " points."
-                << std::endl;
+                          << " / " << next_image.NumObservations() << " points."
+                          << std::endl;
 
                 reg_next_success = mapper.RegisterNextImage(
                         mapper_options.IncrementalMapperOptions(), next_image_id);
@@ -413,8 +395,7 @@ void IncrementalMapperController::run() {
 
                     break;
                 } else {
-                    std::cout << "  => Could not register, trying another image."
-                    << std::endl;
+                    std::cout << "  => Could not register, trying another image." << std::endl;
 
                     const size_t kMinNumInitialRegTrials = 30;
                     if (reg_trial >= kMinNumInitialRegTrials &&
@@ -425,8 +406,7 @@ void IncrementalMapperController::run() {
                 }
             }
 
-            const size_t max_model_overlap =
-                    static_cast<size_t>(mapper_options.max_model_overlap);
+            const size_t max_model_overlap = static_cast<size_t>(mapper_options.max_model_overlap);
             if (mapper.NumSharedRegImages() >= max_model_overlap) {
                 break;
             }
@@ -448,10 +428,8 @@ void IncrementalMapperController::run() {
         }
 
         const size_t min_model_size =
-                std::min(database_cache.NumImages(),
-                         static_cast<size_t>(mapper_options.min_model_size));
-        if ((mapper_options.multiple_models &&
-             reconstruction.NumRegImages() < min_model_size) ||
+                std::min(database_cache.NumImages(), static_cast<size_t>(mapper_options.min_model_size));
+        if ((mapper_options.multiple_models && reconstruction.NumRegImages() < min_model_size) ||
             reconstruction.NumRegImages() == 0) {
             const bool kDiscardReconstruction = true;
             mapper.EndReconstruction(kDiscardReconstruction);

@@ -1,7 +1,7 @@
 #ifndef INC_3D_RECONSTRUCTION_CONTROLLERS_H
 #define INC_3D_RECONSTRUCTION_CONTROLLERS_H
 
-#include "options.h"
+#include "../options.h"
 
 #include <memory>
 #include <iostream>
