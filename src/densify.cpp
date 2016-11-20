@@ -97,35 +97,31 @@ void ImageDensifier::run() {
         const Camera& camera = reconstruction_.Camera(image.CameraId());
 
         const std::string input_image_path = image_path_ + image.Name();
-        const std::string output_image_path =
-                (visualize_path / fs::path((boost::format("%08d.jpg") % i).str()))
-                        .string();
-        const std::string proj_matrix_path =
-                (txt_path / fs::path((boost::format("%08d.txt") % i).str())).string();
+        const std::string output_image_path = (visualize_path / fs::path(
+                QString().sprintf("%08lu.jpg", i).toStdString())).string();
+        const std::string proj_matrix_path = (txt_path / fs::path(
+                QString().sprintf("%0lu.txt", i).toStdString())).string();
 
         std::function<size_t(void)> UndistortFunc = [=]() {
             if (fs::exists(output_image_path) && fs::exists(proj_matrix_path)) {
-                std::cout << boost::format("SKIP: Already undistorted [%d/%d]") %
-                             (i + 1) % reg_image_ids.size()
-                << std::endl;
+                std::cout << QString().sprintf(
+                        "SKIP: Already undistorted [%lu/%lu]", i + 1, reg_image_ids.size()
+                ).toStdString() << std::endl;
                 return i;
             }
             Bitmap distorted_bitmap;
 
             if (!distorted_bitmap.Read(input_image_path, true)) {
-                std::cerr << "ERROR: Cannot read image at path " << input_image_path
-                << std::endl;
+                std::cerr << "ERROR: Cannot read image at path " << input_image_path << std::endl;
                 return i;
             }
 
             Bitmap undistorted_bitmap;
             Camera undistorted_camera;
-            UndistortImage(distorted_bitmap, camera, &undistorted_bitmap,
-                           &undistorted_camera);
+            UndistortImage(distorted_bitmap, camera, &undistorted_bitmap, &undistorted_camera);
 
             undistorted_bitmap.Write(output_image_path);
-            WriteProjectionMatrix(proj_matrix_path, undistorted_camera, image,
-                                  "CONTOUR");
+            WriteProjectionMatrix(proj_matrix_path, undistorted_camera, image, "CONTOUR");
 
             return i;
         };
@@ -164,9 +160,9 @@ void ImageDensifier::run() {
             point2D.SetXY(undistorted_camera.WorldToImage(world_point));
         }
 
-        std::cout << boost::format("Undistorting image [%d/%d]") % (i + 1) %
-                     reg_image_ids.size()
-        << std::endl;
+        std::cout << QString().sprintf(
+                "Undistorting image [%lu/%lu]", i + 1, reg_image_ids.size()
+        ).toStdString() << std::endl;
     }
 
     std::cout << "Writing bundle file" << std::endl;
@@ -213,7 +209,7 @@ void ImageDensifier::run() {
         }
 
         std::ofstream ofstr;
-        std::string option = (boost::format("option-%04d") % c).str();
+        std::string option = QString().sprintf("option-%04d", c).toStdString();
         ofstr.open((pmvs_path / fs::path(option)).string().c_str());
         results_.push_back(option);
 
@@ -253,8 +249,9 @@ void ImageDensifier::run() {
 
         QString program = QString::fromStdString(binary_path_);
         QStringList arguments;
-        arguments << "pmvs" << EnsureTrailingSlash(pmvs_path.string()).c_str() <<
-        (boost::format("option-%04d") % c).str().c_str();
+        arguments << "pmvs" << EnsureTrailingSlash(pmvs_path.string()).c_str()
+        << QString().sprintf("option-%04d", c).toStdString().c_str();
+
         QProcess* pmvs_process = new QProcess;
         std::cout << "Running " << program.toUtf8().constData() << " with mode pmvs" << std::endl;
         WaitForProcess(pmvs_process, program, arguments);

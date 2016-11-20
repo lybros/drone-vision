@@ -10,11 +10,9 @@ namespace {
             const int new_width = static_cast<int>(camera.Width() * scale);
             const int new_height = static_cast<int>(camera.Height() * scale);
 
-            std::cout << boost::format(
-                    "  WARNING: Image exceeds maximum dimensions "
-                            "- resizing to %dx%d.") %
-                         new_width % new_height
-            << std::endl;
+            std::cout << QString().sprintf(
+                    "  WARNING: Image exceeds maximum dimensions - resizing to %dx%d.", new_width, new_height
+            ).toStdString() << std::endl;
 
             *scale_x = static_cast<double>(new_width) / camera.Width();
             *scale_y = static_cast<double>(new_height) / camera.Height();
@@ -171,11 +169,10 @@ bool FeatureExtractor::ReadImage(const std::string& image_path, Image* image,
     if (bitmap->ExifLatitude(&image->TvecPrior(0)) &&
         bitmap->ExifLongitude(&image->TvecPrior(1)) &&
         bitmap->ExifAltitude(&image->TvecPrior(2))) {
-        std::cout << boost::format(
-                "  EXIF GPS:       LAT=%.3f, LON=%.3f, ALT=%.3f") %
-                     image->TvecPrior(0) % image->TvecPrior(1) %
-                     image->TvecPrior(2)
-        << std::endl;
+        std::cout << QString().sprintf(
+                "  EXIF GPS:       LAT=%.3f, LON=%.3f, ALT=%.3f",
+                image->TvecPrior(0), image->TvecPrior(1), image->TvecPrior(2)
+        ).toStdString() << std::endl;
     } else {
         image->TvecPrior(0) = std::numeric_limits<double>::quiet_NaN();
         image->TvecPrior(1) = std::numeric_limits<double>::quiet_NaN();
@@ -479,7 +476,7 @@ bool FeatureMatcher::IsStopped() {
 }
 
 void FeatureMatcher::PrintElapsedTime(const Timer& timer) {
-    std::cout << boost::format(" in %.3fs") % timer.ElapsedSeconds() << std::endl;
+    std::cout << QString().sprintf(" in %.3fs", timer.ElapsedSeconds()).toStdString() << std::endl;
 }
 
 const FeatureKeypoints& FeatureMatcher::CacheKeypoints(const image_t image_id) {
@@ -821,9 +818,11 @@ void ExhaustiveFeatureMatcher::DoMatching() {
             Timer timer;
             timer.Start();
 
-            std::cout << boost::format("Matching block [%d/%d, %d/%d]") %
-                         (start_idx1 / block_size + 1) % num_blocks %
-                         (start_idx2 / block_size + 1) % num_blocks << std::flush;
+            std::cout << QString().sprintf(
+                    "Matching block [%lu/%lu, %lu/%lu]",
+                    (start_idx1 / block_size + 1), num_blocks,
+                    (start_idx2 / block_size + 1), num_blocks
+            ).toStdString() << std::flush;
 
             image_pairs.clear();
 
@@ -909,7 +908,9 @@ ExhaustiveFeatureMatcher::PreemptivelyFilterImagePairs(const std::vector<std::pa
 
     database_.EndTransaction();
 
-    std::cout << boost::format(" P(%d/%d)") % filtered_image_pairs.size() % image_pairs.size() << std::flush;
+    std::cout << QString().sprintf(
+            " P(%lu/%lu)", filtered_image_pairs.size(), image_pairs.size()
+    ).toStdString() << std::flush;
 
     return filtered_image_pairs;
 }

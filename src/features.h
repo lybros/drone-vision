@@ -11,7 +11,6 @@
 #include <QtCore/QMutex>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOffscreenSurface>
-#include <boost/format.hpp>
 #include <boost/filesystem.hpp>
 
 struct SIFTOptions {

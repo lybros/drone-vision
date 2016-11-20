@@ -76,8 +76,8 @@ namespace {
         PrintHeading1("Retriangulation");
         CompleteAndMergeTracks(options, mapper);
         std::cout << "  => Retriangulated observations: "
-                  << mapper->Retriangulate(options.TriangulationOptions())
-                  << std::endl;
+        << mapper->Retriangulate(options.TriangulationOptions())
+        << std::endl;
 
         for (int i = 0; i < options.ba_global_max_refinements; ++i) {
             const size_t num_observations = reconstruction.ComputeNumObservations();
@@ -95,12 +95,12 @@ namespace {
         FilterImages(options, mapper);
     }
 
-    void ExtractColors(const std::string& image_path, const image_t image_id,
-                       Reconstruction* reconstruction) {
+    void ExtractColors(const std::string& image_path, const image_t image_id, Reconstruction* reconstruction) {
         if (!reconstruction->ExtractColors(image_id, image_path)) {
-            std::cout << boost::format("WARNING: Could not read image %s at path %s.") %
-                         reconstruction->Image(image_id).Name() % image_path
-                      << std::endl;
+            std::cout << QString().sprintf(
+                    "WARNING: Could not read image %s at path %s.",
+                    reconstruction->Image(image_id).Name().c_str(), image_path.c_str()
+            ).toStdString() << std::endl;
         }
     }
 
@@ -116,7 +116,7 @@ IncrementalMapperController::IncrementalMapperController(
           running_(false),
           started_(false),
           finished_(false),
-          options_(options) {}
+          options_(options) { }
 
 IncrementalMapperController::IncrementalMapperController(
         const OptionManager& options, class Reconstruction* initial_model)
@@ -363,8 +363,8 @@ void IncrementalMapperController::run() {
                               ")");
 
                 std::cout << "  => Image sees " << next_image.NumVisiblePoints3D()
-                          << " / " << next_image.NumObservations() << " points."
-                          << std::endl;
+                << " / " << next_image.NumObservations() << " points."
+                << std::endl;
 
                 reg_next_success = mapper.RegisterNextImage(
                         mapper_options.IncrementalMapperOptions(), next_image_id);
