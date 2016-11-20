@@ -6,8 +6,6 @@
 #include <memory>
 #include <iostream>
 
-#include <boost/format.hpp>
-
 #include <QtCore/QThread>
 #include <QtWidgets/QAction>
 #include <QtCore/QMutex>

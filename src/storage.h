@@ -10,7 +10,6 @@
 
 #include <unordered_map>
 #include <unordered_set>
-#include <boost/format.hpp>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 
