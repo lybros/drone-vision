@@ -84,8 +84,7 @@ bool FeatureExtractor::ReadImage(const std::string& image_path, Image* image,
         database_.BeginTransaction();
         *image = database_.ReadImageFromName(image->Name());
         const bool exists_keypoints = database_.ExistsKeypoints(image->ImageId());
-        const bool exists_descriptors =
-                database_.ExistsDescriptors(image->ImageId());
+        const bool exists_descriptors = database_.ExistsDescriptors(image->ImageId());
         database_.EndTransaction();
 
         if (exists_keypoints && exists_descriptors) {
@@ -309,8 +308,7 @@ void SiftGPUFeatureExtractor::DoExtraction() {
             const size_t num_features = static_cast<size_t>(sift_gpu.GetFeatureNum());
             std::vector<SiftGPU::SiftKeypoint> sift_gpu_keypoints(num_features);
 
-            Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-                    descriptors(num_features, 128);
+            Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> descriptors(num_features, 128);
 
             sift_gpu.GetFeatureVector(sift_gpu_keypoints.data(), descriptors.data());
 
@@ -340,12 +338,10 @@ void SiftGPUFeatureExtractor::DoExtraction() {
             if (!database_.ExistsDescriptors(image.ImageId())) {
                 if (sift_options_.normalization == SIFTOptions::Normalization::L2) {
                     descriptors = L2NormalizeFeatureDescriptors(descriptors);
-                } else if (sift_options_.normalization ==
-                           SIFTOptions::Normalization::L1_ROOT) {
+                } else if (sift_options_.normalization == SIFTOptions::Normalization::L1_ROOT) {
                     descriptors = L1RootNormalizeFeatureDescriptors(descriptors);
                 }
-                const FeatureDescriptors descriptors_byte =
-                        FeatureDescriptorsToUnsignedByte(descriptors);
+                const FeatureDescriptors descriptors_byte = FeatureDescriptorsToUnsignedByte(descriptors);
                 database_.WriteDescriptors(image.ImageId(), descriptors_byte);
             }
 

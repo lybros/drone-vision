@@ -83,19 +83,15 @@ void MainWindow::CreateWidgets() {
 }
 
 void MainWindow::CreateActions() {
-    action_new_project_ =
-            new QAction(QIcon(":/media/project-new.png"), tr("New project"), this);
+    action_new_project_ = new QAction(QIcon(":/media/project-new.png"), tr("New project"), this);
     action_new_project_->setShortcuts(QKeySequence::New);
-    connect(action_new_project_, &QAction::triggered, this,
-            &MainWindow::NewProject);
+    connect(action_new_project_, &QAction::triggered, this, &MainWindow::NewProject);
 
-    action_import_model_ =
-            new QAction(QIcon(":/media/import.png"), tr("Import model"), this);
+    action_import_model_ = new QAction(QIcon(":/media/import.png"), tr("Import model"), this);
     connect(action_import_model_, &QAction::triggered, this, &MainWindow::ImportModel);
     blocking_actions_.push_back(action_import_model_);
 
-    action_export_model_ =
-            new QAction(QIcon(":/media/export.png"), tr("Export model"), this);
+    action_export_model_ = new QAction(QIcon(":/media/export.png"), tr("Export model"), this);
     connect(action_export_model_, &QAction::triggered, this, &MainWindow::ExportModel);
     blocking_actions_.push_back(action_export_model_);
 
@@ -106,14 +102,11 @@ void MainWindow::CreateActions() {
     action_quit_ = new QAction(tr("Quit"), this);
     connect(action_quit_, &QAction::triggered, this, &MainWindow::close);
 
-    action_feature_extraction_ = new QAction(
-            QIcon(":/media/feature-extraction.png"), tr("Extract features"), this);
-    connect(action_feature_extraction_, &QAction::triggered, this,
-            &MainWindow::FeatureExtraction);
+    action_feature_extraction_ = new QAction(QIcon(":/media/feature-extraction.png"), tr("Extract features"), this);
+    connect(action_feature_extraction_, &QAction::triggered, this, &MainWindow::FeatureExtraction);
     blocking_actions_.push_back(action_feature_extraction_);
 
-    action_feature_matching_ = new QAction(QIcon(":/media/feature-matching.png"),
-                                           tr("Match features"), this);
+    action_feature_matching_ = new QAction(QIcon(":/media/feature-matching.png"), tr("Match features"), this);
     connect(action_feature_matching_, &QAction::triggered, this,
             &MainWindow::FeatureMatching);
     blocking_actions_.push_back(action_feature_matching_);
@@ -187,7 +180,7 @@ void MainWindow::CreateToolbar() {
     import_export_toolbar_ = addToolBar(tr("Model import/export"));
     import_export_toolbar_->addAction(action_import_model_);
     import_export_toolbar_->addAction(action_export_model_);
-    import_export_toolbar_->setIconSize(QSize(16,16));
+    import_export_toolbar_->setIconSize(QSize(16, 16));
 
     preprocessing_toolbar_ = addToolBar(tr("Processing"));
     preprocessing_toolbar_->addAction(action_feature_extraction_);
@@ -322,17 +315,14 @@ void MainWindow::ExportModel() {
     }
 
     QString default_filter("PLY (*.ply)");
-    const std::string path =
-            QFileDialog::getSaveFileName(
-                    this, tr("Select project file"), "",
-                    "PLY (*.ply)",
-                    &default_filter)
-                    .toUtf8()
-                    .constData();
+    const std::string path = QFileDialog::getSaveFileName(
+            this,
+            tr("Select project file"),
+            "",
+            "PLY (*.ply)",
+            &default_filter).toUtf8().constData();
 
-    if (path == "") {
-        return;
-    }
+    if (path == "") { return; }
 
     progress_bar_->setLabelText(tr("Exporting model"));
     progress_bar_->raise();
@@ -353,13 +343,16 @@ void MainWindow::ExportModelFinished() { progress_bar_->hide(); }
 void MainWindow::OpenProject() {
     QString path;
 
-    while(true) {
+    while (true) {
         path = QFileDialog::getExistingDirectory(
-                this, tr("Select a directory with project"),
-                "", QFileDialog::ShowDirsOnly);
-        if (path.isEmpty()) {
-            return;
-        }
+                this,
+                tr("Select a directory with project"),
+                "",
+                QFileDialog::ShowDirsOnly
+        );
+
+        if (path.isEmpty()) { return; }
+
         if (IsValidProjectDirectory(path)) {
             break;
         } else {
@@ -383,7 +376,7 @@ void MainWindow::OpenProject() {
 
 bool MainWindow::IsValidProjectDirectory(const QString& path) {
     return QFileInfo(EnsureTrailingSlash(path) + "base.db").exists() &&
-            QFileInfo(EnsureTrailingSlash(path) + "config").exists();
+           QFileInfo(EnsureTrailingSlash(path) + "config").exists();
 }
 
 void MainWindow::ReadProjectConfiguration(const QString& project_path) {

@@ -16,6 +16,4 @@ point3D_t Point2D::Point3DId() const { return point3D_id_; }
 
 bool Point2D::HasPoint3D() const { return point3D_id_ != kInvalidPoint3DId; }
 
-void Point2D::SetPoint3DId(const point3D_t point3D_id) {
-    point3D_id_ = point3D_id;
-}
+void Point2D::SetPoint3DId(const point3D_t point3D_id) { point3D_id_ = point3D_id; }

@@ -47,8 +47,7 @@ void IncrementalMapper::BeginReconstruction(Reconstruction* reconstruction) {
     reconstruction_ = reconstruction;
     reconstruction_->Load(*database_cache_);
     reconstruction_->SetUp(&database_cache_->SceneGraph());
-    triangulator_.reset(new IncrementalTriangulator(
-            &database_cache_->SceneGraph(), reconstruction));
+    triangulator_.reset(new IncrementalTriangulator(&database_cache_->SceneGraph(), reconstruction));
 
     num_shared_reg_images_ = 0;
     for (const image_t image_id : reconstruction_->RegImageIds()) {

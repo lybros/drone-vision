@@ -16,7 +16,6 @@ std::unordered_set<point3D_t> Reconstruction::Point3DIds() const {
 
 void Reconstruction::Load(const DatabaseCache& database_cache) {
     scene_graph_ = nullptr;
-
     cameras_.reserve(database_cache.NumCameras());
 
     for (const auto& camera : database_cache.Cameras()) {
@@ -675,7 +674,12 @@ void Reconstruction::ExportPLY(const std::string& path) const {
     file << "property uchar red" << std::endl;
     file << "property uchar green" << std::endl;
     file << "property uchar blue" << std::endl;
+    file << "property descriptors rows for 3d point" << std::endl;
+    file << "property descriptors cols for 3d point" << std::endl;
     file << "end_header" << std::endl;
+
+    std::cout << "size " << points3D_.size() << std::endl;
+    int numOfDescriptors = 0;
 
     for (const auto& point3D : points3D_) {
         file << point3D.second.X() << " ";
@@ -684,11 +688,25 @@ void Reconstruction::ExportPLY(const std::string& path) const {
         file << static_cast<int>(point3D.second.Color(0)) << " ";
         file << static_cast<int>(point3D.second.Color(1)) << " ";
         file << static_cast<int>(point3D.second.Color(2)) << std::endl;
-    }
 
+        std::vector<TrackElement> elements = point3D.second.Track().Elements();
+        const int DESCRIPTORS_COLS_COUNT = 128;
+        file << elements.size() << " " << DESCRIPTORS_COLS_COUNT << std::endl;
+        numOfDescriptors += elements.size();
+
+        for (const auto& element : elements) {
+            FeatureDescriptors descriptors = Image(element.image_id).Descriptors();
+
+            file << descriptors.row(element.point2D_idx);
+            file << std::endl << std::endl;
+        }
+    }
     file << std::endl;
 
     file.close();
+
+    PrintHeading2((QString("Export %1 points with %2 descriptors")
+            .arg(points3D_.size()).arg(numOfDescriptors)).toUtf8().constData());
 }
 
 bool Reconstruction::ExtractColors(const image_t image_id, const std::string& path) {
