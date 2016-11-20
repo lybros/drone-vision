@@ -471,10 +471,10 @@ void SceneGraph::AddCorrespondences(const image_t image_id1, const image_t image
                 image1.num_correspondences -= 1;
                 image2.num_correspondences -= 1;
                 num_correspondences -= 1;
-                std::cout << boost::format(
+                std::cout << (QString(
                         "WARNING: Duplicate correspondence between "
-                                "point2D_idx=%d in image_id=%d and point2D_idx=%d in image_id=%d"
-                ) % point2D_idx1 % image_id1 % point2D_idx2 % image_id2 << std::endl;
+                                "point2D_idx=%1 in image_id=%2 and point2D_idx=%3 in image_id=%4"
+                ).arg(point2D_idx1).arg(image_id1).arg(point2D_idx2).arg(image_id2)).toStdString() << std::endl;
             } else {
                 std::vector<Correspondence>& corrs1 = image1.corrs[point2D_idx1];
                 corrs1.emplace_back(image_id2, point2D_idx2);
@@ -487,14 +487,14 @@ void SceneGraph::AddCorrespondences(const image_t image_id1, const image_t image
             image2.num_correspondences -= 1;
             num_correspondences -= 1;
             if (!valid_idx1) {
-                std::cout
-                << boost::format("WARNING: point2D_idx=%d in image_id=%d does not exist")
-                   % point2D_idx1 % image_id1 << std::endl;
+                std::cout << QString().sprintf(
+                        "WARNING: point2D_idx=%u in image_id=%u does not exist", point2D_idx1, image_id1
+                ).toStdString() << std::endl;
             }
             if (!valid_idx2) {
-                std::cout
-                << boost::format("WARNING: point2D_idx=%d in image_id=%d does not exist")
-                   % point2D_idx2 % image_id2 << std::endl;
+                std::cout << QString().sprintf(
+                        "WARNING: point2D_idx=%u in image_id=%u does not exist", point2D_idx2, image_id2
+                ).toStdString() << std::endl;
             }
         }
     }
@@ -1330,7 +1330,7 @@ void Database::CreateCameraTable() const {
 }
 
 void Database::CreateImageTable() const {
-    const std::string sql = (boost::format(
+    const std::string sql = (QString().sprintf(
             "CREATE TABLE IF NOT EXISTS images"
                     "   (image_id   INTEGER  PRIMARY KEY AUTOINCREMENT  NOT NULL,"
                     "    name       TEXT                                NOT NULL UNIQUE,"
@@ -1342,9 +1342,9 @@ void Database::CreateImageTable() const {
                     "    prior_tx   REAL,"
                     "    prior_ty   REAL,"
                     "    prior_tz   REAL,"
-                    "CONSTRAINT image_id_check CHECK(image_id >= 0 and image_id < %d),"
+                    "CONSTRAINT image_id_check CHECK(image_id >= 0 and image_id < %lu),"
                     "FOREIGN KEY(camera_id) REFERENCES cameras(camera_id));"
-                    "CREATE UNIQUE INDEX IF NOT EXISTS index_name ON images(name);") % kMaxNumImages).str();
+                    "CREATE UNIQUE INDEX IF NOT EXISTS index_name ON images(name);", kMaxNumImages).toStdString());
 
     SQLITE3_EXEC(database_, sql.c_str(), nullptr);
 }
@@ -1509,15 +1509,16 @@ void DatabaseCache::Load(const Database& database, const size_t min_num_matches,
             cameras_.emplace(camera.CameraId(), camera);
         }
     }
-
-    std::cout << boost::format(" %d in %.3fs") % cameras_.size() % timer.ElapsedSeconds() << std::endl;
+    std::cout << QString().sprintf(" %lu in %.3fs", cameras_.size(), timer.ElapsedSeconds()).toStdString() << std::endl;
 
     timer.Restart();
     std::cout << "Loading matches..." << std::flush;
 
     const std::vector<std::pair<image_pair_t, TwoViewGeometry>> image_pairs = database.ReadAllInlierMatches();
 
-    std::cout << boost::format(" %d in %.3fs") % image_pairs.size() % timer.ElapsedSeconds() << std::endl;
+    std::cout << QString().sprintf(
+            " %lu in %.3fs", image_pairs.size(), timer.ElapsedSeconds()
+    ).toStdString() << std::endl;
 
     auto UseInlierMatchesCheck = [min_num_matches, ignore_watermarks](const TwoViewGeometry& two_view_geometry) {
         return (static_cast<size_t>(two_view_geometry.inlier_matches.size()) >= min_num_matches) &&
@@ -1553,8 +1554,9 @@ void DatabaseCache::Load(const Database& database, const size_t min_num_matches,
             }
         }
 
-        std::cout << boost::format(" %d in %.3fs (connected %d)")
-                     % images.size() % timer.ElapsedSeconds() % connected_image_ids.size() << std::endl;
+        std::cout << QString().sprintf(
+                " %lu in %.3fs (connected %lu)", images.size(), timer.ElapsedSeconds(), connected_image_ids.size()
+        ).toStdString() << std::endl;
     }
 
     timer.Restart();
@@ -1583,8 +1585,9 @@ void DatabaseCache::Load(const Database& database, const size_t min_num_matches,
         image.second.SetNumCorrespondences(scene_graph_.NumCorrespondencesForImage(image.first));
     }
 
-    std::cout << boost::format(" in %.3fs (ignored %d)")
-                 % timer.ElapsedSeconds() % num_ignored_image_pairs << std::endl;
+    std::cout << QString().sprintf(
+            " in %.3fs (ignored %lu)", timer.ElapsedSeconds(), num_ignored_image_pairs
+    ).toStdString() << std::endl;
 }
 
 

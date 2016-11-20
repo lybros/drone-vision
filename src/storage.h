@@ -8,9 +8,9 @@
 #include "entities/point_2d.h"
 #include "../3rdparty/sqlite/sqlite3.h"
 
+#include <QString>
 #include <unordered_map>
 #include <unordered_set>
-#include <boost/format.hpp>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 
