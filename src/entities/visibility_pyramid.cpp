@@ -2,9 +2,12 @@
 
 VisibilityPyramid::VisibilityPyramid() : VisibilityPyramid(0, 0, 0) { }
 
-VisibilityPyramid::VisibilityPyramid(const size_t num_levels,
-                                     const size_t width, const size_t height)
-        : width_(width), height_(height), score_(0), max_score_(0) {
+VisibilityPyramid::VisibilityPyramid(
+        const size_t num_levels,
+        const size_t width,
+        const size_t height
+) : width_(width), height_(height), score_(0), max_score_(0) {
+
     pyramid_.resize(num_levels);
     for (size_t level = 0; level < num_levels; ++level) {
         const size_t level_plus_one = level + 1;
@@ -50,8 +53,7 @@ void VisibilityPyramid::ResetPoint(const double x, const double y) {
     }
 }
 
-void VisibilityPyramid::CellForPoint(const double x, const double y, size_t* cx,
-                                     size_t* cy) const {
+void VisibilityPyramid::CellForPoint(const double x, const double y, size_t* cx, size_t* cy) const {
     const int max_dim = 1 << pyramid_.size();
     *cx = Clip<size_t>(static_cast<size_t>(max_dim * x / width_), 0,
                        static_cast<size_t>(max_dim - 1));

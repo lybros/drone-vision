@@ -1549,6 +1549,7 @@ void DatabaseCache::Load(const Database& database, const size_t min_num_matches,
                 const FeatureKeypoints keypoints = database.ReadKeypoints(image.ImageId());
                 const std::vector<Eigen::Vector2d> points = FeatureKeypointsToPointsVector(keypoints);
                 images_[image.ImageId()].SetPoints2D(points);
+                images_[image.ImageId()].SetDescriptors(database.ReadDescriptors(image.ImageId()));
             }
         }
 

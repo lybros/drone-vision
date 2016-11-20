@@ -36,8 +36,6 @@ void Point_3D::SetError(const double error) { error_ = error; }
 
 const class Track& Point_3D::Track() const { return track_; }
 
-class Track& Point_3D::Track() {
-    return track_;
-}
+class Track& Point_3D::Track() { return track_; }
 
 void Point_3D::SetTrack(const class Track& track) { track_ = track; }

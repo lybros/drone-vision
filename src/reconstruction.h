@@ -6,6 +6,7 @@
 #include "entities/track.h"
 #include "entities/point_3d.h"
 #include "entities/point_2d.h"
+#include "features.h"
 
 #include <unordered_map>
 #include <unordered_set>

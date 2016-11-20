@@ -38,8 +38,7 @@ void PrintHeading2(const std::string& heading) {
     std::cout << std::string(std::min<int>(heading.size(), 78), '-') << std::endl;
 }
 
-std::string StringReplace(const std::string& str, const std::string& old_str,
-                          const std::string& new_str) {
+std::string StringReplace(const std::string& str, const std::string& old_str, const std::string& new_str) {
     if (old_str.empty()) {
         return str;
     }

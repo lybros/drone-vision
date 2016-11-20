@@ -102,10 +102,13 @@ public:
 
     const std::vector<class Point2D>& Points2D() const;
 
-    void SetPoints2D(const std::vector <Eigen::Vector2d>& points);
+    void SetPoints2D(const std::vector<Eigen::Vector2d>& points);
 
-    void SetPoint3DForPoint2D(const point2D_t point2D_idx,
-                              const point3D_t point3D_id);
+    const FeatureDescriptors& Descriptors() const;
+
+    void SetDescriptors(const FeatureDescriptors& descriptors);
+
+    void SetPoint3DForPoint2D(const point2D_t point2D_idx, const point3D_t point3D_id);
 
     void ResetPoint3DForPoint2D(const point2D_t point2D_idx);
 
@@ -151,6 +154,7 @@ private:
     Eigen::Vector3d tvec_prior_;
 
     std::vector<class Point2D> points2D_;
+    FeatureDescriptors descriptors_;
 
     std::vector <image_t> num_correspondences_have_point3D_;
 

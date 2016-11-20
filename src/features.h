@@ -175,18 +175,13 @@ protected:
 
     void UploadDescriptors(const int index, const image_t image_id);
 
-    void ExtractMatchesFromBuffer(const size_t num_matches,
-                                  FeatureMatches* matches) const;
+    void ExtractMatchesFromBuffer(const size_t num_matches, FeatureMatches* matches) const;
 
-    void MatchImagePairs(
-            const std::vector<std::pair<image_t, image_t>>& image_pairs);
+    void MatchImagePairs(const std::vector<std::pair<image_t, image_t>>& image_pairs);
 
-    void MatchImagePairGuided(
-            const image_t image_id1, const image_t image_id2,
-            TwoViewGeometry* two_view_geometry);
+    void MatchImagePairGuided(const image_t image_id1, const image_t image_id2, TwoViewGeometry* two_view_geometry);
 
-    static TwoViewGeometry VerifyImagePair(const GeometricVerificationData data,
-                                           const bool multiple_models);
+    static TwoViewGeometry VerifyImagePair(const GeometricVerificationData data, const bool multiple_models);
 
     Timer total_timer_;
 

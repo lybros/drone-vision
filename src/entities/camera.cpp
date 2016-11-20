@@ -166,8 +166,7 @@ bool CameraModelHasBogusParams(
     return false;
 }
 
-std::vector<Eigen::Vector2d> FeatureKeypointsToPointsVector(
-        const FeatureKeypoints& keypoints) {
+std::vector<Eigen::Vector2d> FeatureKeypointsToPointsVector(const FeatureKeypoints& keypoints) {
     std::vector<Eigen::Vector2d> points(keypoints.size());
     for (size_t i = 0; i < keypoints.size(); ++i) {
         points[i] = Eigen::Vector2d(keypoints[i].x, keypoints[i].y);
@@ -175,33 +174,26 @@ std::vector<Eigen::Vector2d> FeatureKeypointsToPointsVector(
     return points;
 }
 
-Eigen::MatrixXf L2NormalizeFeatureDescriptors(
-        const Eigen::MatrixXf& descriptors) {
+Eigen::MatrixXf L2NormalizeFeatureDescriptors(const Eigen::MatrixXf& descriptors) {
     return descriptors.rowwise().normalized();
 }
 
-Eigen::MatrixXf L1RootNormalizeFeatureDescriptors(
-        const Eigen::MatrixXf& descriptors) {
-    Eigen::MatrixXf descriptors_normalized(descriptors.rows(),
-                                           descriptors.cols());
+Eigen::MatrixXf L1RootNormalizeFeatureDescriptors(const Eigen::MatrixXf& descriptors) {
+    Eigen::MatrixXf descriptors_normalized(descriptors.rows(), descriptors.cols());
     for (Eigen::MatrixXf::Index r = 0; r < descriptors.rows(); ++r) {
         const float norm = descriptors.row(r).lpNorm<1>();
         descriptors_normalized.row(r) = descriptors.row(r) / norm;
-        descriptors_normalized.row(r) =
-                descriptors_normalized.row(r).array().sqrt();
+        descriptors_normalized.row(r) = descriptors_normalized.row(r).array().sqrt();
     }
     return descriptors_normalized;
 }
 
-FeatureDescriptors FeatureDescriptorsToUnsignedByte(
-        const Eigen::MatrixXf& descriptors) {
-    FeatureDescriptors descriptors_unsigned_byte(descriptors.rows(),
-                                                 descriptors.cols());
+FeatureDescriptors FeatureDescriptorsToUnsignedByte(const Eigen::MatrixXf& descriptors) {
+    FeatureDescriptors descriptors_unsigned_byte(descriptors.rows(), descriptors.cols());
     for (Eigen::MatrixXf::Index r = 0; r < descriptors.rows(); ++r) {
         for (Eigen::MatrixXf::Index c = 0; c < descriptors.cols(); ++c) {
             const float scaled_value = std::round(512.0f * descriptors(r, c));
-            descriptors_unsigned_byte(r, c) =
-                    static_cast<uint8_t>(std::min(255.0f, scaled_value));
+            descriptors_unsigned_byte(r, c) = static_cast<uint8_t>(std::min(255.0f, scaled_value));
         }
     }
     return descriptors_unsigned_byte;
