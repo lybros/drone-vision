@@ -695,7 +695,7 @@ void Reconstruction::ExportPLY(const std::string& path) const {
         numOfDescriptors += elements.size();
 
         for (const auto& element : elements) {
-            file << Image(element.image_id).Descriptors().row(element.point2D_idx)<< std::endl << std::endl;
+            file << Image(element.image_id).Descriptors().row(element.point2D_idx) << std::endl << std::endl;
         }
     }
     file << std::endl;
