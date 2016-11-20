@@ -615,12 +615,13 @@ void MainWindow::DensifyModel() {
         return;
     }
 
-    QString output_path = QString::fromStdString(*options_.database_path);
+    QString output_path = QString::fromStdString(*options_.project_path);
     QDir(output_path).cdUp();
     EnsureTrailingSlash(output_path);
 
-    ImageDensifier* densifier = new ImageDensifier(mapper_controller->Model(0), *options_.image_path,
-                                                   output_path.toStdString(), binary_path_);
+    ImageDensifier* densifier = new ImageDensifier(
+            mapper_controller->Model(0), *options_.image_path, output_path.toStdString(), binary_path_
+    );
     densifier->start();
     QProgressDialog* progress_bar_ = new QProgressDialog(this);
     progress_bar_->setWindowModality(Qt::ApplicationModal);
