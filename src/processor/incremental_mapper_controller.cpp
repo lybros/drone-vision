@@ -406,7 +406,7 @@ void IncrementalMapperController::run() {
                 std::cout << "  => Image sees " << next_image.NumVisiblePoints3D()
                           << " / " << next_image.NumObservations() << " points." << std::endl;
 
-                // RegusterNextImage() is really huge. And compilicated. Lot's of things are happening inside.
+                // RegisterNextImage() is really huge. And compilicated. Lot's of things are happening inside.
                 // But for now it would be enough to know that inside we have a lot of checks if an image
                 // can be added to the reconstructions and HOW that's possible; there're estimations which also
                 // tells in the end, if image is good enough for appending.

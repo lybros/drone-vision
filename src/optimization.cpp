@@ -327,7 +327,7 @@ void BundleAdjuster::FillPoints(
                 continue;
             }
 
-            // Some 3d points has been filtered out as we we have nothing to do with them.
+            // Some 3d points have been filtered out as we have nothing to do with them.
 
             point3D_num_images_[point3D_id] += 1;
 
