@@ -31,11 +31,9 @@ size_t IncrementalTriangulator::TriangulateImage(const Options& options, const i
 
     std::vector<CorrData> corrs_data;
 
-    for (point2D_t point2D_idx = 0; point2D_idx < image.NumPoints2D();
-         ++point2D_idx) {
+    for (point2D_t point2D_idx = 0; point2D_idx < image.NumPoints2D(); ++point2D_idx) {
         const size_t num_triangulated =
-                Find(options, image_id, point2D_idx,
-                     static_cast<size_t>(options.max_transitivity), &corrs_data);
+                Find(options, image_id, point2D_idx, static_cast<size_t>(options.max_transitivity), &corrs_data);
         if (corrs_data.empty()) {
             continue;
         }
@@ -335,8 +333,7 @@ size_t IncrementalTriangulator::Find(const Options& options,
                                      const size_t transitivity,
                                      std::vector<CorrData>* corrs_data) {
     const std::vector<SceneGraph::Correspondence>& corrs =
-            scene_graph_->FindTransitiveCorrespondences(image_id, point2D_idx,
-                                                        transitivity);
+            scene_graph_->FindTransitiveCorrespondences(image_id, point2D_idx, transitivity);
 
     corrs_data->clear();
     corrs_data->reserve(corrs.size());

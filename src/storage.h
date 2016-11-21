@@ -126,7 +126,7 @@ public:
 
     point2D_t NumCorrespondencesBetweenImages(const image_t image_id1, const image_t image_id2) const;
 
-    const std::unordered_map<image_pair_t, point2D_t>& NumCorrespondencesBetweenImages() const;
+    const std::unordered_map<image_pair_t, point2D_t>& CorrespondencesBetweenImages() const;
 
     void Finalize();
 

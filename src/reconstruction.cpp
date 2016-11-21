@@ -14,20 +14,21 @@ std::unordered_set<point3D_t> Reconstruction::Point3DIds() const {
     return point3D_ids;
 }
 
+// Retrieving reconstruction from database cache.
 void Reconstruction::Load(const DatabaseCache& database_cache) {
     scene_graph_ = nullptr;
-    cameras_.reserve(database_cache.NumCameras());
 
+    // Retrieving all the cameras from database.
+    cameras_.reserve(database_cache.NumCameras());
     for (const auto& camera : database_cache.Cameras()) {
         if (!ExistsCamera(camera.first)) {
             AddCamera(camera.second);
         }
     }
 
+    // The same for images.
     images_.reserve(database_cache.NumImages());
-
     for (const auto& image : database_cache.Images()) {
-
         if (ExistsImage(image.second.ImageId())) {
             class Image& existing_image = Image(image.second.ImageId());
             existing_image.SetNumObservations(image.second.NumObservations());
@@ -37,17 +38,22 @@ void Reconstruction::Load(const DatabaseCache& database_cache) {
         }
     }
 
-    for (const auto& image_pair : database_cache.SceneGraph().NumCorrespondencesBetweenImages()) {
+    // Retrieving image_pairs from database cache.
+    for (const auto& image_pair : database_cache.SceneGraph().CorrespondencesBetweenImages()) {
         image_pairs_[image_pair.first] = std::make_pair(0, image_pair.second);
     }
 }
 
+// Setting up reconstruction loaded from database cache.
+// Called only once after calling Reconstruction::Load() method.
 void Reconstruction::SetUp(const SceneGraph* scene_graph) {
+    // Setting up visibility pyramid for every image.
     for (auto& image : images_) {
         image.second.SetUp(Camera(image.second.CameraId()));
     }
     scene_graph_ = scene_graph;
 
+    // For every 2d point of every image, which has 3d point - setting observation as triangulated (whatever that means).
     for (const auto image_id : reg_image_ids_) {
         const class Image& image = Image(image_id);
         for (point2D_t point2D_idx = 0; point2D_idx < image.NumPoints2D(); ++point2D_idx) {
@@ -220,7 +226,9 @@ void Reconstruction::DeRegisterImage(const image_t image_id) {
 
 void Reconstruction::Normalize(const double extent, const double p0, const double p1, const bool use_images) {
 
-    if (use_images && reg_image_ids_.size() < 2) { return; }
+    if (use_images && reg_image_ids_.size() < 2) {
+        return;
+    }
 
     std::unordered_map<class Image*, Eigen::Vector3d> proj_centers;
 
@@ -343,7 +351,6 @@ size_t Reconstruction::FilterPoints3DInImages(
 }
 
 size_t Reconstruction::FilterAllPoints3D(const double max_reproj_error, const double min_tri_angle) {
-
     const std::unordered_set<point3D_t>& point3D_ids = Point3DIds();
     size_t num_filtered = 0;
     num_filtered += FilterPoints3DWithLargeReprojectionError(max_reproj_error, point3D_ids);
@@ -859,13 +866,16 @@ size_t Reconstruction::FilterPoints3DWithLargeReprojectionError(
     return num_filtered;
 }
 
+// Seems like here we connect together 2d points, which correspond with each other.
 void Reconstruction::SetObservationAsTriangulated(
         const image_t image_id,
         const point2D_t point2D_idx,
         const bool is_continued_point3D
 ) {
 
-    if (scene_graph_ == nullptr) { return; }
+    if (scene_graph_ == nullptr) {
+        return;
+    }
 
     const class Image& image = Image(image_id);
     const Point2D& point2D = image.Point2D(point2D_idx);
@@ -877,7 +887,6 @@ void Reconstruction::SetObservationAsTriangulated(
         corr_image.IncrementCorrespondenceHasPoint3D(corr.point2D_idx);
 
         if (point2D.Point3DId() == corr_point2D.Point3DId() && (is_continued_point3D || image_id < corr.image_id)) {
-
             const image_pair_t pair_id = Database::ImagePairToPairId(image_id, corr.image_id);
             image_pairs_[pair_id].first += 1;
         }

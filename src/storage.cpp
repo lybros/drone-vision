@@ -599,7 +599,7 @@ point2D_t SceneGraph::NumCorrespondencesBetweenImages(const image_t image_id1, c
     }
 }
 
-const std::unordered_map<image_pair_t, point2D_t>& SceneGraph::NumCorrespondencesBetweenImages() const {
+const std::unordered_map<image_pair_t, point2D_t>& SceneGraph::CorrespondencesBetweenImages() const {
     return image_pairs_;
 }
 
@@ -1467,6 +1467,7 @@ size_t Database::SumColumn(const std::string& column, const std::string& table) 
     return sum;
 }
 
+// Giving an id to a pair of images to uniquely identify it.
 image_pair_t Database::ImagePairToPairId(const image_t image_id1, const image_t image_id2) {
     if (SwapImagePair(image_id1, image_id2)) {
         return kMaxNumImages * image_id2 + image_id1;
