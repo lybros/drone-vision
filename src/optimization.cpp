@@ -1,6 +1,6 @@
 #include "optimization.h"
 
-BundleAdjustmentConfiguration::BundleAdjustmentConfiguration() { }
+BundleAdjustmentConfiguration::BundleAdjustmentConfiguration() {}
 
 size_t BundleAdjustmentConfiguration::NumImages() const {
     return image_ids_.size();
@@ -58,6 +58,7 @@ bool BundleAdjustmentConfiguration::IsConstantCamera(
 }
 
 void BundleAdjustmentConfiguration::SetConstantPose(const image_t image_id) {
+    // Why to use macros from GLOG package (which stands for google logging)?
     CHECK(HasImage(image_id));
     CHECK(!HasConstantTvec(image_id));
     constant_poses_.insert(image_id);
@@ -67,13 +68,11 @@ void BundleAdjustmentConfiguration::SetVariablePose(const image_t image_id) {
     constant_poses_.erase(image_id);
 }
 
-bool BundleAdjustmentConfiguration::HasConstantPose(
-        const image_t image_id) const {
+bool BundleAdjustmentConfiguration::HasConstantPose(const image_t image_id) const {
     return constant_poses_.count(image_id) > 0;
 }
 
-void BundleAdjustmentConfiguration::SetConstantTvec(
-        const image_t image_id, const std::vector<int>& idxs) {
+void BundleAdjustmentConfiguration::SetConstantTvec(const image_t image_id, const std::vector<int>& idxs) {
     CHECK_GT(idxs.size(), 0);
     CHECK_LE(idxs.size(), 3);
     CHECK(HasImage(image_id));
@@ -99,13 +98,11 @@ const {
     return image_ids_;
 }
 
-const std::unordered_set<point3D_t>&
-BundleAdjustmentConfiguration::VariablePoints() const {
+const std::unordered_set<point3D_t>& BundleAdjustmentConfiguration::VariablePoints() const {
     return variable_point3D_ids_;
 }
 
-const std::unordered_set<point3D_t>&
-BundleAdjustmentConfiguration::ConstantPoints() const {
+const std::unordered_set<point3D_t>& BundleAdjustmentConfiguration::ConstantPoints() const {
     return constant_point3D_ids_;
 }
 
@@ -130,13 +127,11 @@ bool BundleAdjustmentConfiguration::HasPoint(const point3D_t point3D_id) const {
     return HasVariablePoint(point3D_id) || HasConstantPoint(point3D_id);
 }
 
-bool BundleAdjustmentConfiguration::HasVariablePoint(
-        const point3D_t point3D_id) const {
+bool BundleAdjustmentConfiguration::HasVariablePoint(const point3D_t point3D_id) const {
     return variable_point3D_ids_.count(point3D_id) > 0;
 }
 
-bool BundleAdjustmentConfiguration::HasConstantPoint(
-        const point3D_t point3D_id) const {
+bool BundleAdjustmentConfiguration::HasConstantPoint(const point3D_t point3D_id) const {
     return constant_point3D_ids_.count(point3D_id) > 0;
 }
 
@@ -167,8 +162,7 @@ ceres::LossFunction* BundleAdjuster::Options::CreateLossFunction() const {
 void BundleAdjuster::Options::Check() const {
 }
 
-BundleAdjuster::BundleAdjuster(const Options& options,
-                               const BundleAdjustmentConfiguration& config)
+BundleAdjuster::BundleAdjuster(const Options& options, const BundleAdjustmentConfiguration& config)
         : options_(options), config_(config) {
     options_.Check();
 }
@@ -176,11 +170,16 @@ BundleAdjuster::BundleAdjuster(const Options& options,
 bool BundleAdjuster::Solve(Reconstruction* reconstruction) {
     point3D_num_images_.clear();
 
+    // First appearance of Ceres!
     problem_.reset(new ceres::Problem());
 
+    // Getting LossFunction depending on loss_function_type set in options.
     ceres::LossFunction* loss_function = options_.CreateLossFunction();
+    // Adding all the images from configuration to the problem.
     SetUp(reconstruction, loss_function);
 
+    // In redard to inner options of BundleAdjuster - here we're choosing if camera is constant (predefined)
+    // or we want to parameterize it.
     ParameterizeCameras(reconstruction);
     ParameterizePoints(reconstruction);
 
@@ -202,6 +201,8 @@ bool BundleAdjuster::Solve(Reconstruction* reconstruction) {
         solver_options.preconditioner_type = ceres::SCHUR_JACOBI;
     }
 
+    // Finally all the parameters are set. Let's solve it!
+
 #ifdef OPENMP_ENABLED
     if (solver_options.num_threads <= 0) {
 solver_options.num_threads = omp_get_max_threads();
@@ -214,8 +215,6 @@ solver_options.num_linear_solver_threads = omp_get_max_threads();
     solver_options.num_linear_solver_threads = 1;
 #endif
 
-    std::string error;
-
     ceres::Solve(solver_options, problem_.get(), &summary_);
 
     if (solver_options.minimizer_progress_to_stdout) {
@@ -227,19 +226,24 @@ solver_options.num_linear_solver_threads = omp_get_max_threads();
         PrintSolverSummary(summary_);
     }
 
+    // Method that does nothing.
     TearDown(reconstruction);
 
+    // It's solved! Thanks to ceres. Report is printed (if print_summary flag is set).
     return true;
 }
 
 ceres::Solver::Summary BundleAdjuster::Summary() const { return summary_; }
 
-void BundleAdjuster::SetUp(Reconstruction* reconstruction,
-                           ceres::LossFunction* loss_function) {
+void BundleAdjuster::SetUp(Reconstruction* reconstruction, ceres::LossFunction* loss_function) {
+    // So here we're adding every image (which is valid) to a CERES problem by calling AddResidualBlock method.
+    // Cost function and set of parameters overall differs.
     for (const image_t image_id : config_.Images()) {
         AddImageToProblem(image_id, reconstruction, loss_function);
     }
 
+    // It's not clear why, but here we're doing the same - adding residual blocks to the problem.
+    // I guess the difference is here we're processing with 3d points.
     FillPoints(config_.VariablePoints(), reconstruction, loss_function);
     FillPoints(config_.ConstantPoints(), reconstruction, loss_function);
 }
@@ -252,8 +256,7 @@ void BundleAdjuster::AddImageToProblem(const image_t image_id,
                                        ceres::LossFunction* loss_function) {
     Image& image = reconstruction->Image(image_id);
 
-    if (image.NumPoints3D() <
-        static_cast<size_t>(options_.min_observations_per_image)) {
+    if (image.NumPoints3D() < static_cast<size_t>(options_.min_observations_per_image)) {
         return;
     }
 
@@ -273,6 +276,7 @@ void BundleAdjuster::AddImageToProblem(const image_t image_id,
         if (!point2D.HasPoint3D()) {
             continue;
         }
+        // So for every 2d point on the image which DOES have correspondent 3d point already.
 
         point3D_num_images_[point2D.Point3DId()] += 1;
 
@@ -280,6 +284,8 @@ void BundleAdjuster::AddImageToProblem(const image_t image_id,
 
         ceres::CostFunction* cost_function = nullptr;
 
+        // Adding an appropriate residual block to the problem.
+        // The 'AddResidualBlock" method is overloaded in CERES, so we can add it with different set of parameters.
         if (constant_pose) {
             cost_function = BundleAdjustmentConstantPoseCostFunction<RadialCameraModel>::Create(
                     image.Qvec(), image.Tvec(), point2D.XY());
@@ -292,12 +298,10 @@ void BundleAdjuster::AddImageToProblem(const image_t image_id,
     }
 
     if (!constant_pose) {
-        ceres::LocalParameterization* quaternion_parameterization =
-                new ceres::QuaternionParameterization;
+        ceres::LocalParameterization* quaternion_parameterization = new ceres::QuaternionParameterization;
         problem_->SetParameterization(qvec_data, quaternion_parameterization);
         if (config_.HasConstantTvec(image_id)) {
-            const std::vector<int>& constant_tvec_idxs =
-                    config_.ConstantTvec(image_id);
+            const std::vector<int>& constant_tvec_idxs = config_.ConstantTvec(image_id);
             ceres::SubsetParameterization* tvec_parameterization =
                     new ceres::SubsetParameterization(3, constant_tvec_idxs);
             problem_->SetParameterization(tvec_data, tvec_parameterization);
@@ -307,7 +311,10 @@ void BundleAdjuster::AddImageToProblem(const image_t image_id,
 
 void BundleAdjuster::FillPoints(
         const std::unordered_set<point3D_t>& point3D_ids,
-        Reconstruction* reconstruction, ceres::LossFunction* loss_function) {
+        Reconstruction* reconstruction,
+        ceres::LossFunction* loss_function
+) {
+    // For every 3d point received as a parameter.
     for (const point3D_t point3D_id : point3D_ids) {
         Point_3D& point3D = reconstruction->Point3D(point3D_id);
 
@@ -319,6 +326,8 @@ void BundleAdjuster::FillPoints(
             if (config_.HasImage(track_el.image_id)) {
                 continue;
             }
+
+            // Some 3d points has been filtered out as we we have nothing to do with them.
 
             point3D_num_images_[point3D_id] += 1;
 
@@ -355,26 +364,21 @@ void BundleAdjuster::ParameterizeCameras(Reconstruction* reconstruction) {
 
             if (!options_.refine_focal_length) {
                 const std::vector<size_t>& params_idxs = camera.FocalLengthIdxs();
-                const_camera_params.insert(const_camera_params.end(),
-                                           params_idxs.begin(), params_idxs.end());
+                const_camera_params.insert(const_camera_params.end(), params_idxs.begin(), params_idxs.end());
             }
             if (!options_.refine_principal_point) {
                 const std::vector<size_t>& params_idxs = camera.PrincipalPointIdxs();
-                const_camera_params.insert(const_camera_params.end(),
-                                           params_idxs.begin(), params_idxs.end());
+                const_camera_params.insert(const_camera_params.end(), params_idxs.begin(), params_idxs.end());
             }
             if (!options_.refine_extra_params) {
                 const std::vector<size_t>& params_idxs = camera.ExtraParamsIdxs();
-                const_camera_params.insert(const_camera_params.end(),
-                                           params_idxs.begin(), params_idxs.end());
+                const_camera_params.insert(const_camera_params.end(), params_idxs.begin(), params_idxs.end());
             }
 
             if (const_camera_params.size() > 0) {
                 ceres::SubsetParameterization* camera_params_parameterization =
-                        new ceres::SubsetParameterization(
-                                static_cast<int>(camera.NumParams()), const_camera_params);
-                problem_->SetParameterization(camera.ParamsData(),
-                                              camera_params_parameterization);
+                        new ceres::SubsetParameterization(static_cast<int>(camera.NumParams()), const_camera_params);
+                problem_->SetParameterization(camera.ParamsData(), camera_params_parameterization);
             }
         }
     }
@@ -386,6 +390,7 @@ void BundleAdjuster::ParameterizePoints(Reconstruction* reconstruction) {
             !config_.HasConstantPoint(num_images.first)) {
             Point_3D& point3D = reconstruction->Point3D(num_images.first);
             if (point3D.Track().Length() > point3D_num_images_[num_images.first]) {
+                // Adding a 3d point to the problem if appr. Track has more data than point3D_num_images_ map.
                 problem_->SetParameterBlockConstant(point3D.XYZ().data());
             }
         }
@@ -404,26 +409,26 @@ void PrintSolverSummary(const ceres::Solver::Summary& summary) {
 
     std::cout << std::right << std::setw(16) << "Parameters : ";
     std::cout << std::left << summary.num_effective_parameters_reduced
-    << std::endl;
+              << std::endl;
 
     std::cout << std::right << std::setw(16) << "Iterations : ";
     std::cout << std::left
-    << summary.num_successful_steps + summary.num_unsuccessful_steps
-    << std::endl;
+              << summary.num_successful_steps + summary.num_unsuccessful_steps
+              << std::endl;
 
     std::cout << std::right << std::setw(16) << "Time : ";
     std::cout << std::left << summary.total_time_in_seconds << " [s]"
-    << std::endl;
+              << std::endl;
 
     std::cout << std::right << std::setw(16) << "Initial cost : ";
     std::cout << std::right << std::setprecision(6)
-    << std::sqrt(summary.initial_cost / summary.num_residuals_reduced)
-    << " [px]" << std::endl;
+              << std::sqrt(summary.initial_cost / summary.num_residuals_reduced)
+              << " [px]" << std::endl;
 
     std::cout << std::right << std::setw(16) << "Final cost : ";
     std::cout << std::right << std::setprecision(6)
-    << std::sqrt(summary.final_cost / summary.num_residuals_reduced)
-    << " [px]" << std::endl;
+              << std::sqrt(summary.final_cost / summary.num_residuals_reduced)
+              << " [px]" << std::endl;
 
     std::cout << std::right << std::setw(16) << "Termination : ";
 

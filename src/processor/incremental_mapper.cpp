@@ -41,15 +41,27 @@ IncrementalMapper::IncrementalMapper(const DatabaseCache* database_cache)
           triangulator_(nullptr),
           num_total_reg_images_(0),
           num_shared_reg_images_(0),
-          prev_init_image_pair_id_(kInvalidImagePairId) { }
+          prev_init_image_pair_id_(kInvalidImagePairId) {}
 
+// This method begins reconstruction.
+// Called only once from run() method of IncrementalMapperController.
 void IncrementalMapper::BeginReconstruction(Reconstruction* reconstruction) {
     reconstruction_ = reconstruction;
+
+    // Retrieving cameras, images and correspondences between images from database cache.
     reconstruction_->Load(*database_cache_);
+
+    // Setting up images.
+    // Seems like here we're looking for corresponded 2d points.
+    // Quiet much magic happens here.
     reconstruction_->SetUp(&database_cache_->SceneGraph());
+
+    // Here we're initializing our mapper with IncrementalTriangulator, which is initialized with Scene Graph from
+    // database cache and our current reconstruction.
     triangulator_.reset(new IncrementalTriangulator(&database_cache_->SceneGraph(), reconstruction));
 
     num_shared_reg_images_ = 0;
+    // I can't see where reg_image_ids_ was initialized before we reached this line.
     for (const image_t image_id : reconstruction_->RegImageIds()) {
         RegisterImageEvent(image_id);
     }
@@ -74,12 +86,14 @@ void IncrementalMapper::EndReconstruction(const bool discard) {
     triangulator_.reset();
 }
 
-bool IncrementalMapper::FindInitialImagePair(const Options& options,
-                                             image_t* image_id1,
-                                             image_t* image_id2) {
+// Method searches for good initial pair of images to proceed with reconstruction process.
+bool IncrementalMapper::FindInitialImagePair(const Options& options, image_t* image_id1, image_t* image_id2) {
+    // Method that does nothing.
     options.Check();
 
     std::vector<image_t> image_ids1;
+    // Checking if only one of image_ids is invalid or both of them.
+    // We want to choose one image and then to look for a good second image for it.
     if (*image_id1 != kInvalidImageId && *image_id2 == kInvalidImageId) {
         if (!database_cache_->ExistsImage(*image_id1)) {
             return false;
@@ -91,19 +105,21 @@ bool IncrementalMapper::FindInitialImagePair(const Options& options,
         }
         image_ids1.push_back(*image_id2);
     } else {
+        // If both images are not valid (not images, in fact).
+        // So here by some criteria we're getting a sorted vector of image_ids.
         image_ids1 = FindFirstInitialImage();
     }
 
     for (size_t i1 = 0; i1 < image_ids1.size(); ++i1) {
         *image_id1 = image_ids1[i1];
 
+        // Looking for a good fit for our first image chosen before.
         const std::vector<image_t> image_ids2 = FindSecondInitialImage(*image_id1);
 
         for (size_t i2 = 0; i2 < image_ids2.size(); ++i2) {
             *image_id2 = image_ids2[i2];
 
-            const image_pair_t pair_id =
-                    Database::ImagePairToPairId(*image_id1, *image_id2);
+            const image_pair_t pair_id = Database::ImagePairToPairId(*image_id1, *image_id2);
 
             if (tried_init_image_pairs_.count(pair_id) > 0) {
                 continue;
@@ -111,6 +127,9 @@ bool IncrementalMapper::FindInitialImagePair(const Options& options,
 
             tried_init_image_pairs_.insert(pair_id);
 
+            // So geometry magic in order to understand if chosen pair of images is a good choice for being
+            // "initializing images". As far as I remember we're checking, if one image can't be got from another
+            // by simple homography.
             if (EstimateInitialTwoViewGeometry(options, *image_id1, *image_id2)) {
                 return true;
             }
@@ -126,6 +145,7 @@ bool IncrementalMapper::FindInitialImagePair(const Options& options,
 std::vector<image_t> IncrementalMapper::FindNextImages(const Options& options) {
     options.Check();
 
+    // Choosing what approach we're going to use to iteratively add new images.
     std::function<float(const Image&)> rank_image_func;
     switch (options.image_selection_method) {
         case Options::ImageSelectionMethod::MAX_VISIBLE_POINTS_NUM:
@@ -147,8 +167,7 @@ std::vector<image_t> IncrementalMapper::FindNextImages(const Options& options) {
             continue;
         }
 
-        if (image.second.NumVisiblePoints3D() <
-            static_cast<size_t>(options.abs_pose_min_num_inliers)) {
+        if (image.second.NumVisiblePoints3D() < static_cast<size_t>(options.abs_pose_min_num_inliers)) {
             continue;
         }
 
@@ -164,11 +183,13 @@ std::vector<image_t> IncrementalMapper::FindNextImages(const Options& options) {
             other_image_ranks.emplace_back(image.first, rank);
         }
     }
+    // We've counted image ranks, which we then use to sort images in an appropriate order and to return back.
 
     std::vector<image_t> ranked_images_ids;
     SortAndAppendNextImages(image_ranks, &ranked_images_ids);
     SortAndAppendNextImages(other_image_ranks, &ranked_images_ids);
 
+    // Images in the correct order to be processed with.
     return ranked_images_ids;
 }
 
@@ -180,8 +201,7 @@ bool IncrementalMapper::RegisterInitialImagePair(const Options& options,
     num_reg_trials_[image_id1] += 1;
     num_reg_trials_[image_id2] += 1;
 
-    const image_pair_t pair_id =
-            Database::ImagePairToPairId(image_id1, image_id2);
+    const image_pair_t pair_id = Database::ImagePairToPairId(image_id1, image_id2);
     tried_init_image_pairs_.insert(pair_id);
 
     Image& image1 = reconstruction_->Image(image_id1);
@@ -190,20 +210,30 @@ bool IncrementalMapper::RegisterInitialImagePair(const Options& options,
     Image& image2 = reconstruction_->Image(image_id2);
     const Camera& camera2 = reconstruction_->Camera(image2.CameraId());
 
+    // Ok so now er have image1 and image2 which are initial images.
+    // Checking it with geometry magic again.
+    // The same function we've run while searching for initial pair.
+    // Well, ok, why not to run it again.
     if (!EstimateInitialTwoViewGeometry(options, image_id1, image_id2)) {
         return false;
     }
 
+    // It's not clear at all what is meant by vectors T and Q.
+    // I can't see the same naming of vectors in diploma.
     image1.Qvec() = Eigen::Vector4d(1, 0, 0, 0);
     image1.Tvec() = Eigen::Vector3d(0, 0, 0);
     image2.Qvec() = prev_init_two_view_geometry_.qvec;
     image2.Tvec() = prev_init_two_view_geometry_.tvec;
 
+    // Getting all this projection stuff. Where it goes from is so deep that it's not clear.
     const Eigen::Matrix3x4d proj_matrix1 = image1.ProjectionMatrix();
     const Eigen::Matrix3x4d proj_matrix2 = image2.ProjectionMatrix();
     const Eigen::Vector3d proj_center1 = image1.ProjectionCenter();
     const Eigen::Vector3d proj_center2 = image2.ProjectionCenter();
 
+    // But now we have some projection/approximation matrices. Which is good.
+
+    // Finally registering images.
     reconstruction_->RegisterImage(image_id1);
     reconstruction_->RegisterImage(image_id2);
     RegisterImageEvent(image_id1);
@@ -216,6 +246,7 @@ bool IncrementalMapper::RegisterInitialImagePair(const Options& options,
     const double min_tri_angle_rad = DegToRad(options.init_min_tri_angle);
 
     Track track;
+    // As for now our track is just two 2d points corresponding to the same 3d point (due to definition what track is).
     track.Reserve(2);
     track.AddElement(TrackElement());
     track.AddElement(TrackElement());
@@ -224,28 +255,27 @@ bool IncrementalMapper::RegisterInitialImagePair(const Options& options,
     for (size_t i = 0; i < corrs.size(); ++i) {
         const point2D_t point2D_idx1 = corrs[i].first;
         const point2D_t point2D_idx2 = corrs[i].second;
-        const Eigen::Vector2d point1_N =
-                camera1.ImageToWorld(image1.Point2D(point2D_idx1).XY());
-        const Eigen::Vector2d point2_N =
-                camera2.ImageToWorld(image2.Point2D(point2D_idx2).XY());
-        const Eigen::Vector3d& xyz =
-                TriangulatePoint(proj_matrix1, proj_matrix2, point1_N, point2_N);
-        const double tri_angle =
-                CalculateTriangulationAngle(proj_center1, proj_center2, xyz);
+        const Eigen::Vector2d point1_N = camera1.ImageToWorld(image1.Point2D(point2D_idx1).XY());
+        const Eigen::Vector2d point2_N = camera2.ImageToWorld(image2.Point2D(point2D_idx2).XY());
+        const Eigen::Vector3d& xyz = TriangulatePoint(proj_matrix1, proj_matrix2, point1_N, point2_N);
+        const double tri_angle = CalculateTriangulationAngle(proj_center1, proj_center2, xyz);
         if (tri_angle >= min_tri_angle_rad &&
             HasPointPositiveDepth(proj_matrix1, xyz) &&
             HasPointPositiveDepth(proj_matrix2, xyz)) {
+            // Seems like everything is so great that we now have xyz of the 3d point!
+            // And track with two correspondent images and 2d points.
             track.Element(0).point2D_idx = point2D_idx1;
             track.Element(1).point2D_idx = point2D_idx2;
             reconstruction_->AddPoint3D(xyz, track);
         }
     }
 
+    // So we've registered images, created a track with 2 images and, which is, I guess, super important -
+    // added a real 3d point into our reconstruction!
     return true;
 }
 
-bool IncrementalMapper::RegisterNextImage(const Options& options,
-                                          const image_t image_id) {
+bool IncrementalMapper::RegisterNextImage(const Options& options, const image_t image_id) {
     options.Check();
 
     Image& image = reconstruction_->Image(image_id);
@@ -253,8 +283,7 @@ bool IncrementalMapper::RegisterNextImage(const Options& options,
 
     num_reg_trials_[image_id] += 1;
 
-    if (image.NumVisiblePoints3D() <
-        static_cast<size_t>(options.abs_pose_min_num_inliers)) {
+    if (image.NumVisiblePoints3D() < static_cast<size_t>(options.abs_pose_min_num_inliers)) {
         return false;
     }
 
@@ -264,13 +293,15 @@ bool IncrementalMapper::RegisterNextImage(const Options& options,
     std::vector<Eigen::Vector2d> tri_points2D;
     std::vector<Eigen::Vector3d> tri_points3D;
 
-    for (point2D_t point2D_idx = 0; point2D_idx < image.NumPoints2D();
-         ++point2D_idx) {
+    for (point2D_t point2D_idx = 0; point2D_idx < image.NumPoints2D(); ++point2D_idx) {
+        // Running the following code for every 2d point of the image we're trying to append.
         const Point2D& point2D = image.Point2D(point2D_idx);
         const SceneGraph& scene_graph = database_cache_->SceneGraph();
+        // Getting Correspondences for our image and selected 2d point from scene graph.
+        // TODO(uladbohdan): to understand what exactly is meant by Scene Graph and Correspondeces,
+        // I guess it tightly connected with 'traces'.
         const std::vector<SceneGraph::Correspondence> corrs =
-                scene_graph.FindTransitiveCorrespondences(image_id, point2D_idx,
-                                                          kCorrTransitivity);
+                scene_graph.FindTransitiveCorrespondences(image_id, point2D_idx, kCorrTransitivity);
 
         std::unordered_set<point3D_t> point3D_ids;
 
@@ -289,8 +320,7 @@ bool IncrementalMapper::RegisterNextImage(const Options& options,
                 continue;
             }
 
-            const Camera& corr_camera =
-                    reconstruction_->Camera(corr_image.CameraId());
+            const Camera& corr_camera = reconstruction_->Camera(corr_image.CameraId());
 
             if (corr_camera.HasBogusParams(options.min_focal_length_ratio,
                                            options.max_focal_length_ratio,
@@ -298,8 +328,8 @@ bool IncrementalMapper::RegisterNextImage(const Options& options,
                 continue;
             }
 
-            const Point_3D& point3D =
-                    reconstruction_->Point3D(corr_point2D.Point3DId());
+            // So here is the 3d point we were looking for!
+            const Point_3D& point3D = reconstruction_->Point3D(corr_point2D.Point3DId());
 
             tri_corrs.emplace_back(point2D_idx, corr_point2D.Point3DId());
             point3D_ids.insert(corr_point2D.Point3DId());
@@ -308,8 +338,7 @@ bool IncrementalMapper::RegisterNextImage(const Options& options,
         }
     }
 
-    if (tri_points2D.size() <
-        static_cast<size_t>(options.abs_pose_min_num_inliers)) {
+    if (tri_points2D.size() < static_cast<size_t>(options.abs_pose_min_num_inliers)) {
         return false;
     }
 
@@ -319,8 +348,7 @@ bool IncrementalMapper::RegisterNextImage(const Options& options,
     abs_pose_options.min_focal_length_ratio = options.min_focal_length_ratio;
     abs_pose_options.max_focal_length_ratio = options.max_focal_length_ratio;
     abs_pose_options.ransac_options.max_error = options.abs_pose_max_error;
-    abs_pose_options.ransac_options.min_inlier_ratio =
-            options.abs_pose_min_inlier_ratio;
+    abs_pose_options.ransac_options.min_inlier_ratio = options.abs_pose_min_inlier_ratio;
     abs_pose_options.ransac_options.confidence = 0.9999;
 
     AbsolutePoseRefinementOptions abs_pose_refinement_options;
@@ -365,6 +393,7 @@ bool IncrementalMapper::RegisterNextImage(const Options& options,
         return false;
     }
 
+    // Looks like after all, if image passes all the obstructions it met - it can be added into reconstruction!
     reconstruction_->RegisterImage(image_id);
     RegisterImageEvent(image_id);
 
@@ -477,8 +506,10 @@ bool IncrementalMapper::AdjustGlobalBundle(const BundleAdjuster::Options& ba_opt
 
     const std::vector<image_t>& reg_image_ids = reconstruction_->RegImageIds();
 
+    // Here we're removing some of the observations. What is a "negative depth"?
     reconstruction_->FilterObservationsWithNegativeDepth();
 
+    // Configuring Bundle Adjustment.
     BundleAdjustmentConfiguration ba_config;
     for (const image_t image_id : reg_image_ids) {
         ba_config.AddImage(image_id);
@@ -486,11 +517,15 @@ bool IncrementalMapper::AdjustGlobalBundle(const BundleAdjuster::Options& ba_opt
     ba_config.SetConstantPose(reg_image_ids[0]);
     ba_config.SetConstantTvec(reg_image_ids[1], {0});
 
+    // This guy will finally run bundle adjustment with all the options and config parameters we're passing.
     BundleAdjuster bundle_adjuster(ba_options, ba_config);
+    // Inside the Solve() we're adding all the data about our current reconstruction state as blocks to the ceres
+    // problem, than choosing a type of a solver and running it.
     if (!bundle_adjuster.Solve(reconstruction_)) {
         return false;
     }
 
+    // Lots of projection magic. Does something.
     reconstruction_->Normalize();
 
     return true;
@@ -518,8 +553,7 @@ size_t IncrementalMapper::FilterImages(const Options& options) {
 
 size_t IncrementalMapper::FilterPoints(const Options& options) {
     options.Check();
-    return reconstruction_->FilterAllPoints3D(options.filter_max_reproj_error,
-                                              options.filter_min_tri_angle);
+    return reconstruction_->FilterAllPoints3D(options.filter_max_reproj_error, options.filter_min_tri_angle);
 }
 
 size_t IncrementalMapper::NumTotalRegImages() const {
@@ -544,13 +578,11 @@ std::vector<image_t> IncrementalMapper::FindFirstInitialImage() const {
             continue;
         }
 
-        if (num_registrations_.count(image.first) > 0 &&
-            num_registrations_.at(image.first) > 0) {
+        if (num_registrations_.count(image.first) > 0 && num_registrations_.at(image.first) > 0) {
             continue;
         }
 
-        const class Camera& camera =
-                reconstruction_->Camera(image.second.CameraId());
+        const class Camera& camera = reconstruction_->Camera(image.second.CameraId());
         ImageInfo image_info;
         image_info.image_id = image.first;
         image_info.prior_focal_length = camera.HasPriorFocalLength();
@@ -563,12 +595,10 @@ std::vector<image_t> IncrementalMapper::FindFirstInitialImage() const {
             [](const ImageInfo& image_info1, const ImageInfo& image_info2) {
                 if (image_info1.prior_focal_length && !image_info2.prior_focal_length) {
                     return true;
-                } else if (!image_info1.prior_focal_length &&
-                           image_info2.prior_focal_length) {
+                } else if (!image_info1.prior_focal_length && image_info2.prior_focal_length) {
                     return false;
                 } else {
-                    return image_info1.num_correspondences >
-                           image_info2.num_correspondences;
+                    return image_info1.num_correspondences > image_info2.num_correspondences;
                 }
             });
 

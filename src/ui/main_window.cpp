@@ -162,11 +162,9 @@ void MainWindow::CreateActions() {
             Qt::BlockingQueuedConnection);
 
     action_render_now_ = new QAction(tr("Render now"), this);
-    connect(action_render_now_, &QAction::triggered, this, &MainWindow::RenderNow,
-            Qt::BlockingQueuedConnection);
+    connect(action_render_now_, &QAction::triggered, this, &MainWindow::RenderNow, Qt::BlockingQueuedConnection);
 
-    action_reconstruction_finish_ =
-            new QAction(tr("Finish reconstruction"), this);
+    action_reconstruction_finish_ = new QAction(tr("Finish reconstruction"), this);
     connect(action_reconstruction_finish_, &QAction::triggered, this,
             &MainWindow::ReconstructionFinish, Qt::BlockingQueuedConnection);
 }

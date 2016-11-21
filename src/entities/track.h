@@ -12,6 +12,7 @@ struct TrackElement {
     point2D_t point2D_idx;
 };
 
+// Due to definition from diploma: Track is a set of points of 2d points which refer to the same 3d point.
 class Track {
 public:
     Track();
