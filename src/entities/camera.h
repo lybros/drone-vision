@@ -153,6 +153,7 @@ public:
             const double max_extra_param
     ) const;
 
+    // Calling this method after reading EXIF data from an image.
     void InitializeWithId(
             const int model_id,
             const double focal_length,

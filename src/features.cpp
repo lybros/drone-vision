@@ -68,8 +68,7 @@ void FeatureExtractor::Stop() {
     stop_ = true;
 }
 
-bool FeatureExtractor::ReadImage(const std::string& image_path, Image* image,
-                                 Bitmap* bitmap) {
+bool FeatureExtractor::ReadImage(const std::string& image_path, Image* image, Bitmap* bitmap) {
     image->SetName(image_path);
     image->SetName(StringReplace(image->Name(), "\\", "/"));
     image->SetName(StringReplace(image->Name(), image_path_, ""));
@@ -103,16 +102,13 @@ bool FeatureExtractor::ReadImage(const std::string& image_path, Image* image,
         if (options_.single_camera && last_camera_id_ != kInvalidCameraId &&
             (camera.Width() != last_camera_.Width() ||
              camera.Height() != last_camera_.Height())) {
-            std::cerr << "  ERROR: Single camera specified, but images have "
-                    "different dimensions."
-            << std::endl;
+            std::cerr << "  ERROR: Single camera specified, but images have different dimensions." << std::endl;
             return false;
         }
 
         if (static_cast<size_t>(bitmap->Width()) != camera.Width() ||
             static_cast<size_t>(bitmap->Height()) != camera.Height()) {
-            std::cerr << "  ERROR: Image previously processed, but current version "
-                    "has different dimensions."
+            std::cerr << "  ERROR: Image previously processed, but current version has different dimensions."
             << std::endl;
         }
     }
@@ -120,27 +116,22 @@ bool FeatureExtractor::ReadImage(const std::string& image_path, Image* image,
     if (options_.single_camera && last_camera_id_ != kInvalidCameraId &&
         (last_camera_.Width() != static_cast<size_t>(bitmap->Width()) ||
          last_camera_.Height() != static_cast<size_t>(bitmap->Height()))) {
-        std::cerr << "  ERROR: Single camera specified, but images have "
-                "different dimensions"
-        << std::endl;
+        std::cerr << "  ERROR: Single camera specified, but images have different dimensions" << std::endl;
         return false;
     }
 
     last_camera_.SetWidth(static_cast<size_t>(bitmap->Width()));
     last_camera_.SetHeight(static_cast<size_t>(bitmap->Height()));
 
-    std::cout << "  Width:          " << last_camera_.Width() << "px"
-    << std::endl;
-    std::cout << "  Height:         " << last_camera_.Height() << "px"
-    << std::endl;
+    std::cout << "  Width:          " << last_camera_.Width() << "px" << std::endl;
+    std::cout << "  Height:         " << last_camera_.Height() << "px" << std::endl;
 
     if (!options_.single_camera || last_camera_id_ == kInvalidCameraId) {
         if (options_.camera_params.empty()) {
             double focal_length = 0.0;
             if (bitmap->ExifFocalLength(&focal_length)) {
                 last_camera_.SetPriorFocalLength(true);
-                std::cout << "  Focal length:   " << focal_length << "px (EXIF)"
-                << std::endl;
+                std::cout << "  Focal length:   " << focal_length << "px (EXIF)" << std::endl;
             } else {
                 focal_length = options_.default_focal_length_factor *
                                std::max(bitmap->Width(), bitmap->Height());
@@ -148,6 +139,8 @@ bool FeatureExtractor::ReadImage(const std::string& image_path, Image* image,
                 std::cout << "  Focal length:   " << focal_length << "px" << std::endl;
             }
 
+            // Here we're finally initializing camera with focal_length if we have it.
+            // Yes, not only focal length, but focal length is what I'm interested in at the moment.
             last_camera_.InitializeWithId(last_camera_.ModelId(), focal_length,
                                           last_camera_.Width(),
                                           last_camera_.Height());
@@ -217,21 +210,14 @@ void SiftGPUFeatureExtractor::DoExtraction() {
             std::distance(boost::filesystem::recursive_directory_iterator(image_path_),
                           boost::filesystem::recursive_directory_iterator());
 
-    const std::string max_image_size_str =
-            std::to_string(sift_options_.max_image_size);
-    const std::string max_num_features_str =
-            std::to_string(sift_options_.max_num_features);
-    const std::string first_octave_str =
-            std::to_string(sift_options_.first_octave);
+    const std::string max_image_size_str = std::to_string(sift_options_.max_image_size);
+    const std::string max_num_features_str = std::to_string(sift_options_.max_num_features);
+    const std::string first_octave_str = std::to_string(sift_options_.first_octave);
     const std::string num_octaves_str = std::to_string(sift_options_.num_octaves);
-    const std::string octave_resolution_str =
-            std::to_string(sift_options_.octave_resolution);
-    const std::string peak_threshold_str =
-            std::to_string(sift_options_.peak_threshold);
-    const std::string edge_threshold_str =
-            std::to_string(sift_options_.edge_threshold);
-    const std::string max_num_orientations_str =
-            std::to_string(sift_options_.max_num_orientations);
+    const std::string octave_resolution_str = std::to_string(sift_options_.octave_resolution);
+    const std::string peak_threshold_str = std::to_string(sift_options_.peak_threshold);
+    const std::string edge_threshold_str = std::to_string(sift_options_.edge_threshold);
+    const std::string max_num_orientations_str = std::to_string(sift_options_.max_num_orientations);
 
     const int kNumArgs = 19;
     const char* sift_gpu_args[kNumArgs] = {
@@ -276,8 +262,7 @@ void SiftGPUFeatureExtractor::DoExtraction() {
             }
         }
 
-        std::cout << "Processing file [" << i_file << "/" << num_files << "]"
-        << std::endl;
+        std::cout << "Processing file [" << i_file << "/" << num_files << "]" << std::endl;
 
         Image image;
         Bitmap bitmap;

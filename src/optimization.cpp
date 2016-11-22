@@ -377,6 +377,8 @@ void BundleAdjuster::ParameterizeCameras(Reconstruction* reconstruction) {
                 const std::vector<size_t>& params_idxs = camera.ExtraParamsIdxs();
                 const_camera_params.insert(const_camera_params.end(), params_idxs.begin(), params_idxs.end());
             }
+            // All the vectors mentioned above are, in fact, vectors of indices. These values are not the values.
+            // Just indices which will allow us to get data from params_ vector.
 
             if (const_camera_params.size() > 0) {
                 ceres::SubsetParameterization* camera_params_parameterization =
