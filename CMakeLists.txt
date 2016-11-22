@@ -50,13 +50,3 @@ add_subdirectory(3rdparty/pmvs)
 add_subdirectory(3rdparty/poisson_triangulation)
 
 add_subdirectory(src)
-
-add_executable(3d_reconstruction ${QT_RESOURCES})
-
-target_link_libraries(3d_reconstruction
-        3d_reconstruction_src
-        pthread dl sqlite sift_gpu pmvs_lib cmvs_lib tinycthread image_lib graclus_lib nlopt numeric_lib
-        ${OpenCV_LIBRARIES} ${CERES_LIBRARIES} ${Boost_LIBRARIES} ${FREEIMAGE_LIBRARIES} ${GLEW_LIBRARIES}
-        ${GLUT_LIBRARY} ${OPENGL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${JPEG_LIBRARIES})
-
-qt5_use_modules(3d_reconstruction Core OpenGL)
