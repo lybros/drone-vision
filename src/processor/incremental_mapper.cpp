@@ -210,7 +210,7 @@ bool IncrementalMapper::RegisterInitialImagePair(const Options& options,
     Image& image2 = reconstruction_->Image(image_id2);
     const Camera& camera2 = reconstruction_->Camera(image2.CameraId());
 
-    // Ok so now er have image1 and image2 which are initial images.
+    // Ok so now we have image1 and image2 which are initial images.
     // Checking it with geometry magic again.
     // The same function we've run while searching for initial pair.
     // Well, ok, why not to run it again.
