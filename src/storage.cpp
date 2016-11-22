@@ -1040,6 +1040,11 @@ camera_t Database::WriteCamera(const Camera& camera, const bool use_camera_id) c
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_add_camera_, 3, static_cast<sqlite3_int64>(camera.Width())));
     SQLITE3_CALL(sqlite3_bind_int64(sql_stmt_add_camera_, 4, static_cast<sqlite3_int64>(camera.Height())));
 
+    // What are the camera parameters? Database doesn't care about that.
+    // It writes (and in the other place - reads) just a vector of doubles which is params_ in class Camera.
+    // Seems like these values are:
+    // "fx, fy, cx, cy" for pinhole camera,
+    // "f, cx, cy, k1, k2" for radial camera.
     const size_t num_params_bytes = sizeof(double) * camera.NumParams();
     SQLITE3_CALL(sqlite3_bind_blob(sql_stmt_add_camera_,
                                    5,

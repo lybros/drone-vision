@@ -178,7 +178,7 @@ bool BundleAdjuster::Solve(Reconstruction* reconstruction) {
     // Adding all the images from configuration to the problem.
     SetUp(reconstruction, loss_function);
 
-    // In redard to inner options of BundleAdjuster - here we're choosing if camera is constant (predefined)
+    // In regard to inner options of BundleAdjuster - here we're choosing if camera is constant (predefined)
     // or we want to parameterize it.
     ParameterizeCameras(reconstruction);
     ParameterizePoints(reconstruction);
@@ -363,14 +363,17 @@ void BundleAdjuster::ParameterizeCameras(Reconstruction* reconstruction) {
             std::vector<int> const_camera_params;
 
             if (!options_.refine_focal_length) {
+                // Initialized with {0} for radial camera, {0, 1} for pinhole camera.
                 const std::vector<size_t>& params_idxs = camera.FocalLengthIdxs();
                 const_camera_params.insert(const_camera_params.end(), params_idxs.begin(), params_idxs.end());
             }
             if (!options_.refine_principal_point) {
+                // Initialized with {1, 2} for radial camera, {2, 3} for pinhole camera.
                 const std::vector<size_t>& params_idxs = camera.PrincipalPointIdxs();
                 const_camera_params.insert(const_camera_params.end(), params_idxs.begin(), params_idxs.end());
             }
             if (!options_.refine_extra_params) {
+                // Initialized with {3, 4} for radial camera, {} for pinhole camera.
                 const std::vector<size_t>& params_idxs = camera.ExtraParamsIdxs();
                 const_camera_params.insert(const_camera_params.end(), params_idxs.begin(), params_idxs.end());
             }
@@ -408,17 +411,13 @@ void PrintSolverSummary(const ceres::Solver::Summary& summary) {
     std::cout << std::left << summary.num_residuals_reduced << std::endl;
 
     std::cout << std::right << std::setw(16) << "Parameters : ";
-    std::cout << std::left << summary.num_effective_parameters_reduced
-              << std::endl;
+    std::cout << std::left << summary.num_effective_parameters_reduced << std::endl;
 
     std::cout << std::right << std::setw(16) << "Iterations : ";
-    std::cout << std::left
-              << summary.num_successful_steps + summary.num_unsuccessful_steps
-              << std::endl;
+    std::cout << std::left << summary.num_successful_steps + summary.num_unsuccessful_steps << std::endl;
 
     std::cout << std::right << std::setw(16) << "Time : ";
-    std::cout << std::left << summary.total_time_in_seconds << " [s]"
-              << std::endl;
+    std::cout << std::left << summary.total_time_in_seconds << " [s]" << std::endl;
 
     std::cout << std::right << std::setw(16) << "Initial cost : ";
     std::cout << std::right << std::setprecision(6)

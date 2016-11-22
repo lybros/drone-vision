@@ -278,6 +278,7 @@ bool IncrementalMapper::RegisterInitialImagePair(const Options& options,
 bool IncrementalMapper::RegisterNextImage(const Options& options, const image_t image_id) {
     options.Check();
 
+    // Fixing an image and a camera connected to this image.
     Image& image = reconstruction_->Image(image_id);
     Camera& camera = reconstruction_->Camera(image.CameraId());
 
@@ -353,23 +354,32 @@ bool IncrementalMapper::RegisterNextImage(const Options& options, const image_t 
 
     AbsolutePoseRefinementOptions abs_pose_refinement_options;
     if (refined_cameras_.count(image.CameraId()) > 0) {
+        // If we already have our current camera in refined_cameras_.
         if (camera.HasBogusParams(options.min_focal_length_ratio,
                                   options.max_focal_length_ratio,
                                   options.max_extra_param)) {
+            // Camera in refined params but params are still bogus. So camera will participate in BA.
             refined_cameras_.erase(image.CameraId());
+            // Retrieving camera params from database cache.
             camera.SetParams(database_cache_->Camera(image.CameraId()).Params());
+            // Unless camera has prior focal length we estimate it, so setting flag on.
             abs_pose_options.estimate_focal_length = !camera.HasPriorFocalLength();
             abs_pose_refinement_options.refine_focal_length = true;
         } else {
+            // I guess that means our camera has real params, not bogus.
+            // So no need in estimating and refining focal length.
             abs_pose_options.estimate_focal_length = false;
             abs_pose_refinement_options.refine_focal_length = false;
         }
     } else {
+        // Our camera is not yet in refined_cameras_.
+        // So camera will be refined and estimated unless it has prior focal length.
         abs_pose_options.estimate_focal_length = !camera.HasPriorFocalLength();
         abs_pose_refinement_options.refine_focal_length = true;
     }
 
     if (!options.abs_pose_estimate_focal_length) {
+        // Overrides everything we got a step before.
         abs_pose_options.estimate_focal_length = false;
         abs_pose_refinement_options.refine_focal_length = false;
     }
@@ -409,6 +419,7 @@ bool IncrementalMapper::RegisterNextImage(const Options& options, const image_t 
         }
     }
 
+    // That's the only place where we're adding cameras into refined_cameras_
     refined_cameras_.insert(image.CameraId());
 
     return true;
