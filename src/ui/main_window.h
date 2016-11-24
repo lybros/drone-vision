@@ -2,6 +2,7 @@
 #define INC_3D_RECONSTRUCTION_MAINWINDOW_H
 
 #include "../processor/incremental_mapper_controller.h"
+#include "../processor/ba_experiments.h"
 #include "../densify.h"
 #include "../surface_reconstruct.h"
 
@@ -21,6 +22,7 @@ public:
     bool OverwriteReconstruction();
 
     std::unique_ptr<IncrementalMapperController> mapper_controller;
+    std::unique_ptr<BAExperiments> ba_experiments;
 
     void ReadProjectConfiguration(const QString&);
     void WriteProjectConfiguration();
@@ -80,6 +82,8 @@ private:
     void ReconstructionReset();
 
     void ReconstructionFinish();
+
+    void RunExperimentalReconstruction();
 
     void Render();
 
@@ -148,6 +152,8 @@ private:
     QAction* action_reconstruction_pause_;
     QAction* action_reconstruction_reset_;
     QAction* action_reconstruction_finish_;
+
+    QAction* action_experimental_reconstruction_start_;
 
     QAction* action_render_;
     QAction* action_render_now_;

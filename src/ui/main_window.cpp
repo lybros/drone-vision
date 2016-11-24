@@ -138,6 +138,11 @@ void MainWindow::CreateActions() {
     connect(action_reconstruction_reset_, &QAction::triggered, this,
             &MainWindow::OverwriteReconstruction);
 
+    action_experimental_reconstruction_start_ =
+            new QAction(QIcon(":/media/match-matrix.png"), tr("RUN EXPERIMENTAL RECONSTRUCTION"), this);
+    connect(action_experimental_reconstruction_start_, &QAction::triggered, this,
+            &MainWindow::RunExperimentalReconstruction);
+
     action_render_reset_view_ = new QAction(
             QIcon(":/media/render-reset-view.png"), tr("Reset view"), this);
     connect(action_render_reset_view_, &QAction::triggered, opengl_window_,
@@ -191,6 +196,8 @@ void MainWindow::CreateToolbar() {
     reconstruction_toolbar_->addAction(action_reconstruction_pause_);
     reconstruction_toolbar_->addAction(action_densify_);
     reconstruction_toolbar_->addAction(action_surface_reconstruct_);
+    reconstruction_toolbar_->addSeparator();
+    reconstruction_toolbar_->addAction(action_experimental_reconstruction_start_);
     reconstruction_toolbar_->setIconSize(QSize(16, 16));
 
     render_toolbar_ = addToolBar(tr("Render"));
@@ -233,6 +240,8 @@ void MainWindow::CreateControllers() {
     mapper_controller->action_render = action_render_;
     mapper_controller->action_render_now = action_render_now_;
     mapper_controller->action_finish = action_reconstruction_finish_;
+
+    ba_experiments.reset(new BAExperiments(options_));
 }
 
 void MainWindow::CreateFutures() {
@@ -524,6 +533,10 @@ void MainWindow::ReconstructionReset() {
     CreateControllers();
     EnableBlockingActions();
     RenderClear();
+}
+
+void MainWindow::RunExperimentalReconstruction() {
+    ba_experiments->RunSimpleCeresImplementation();
 }
 
 void MainWindow::Render() {
