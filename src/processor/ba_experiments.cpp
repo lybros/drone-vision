@@ -53,6 +53,10 @@ BAExperiments::BAExperiments(const OptionManager& options) : options_(options), 
 
 void BAExperiments::RunSimpleCeresImplementation() {
 
+    DroneData data(options_);
+    data.Read();
+    return;
+
     ceres::Problem problem;
     BuildCeresProblem(problem);
 
@@ -124,4 +128,53 @@ void BAExperiments::BuildCeresProblem(ceres::Problem& problem) {
         }
     }
     std::cout << std::endl << "PROBLEM IS BUILT" << std::endl;
+}
+
+DroneData::DroneData(const OptionManager& options) : options_(options) {}
+
+bool DroneData::Read() {
+    std::string filename = EnsureTrailingSlash(*options_.image_path) + DroneData::DRONE_DATA_FILE;
+    std::cout << "reading from " << filename << std::endl;
+    std::ifstream file(filename);
+    std::string camera_inner_params;
+
+    std::getline(file, camera_inner_params);
+    std::cout << "LINE READ " << camera_inner_params << std::endl;
+
+    std::stringstream line_stream(camera_inner_params);
+
+    std::string item;
+
+    std::vector<std::string> items;
+    while (!line_stream.eof()) {
+        std::getline(line_stream, item, ' ');
+        items.push_back(item);
+    }
+    std::cout << "camera inner read: " << items.size() << std::endl << "Camera inner: ";
+    for (auto i: items) {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
+
+    std::getline(file, item);
+    std::cout << "num images: " << item << std::endl;
+
+    for (int i = 0; i < 1; i++) {
+        std::string image_line;
+        std::getline(file, image_line);
+        std::vector<std::string> params;
+        std::stringstream image_stream(image_line);
+        while (!image_stream.eof()) {
+            std::getline(image_stream, item, ' ');
+            params.push_back(item);
+        }
+        std::cout << "image num params: " << params.size() << std::endl << "  params themselves: ";
+        for (auto p : params) {
+            std::cout << p << " ";
+        }
+        std::cout << std::endl;
+
+    }
+    file.close();
+    return true;
 }
