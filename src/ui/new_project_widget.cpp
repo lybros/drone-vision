@@ -107,6 +107,8 @@ void NewProjectWidget::Create() {
 
     main_window_->UpdateProjectInfoStatusBar();
 
+    main_window_->WriteAppConfig();
+
     hide();
 }
 

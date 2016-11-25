@@ -26,6 +26,8 @@ public:
 
     void ReadProjectConfiguration(const QString&);
     void WriteProjectConfiguration();
+    QString ReadAppConfig();
+    void WriteAppConfig();
 
     void UpdateProjectInfoStatusBar();
 
@@ -66,6 +68,10 @@ private:
     void ExportModelFinished();
 
     void OpenProject();
+
+    void OpenRecentProject();
+
+    void OpenProjectPath(const QString& path);
 
     bool IsValidProjectDirectory(const QString& path);
 
@@ -140,6 +146,7 @@ private:
 
     QAction* action_new_project_;
     QAction* action_open_project_;
+    QAction* action_open_recent_project_;
     QAction* action_import_model_;
     QAction* action_export_model_;
     QAction* action_quit_;
@@ -175,6 +182,8 @@ private:
     size_t render_counter_;
 
     bool window_closed_;
+
+    const QString APP_CONFIG_FILENAME = QString(".3d_reconstruction_config");
 };
 
 #endif //INC_3D_RECONSTRUCTION_MAINWINDOW_H

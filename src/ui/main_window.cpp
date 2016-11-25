@@ -99,6 +99,13 @@ void MainWindow::CreateActions() {
     connect(action_open_project_, &QAction::triggered, this, &MainWindow::OpenProject);
     blocking_actions_.push_back(action_open_project_);
 
+    QString recent_project_path = ReadAppConfig();
+    QString recent_project_label = "Open the most recent project" +
+            (recent_project_path == "" ? "" : ": " + recent_project_path);
+    action_open_recent_project_ = new QAction(QIcon(":media/project-open.png"), tr(qPrintable(recent_project_label)), this);
+    connect(action_open_recent_project_, &QAction::triggered, this, &MainWindow::OpenRecentProject);
+    blocking_actions_.push_back(action_open_recent_project_);
+
     action_quit_ = new QAction(tr("Quit"), this);
     connect(action_quit_, &QAction::triggered, this, &MainWindow::close);
 
@@ -178,6 +185,8 @@ void MainWindow::CreateToolbar() {
     project_toolbar_ = addToolBar(tr("Project"));
     project_toolbar_->addAction(action_new_project_);
     project_toolbar_->addAction(action_open_project_);
+    project_toolbar_->addSeparator();
+    project_toolbar_->addAction(action_open_recent_project_);
     project_toolbar_->setIconSize(QSize(16, 16));
 
     import_export_toolbar_ = addToolBar(tr("Model import/export"));
@@ -367,6 +376,14 @@ void MainWindow::OpenProject() {
         }
     }
 
+    OpenProjectPath(path);
+}
+
+void MainWindow::OpenRecentProject() {
+    OpenProjectPath(ReadAppConfig());
+}
+
+void MainWindow::OpenProjectPath(const QString& path) {
     progress_bar_->setLabelText(tr("Opening project"));
     progress_bar_->raise();
     progress_bar_->show();
@@ -377,6 +394,8 @@ void MainWindow::OpenProject() {
     ReadProjectConfiguration(path);
 
     UpdateProjectInfoStatusBar();
+
+    WriteAppConfig();
 
     progress_bar_->hide();
 }
@@ -414,6 +433,32 @@ void MainWindow::WriteProjectConfiguration() {
     file << "image_path:" << *options_.image_path << std::endl;
 
     file.close();
+}
+
+QString MainWindow::ReadAppConfig() {
+    QString config_file_name = EnsureTrailingSlash(QDir::homePath()) + MainWindow::APP_CONFIG_FILENAME;
+
+    if (!QFileInfo(config_file_name).exists()) {
+        QMessageBox::critical(this, "", tr("Reading from config file failed."));
+        return QString("");
+    }
+
+    std::ifstream config_file(config_file_name.toStdString());
+    std::string recent_project_path;
+    std::getline(config_file, recent_project_path);
+    config_file.close();
+
+    return QString::fromStdString(recent_project_path);
+}
+
+void MainWindow::WriteAppConfig() {
+    std::ofstream config_file;
+    std::string filename = (EnsureTrailingSlash(QDir::homePath()) + MainWindow::APP_CONFIG_FILENAME).toStdString();
+    config_file.open(filename, std::ios::trunc);
+    config_file << EnsureTrailingSlash(*options_.project_path) << std::endl;
+    config_file.close();
+
+    action_open_recent_project_->setToolTip("RELOAD THIS PROJECT");
 }
 
 void MainWindow::FeatureExtraction() {
