@@ -27,26 +27,14 @@
 #define INC_3D_RECONSTRUCTION_BA_EXPERIMENTAL_H
 
 #include <iostream>
+#include <stdio.h>
+#include <unordered_map>
 
 #include "../storage.h"
 #include "../options.h"
 
 #include <ceres/ceres.h>
 #include <ceres/rotation.h>
-
-class BAExperiments {
-public:
-    BAExperiments(const OptionManager& options);
-
-    void RunSimpleCeresImplementation();
-
-private:
-    void LoadDatabaseCache();
-    void BuildCeresProblem(ceres::Problem&);
-
-    const OptionManager options_;
-    DatabaseCache* database_cache_;
-};
 
 class DroneData {
 public:
@@ -61,16 +49,37 @@ public:
     };
 
     bool Read();
+    void Print();
 
-    double* camera_inner_params;    // focal length, 2 distortions.
-    int number_images;
+    // Returns a number of images read matched.
+    int MatchWithDatabase(DatabaseCache*);
 
-    ImageData* images;
+    std::vector<double> camera_inner_params;    // focal length, 2 distortions.
+    int num_images;
+
+    std::vector<ImageData> images;
 
 private:
+
     const OptionManager options_;
     // Name of the file, which is stored in images_path and contains all additional data from the drone.
     const std::string DRONE_DATA_FILE = "drone_data.txt";
+};
+
+class BAExperiments {
+public:
+    BAExperiments(const OptionManager& options);
+
+    void RunSimpleCeresImplementation();
+
+private:
+    void LoadDatabaseCache();
+    void BuildCeresProblem(ceres::Problem&);
+
+    const OptionManager options_;
+    DatabaseCache* database_cache_;
+    DroneData* drone_data_;
+    double** approx_3d;
 };
 
 #endif //INC_3D_RECONSTRUCTION_BA_EXPERIMENTAL_H
