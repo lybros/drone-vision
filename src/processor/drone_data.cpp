@@ -9,9 +9,10 @@ bool DroneData::Read() {
     // Reading inner camera parameters.
     std::string camera_inner_params;
     std::getline(file, camera_inner_params);
-    this->camera_inner_params = std::vector<double>(3);
-    std::sscanf(camera_inner_params.c_str(), "%lf %lf %lf", &this->camera_inner_params[0],
-                &this->camera_inner_params[1], &this->camera_inner_params[2]);
+    this->camera_inner_params = std::vector<double>(5);
+    std::sscanf(camera_inner_params.c_str(), "%lf %lf %lf %lf %lf", &this->camera_inner_params[0],
+                &this->camera_inner_params[1], &this->camera_inner_params[2],
+                &this->camera_inner_params[3], &this->camera_inner_params[4]);
 
     // Reading number of images in a set.
     std::string image_number_line;

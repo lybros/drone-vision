@@ -353,10 +353,17 @@ void BundleAdjuster::ParameterizeCameras(Reconstruction* reconstruction) {
     const bool constant_camera = !options_.refine_focal_length &&
                                  !options_.refine_principal_point &&
                                  !options_.refine_extra_params;
+    std::cout << "CONSTANT CAMERA: " << constant_camera << std::endl;
     for (const camera_t camera_id : camera_ids_) {
         Camera& camera = reconstruction->Camera(camera_id);
 
         if (constant_camera || config_.IsConstantCamera(camera_id)) {
+            std::cout << "CAMERA CONST PARAMS: ";
+            for (double p : camera.Params()) {
+                std::cout << p << " ";
+            }
+            std::cout << std::endl;
+
             problem_->SetParameterBlockConstant(camera.ParamsData());
             continue;
         } else {
@@ -380,6 +387,12 @@ void BundleAdjuster::ParameterizeCameras(Reconstruction* reconstruction) {
             // All the vectors mentioned above are, in fact, vectors of indices. These values are not the values.
             // Just indices which will allow us to get data from params_ vector.
 
+            std::cout << "CAMERA NON-CONST PARAMS: ";
+            for (double p : camera.Params()) {
+                std::cout << p << " ";
+            }
+            std::cout << std::endl;
+
             if (const_camera_params.size() > 0) {
                 ceres::SubsetParameterization* camera_params_parameterization =
                         new ceres::SubsetParameterization(static_cast<int>(camera.NumParams()), const_camera_params);
@@ -396,6 +409,8 @@ void BundleAdjuster::ParameterizePoints(Reconstruction* reconstruction) {
             Point_3D& point3D = reconstruction->Point3D(num_images.first);
             if (point3D.Track().Length() > point3D_num_images_[num_images.first]) {
                 // Adding a 3d point to the problem if appr. Track has more data than point3D_num_images_ map.
+                std::cout << "adding 3D(1): " << point3D.XYZ()[0] << " " <<
+                          point3D.XYZ()[1] << " " << point3D.XYZ()[2] << std::endl;
                 problem_->SetParameterBlockConstant(point3D.XYZ().data());
             }
         }
@@ -403,6 +418,8 @@ void BundleAdjuster::ParameterizePoints(Reconstruction* reconstruction) {
 
     for (const point3D_t point3D_id : config_.ConstantPoints()) {
         Point_3D& point3D = reconstruction->Point3D(point3D_id);
+        std::cout << "adding 3D(2): " << point3D.XYZ()[0] << " " <<
+                  point3D.XYZ()[1] << " " << point3D.XYZ()[2] << std::endl;
         problem_->SetParameterBlockConstant(point3D.XYZ().data());
     }
 }

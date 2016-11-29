@@ -524,9 +524,15 @@ bool IncrementalMapper::AdjustGlobalBundle(const BundleAdjuster::Options& ba_opt
     BundleAdjustmentConfiguration ba_config;
     for (const image_t image_id : reg_image_ids) {
         ba_config.AddImage(image_id);
+
+        /*if (ba_options.use_drone_data) {
+            camera_t camera_id = reconstruction_->Image(image_id).CameraId();
+            ba_config.SetConstantCamera(camera_id);
+        }*/
     }
     ba_config.SetConstantPose(reg_image_ids[0]);
     ba_config.SetConstantTvec(reg_image_ids[1], {0});
+
 
     // This guy will finally run bundle adjustment with all the options and config parameters we're passing.
     BundleAdjuster bundle_adjuster(ba_options, ba_config);

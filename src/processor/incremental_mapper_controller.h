@@ -54,6 +54,8 @@ private:
 
     void Finish();
 
+    bool UseDroneData(DatabaseCache*);
+
     bool terminate_;
     bool pause_;
     bool running_;

@@ -217,6 +217,7 @@ void BundleAdjustmentOptions::Reset() {
     refine_focal_length = options.refine_focal_length;
     refine_principal_point = options.refine_principal_point;
     refine_extra_params = options.refine_extra_params;
+    use_drone_data = options.use_drone_data;
     print_summary = options.print_summary;
 }
 
@@ -393,9 +394,11 @@ void MapperOptions::Reset() {
     ba_global_points_freq = 50000;
     ba_global_max_num_iterations = 50;
 
-    ba_refine_focal_length = true;
+    // Defines how to process with drone data.
+    ba_refine_focal_length = false;
     ba_refine_principal_point = false;
     ba_refine_extra_params = true;
+    ba_use_drone_data = true;
 
     ba_local_max_refinements = 3;
     ba_local_max_refinement_change = 0.001;
@@ -447,6 +450,7 @@ IncrementalMapper::Options MapperOptions::IncrementalMapperOptions() const {
     options.max_focal_length_ratio = max_focal_length_ratio;
     options.max_extra_param = max_extra_param;
     options.num_threads = num_threads;
+    options.use_drone_data = ba_use_drone_data;
     return options;
 }
 
@@ -475,6 +479,7 @@ BundleAdjuster::Options MapperOptions::LocalBundleAdjustmentOptions() const {
     options.loss_function_scale = 1.0;
     options.loss_function_type =
             BundleAdjuster::Options::LossFunctionType::CAUCHY;
+    options.use_drone_data = ba_use_drone_data;
     return options;
 }
 
@@ -494,6 +499,7 @@ BundleAdjuster::Options MapperOptions::GlobalBundleAdjustmentOptions() const {
     options.refine_extra_params = ba_refine_extra_params;
     options.loss_function_type =
             BundleAdjuster::Options::LossFunctionType::TRIVIAL;
+    options.use_drone_data = ba_use_drone_data;
     return options;
 }
 

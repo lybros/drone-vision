@@ -30,6 +30,9 @@ public:
         ImageSelectionMethod image_selection_method =
                 ImageSelectionMethod::MIN_UNCERTAINTY;
 
+        // Initialized in MapperOptions::IncrementalMapperOptions().
+        bool use_drone_data = true;
+
         void Check() const;
     };
 

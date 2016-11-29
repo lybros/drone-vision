@@ -24,7 +24,6 @@
 #include <ceres/ceres.h>
 #include <ceres/rotation.h>
 
-
 class BAExperiments {
 public:
     BAExperiments(const OptionManager& options);

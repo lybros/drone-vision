@@ -252,6 +252,10 @@ public:
 
         bool print_summary = true;
 
+        // Initialized in MapperOptions::GlobalBundleAdjustmentOptions() &
+        //                MapperOptions::LocalBundleAdjustmentOptions()
+        bool use_drone_data = true;
+
         ceres::Solver::Options solver_options;
 
         Options() {

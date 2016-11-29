@@ -37,7 +37,7 @@ public:
     // Returns a number of images read matched.
     int MatchWithDatabase(DatabaseCache*);
 
-    std::vector<double> camera_inner_params;    // focal length, 2 distortions.
+    std::vector<double> camera_inner_params;    // f, cx, cy, k1, k2 (for RADIAL).
     int num_images;
 
     std::vector<ImageData> images;

@@ -102,6 +102,8 @@ struct BundleAdjustmentOptions : public BaseOptions {
     bool refine_principal_point;
     bool refine_extra_params;
 
+    bool use_drone_data;
+
     bool print_summary;
 };
 
@@ -189,6 +191,8 @@ struct MapperOptions : public BaseOptions {
     bool ba_refine_focal_length;
     bool ba_refine_principal_point;
     bool ba_refine_extra_params;
+
+    bool ba_use_drone_data;
 
     int ba_local_num_images;
     int ba_local_max_num_iterations;

@@ -1,4 +1,5 @@
 #include "incremental_mapper_controller.h"
+#include "drone_data.h"
 
 namespace {
     size_t TriangulateImage(const MapperOptions& options, const Image& image, IncrementalMapper* mapper) {
@@ -254,6 +255,15 @@ void IncrementalMapperController::run() {
     }
 
     std::cout << std::endl;
+
+    if (options_.ba_options->use_drone_data) {
+        if (!UseDroneData(&database_cache)) {
+            std::cerr << "Failed to use drone data, aborting reconstruction process." << std::endl;
+            return;
+        } else {
+            std::cout << "Drone data successfully applied to database." << std::endl;
+        }
+    }
 
     // Creating an IncrementalMapper object, which is linked with our cached database.
     IncrementalMapper mapper(&database_cache);
@@ -516,6 +526,58 @@ void IncrementalMapperController::run() {
     Finish();
 
     exit(0);
+}
+
+bool IncrementalMapperController::UseDroneData(DatabaseCache* database_cache) {
+    std::cout << "use_drone_data flag is set. Applying..." << std::endl;
+
+    // Due to drone_data file format, we assume all the images were made by the same camera.
+    // That means the inner parameters for every camera are the same and constant.
+
+    // Drone data loading, matching with database.
+    DroneData drone_data(options_);
+    if (!drone_data.Read()) {
+        std::cerr << "Drone data failed to be read from file." << std::endl;
+        return false;
+    }
+    drone_data.Print();
+
+    int num_matched = drone_data.MatchWithDatabase(database_cache);
+    if (num_matched != database_cache->NumImages()) {
+        std::cout << "WARNING: matched only " << num_matched << " of " << database_cache->NumImages() << std::endl;
+    }
+
+    if (drone_data.camera_inner_params.size() != 5) {
+        std::cerr << "Failed to read camera inner params: need 5, have " <<
+                  drone_data.camera_inner_params.size() << std::endl;
+        return false;
+    }
+
+    // Applying drone data to every virtual camera.
+    for (auto camera_pair : database_cache->Cameras()) {
+        Camera camera = camera_pair.second;
+        if (camera.ModelName() == "RADIAL") {
+            // Params are "f, cx, cy, k1, k2";
+            std::vector<double> camera_const_params(drone_data.camera_inner_params.begin(),
+                                                    drone_data.camera_inner_params.end());
+            database_cache->Camera(camera.CameraId()).SetParams(camera_const_params);
+        } else {
+            std::cerr << "No support for cameras different to RADIAL (in our terms)" << std::endl;
+            return false;
+        }
+    }
+
+    // Approximating 3D points with GPS data.
+    for (auto image_pair : database_cache->Images()) {
+        Image image = image_pair.second;
+        for (Point2D point_2d : image.Points2D()) {
+            if (point_2d.HasPoint3D()) {
+
+            }
+        }
+    }
+
+    return true;
 }
 
 size_t IncrementalMapperController::NumModels() const { return models_.size(); }
