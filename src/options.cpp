@@ -77,14 +77,16 @@ bool ExtractionOptions::Check() {
 
     if (!camera_model.empty()) {
         const auto model_id = CameraModelNameToId(camera_model);
-        VERIFY_OPTION_MSG(ExtractionOptions, camera_model, model_id != -1,
-                          "Camera model does not exist");
+        VERIFY_OPTION_MSG(ExtractionOptions, camera_model, model_id != -1, "Camera model does not exist");
 
         if (!camera_params.empty()) {
             const auto camera_params_vector = CSVToVector<double>(camera_params);
-            VERIFY_OPTION_MSG(ExtractionOptions, camera_params,
-                              CameraModelVerifyParams(model_id, camera_params_vector),
-                              "Invalid camera parameters");
+            VERIFY_OPTION_MSG(
+                    ExtractionOptions,
+                    camera_params,
+                    CameraModelVerifyParams(model_id, camera_params_vector),
+                    "Invalid camera parameters"
+            );
         }
     }
 
@@ -93,6 +95,7 @@ bool ExtractionOptions::Check() {
     CHECK_OPTION(ExtractionOptions, sift_options.octave_resolution, > 0);
     CHECK_OPTION(ExtractionOptions, sift_options.peak_threshold, > 0);
     CHECK_OPTION(ExtractionOptions, sift_options.edge_threshold, > 0);
+    CHECK_OPTION(ExtractionOptions, sift_options.sigma, > 0);
 
     return verified;
 }
@@ -779,9 +782,7 @@ void OptionManager::Reset() {
 bool OptionManager::Check() {
     bool verified = true;
 
-    verified =
-            verified && boost::filesystem::is_directory(
-                    boost::filesystem::path(*database_path).parent_path());
+    verified = verified && boost::filesystem::is_directory(boost::filesystem::path(*database_path).parent_path());
     verified = verified && boost::filesystem::is_directory(*image_path);
 
     verified = verified && extraction_options->Check();

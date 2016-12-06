@@ -1,12 +1,16 @@
 #include "features.h"
 
 namespace {
-    void ScaleBitmap(const Camera& camera, const int max_image_size,
-                     double* scale_x, double* scale_y, Bitmap* bitmap) {
+    void ScaleBitmap(
+            const Camera& camera,
+            const int max_image_size,
+            double* scale_x,
+            double* scale_y,
+            Bitmap* bitmap
+    ) {
         if (static_cast<int>(camera.Width()) > max_image_size ||
             static_cast<int>(camera.Height()) > max_image_size) {
-            const double scale = static_cast<double>(max_image_size) /
-                                 std::max(camera.Width(), camera.Height());
+            const double scale = static_cast<double>(max_image_size) / std::max(camera.Width(), camera.Height());
             const int new_width = static_cast<int>(camera.Width() * scale);
             const int new_height = static_cast<int>(camera.Height() * scale);
 
@@ -32,13 +36,13 @@ void SIFTOptions::Check() const {
 void FeatureExtractor::Options::Check() const {
 }
 
-FeatureExtractor::FeatureExtractor(const Options& options,
-                                   const std::string& database_path,
-                                   const std::string& image_path)
-        : stop_(false),
-          options_(options),
-          database_path_(database_path),
-          image_path_(image_path) {
+FeatureExtractor::FeatureExtractor(
+        const Options& options,
+        const std::string& database_path,
+        const std::string& image_path
+) : stop_(false), options_(options), database_path_(database_path), image_path_(image_path),
+    parent_thread_(QThread::currentThread()) {
+
     options_.Check();
     image_path_ = StringReplace(image_path_, "\\", "/");
     image_path_ = EnsureTrailingSlash(image_path_);
@@ -91,8 +95,7 @@ bool FeatureExtractor::ReadImage(const std::string& image_path, Image* image, Bi
     }
 
     if (!bitmap->Read(image_path, false)) {
-        std::cout << "  SKIP: Cannot read image at path " << image_path
-        << std::endl;
+        std::cout << "  SKIP: Cannot read image at path " << image_path << std::endl;
         return false;
     }
 
@@ -141,7 +144,8 @@ bool FeatureExtractor::ReadImage(const std::string& image_path, Image* image, Bi
 
             // Here we're finally initializing camera with focal_length if we have it.
             // Yes, not only focal length, but focal length is what I'm interested in at the moment.
-            last_camera_.InitializeWithId(last_camera_.ModelId(), focal_length,
+            last_camera_.InitializeWithId(last_camera_.ModelId(),
+                                          focal_length,
                                           last_camera_.Width(),
                                           last_camera_.Height());
         }
@@ -175,12 +179,17 @@ bool FeatureExtractor::ReadImage(const std::string& image_path, Image* image, Bi
     return true;
 }
 
+void FeatureExtractor::TearDown() {
+    context_->doneCurrent();
+    context_->moveToThread(parent_thread_);
+}
+
 SiftGPUFeatureExtractor::SiftGPUFeatureExtractor(
-        const Options& options, const SIFTOptions& sift_options,
-        const std::string& database_path, const std::string& image_path)
-        : FeatureExtractor(options, database_path, image_path),
-          sift_options_(sift_options),
-          parent_thread_(QThread::currentThread()) {
+        const Options& options,
+        const SIFTOptions& sift_options,
+        const std::string& database_path,
+        const std::string& image_path) : FeatureExtractor(options, database_path, image_path),
+                                         sift_options_(sift_options) {
     sift_options_.Check();
     surface_ = new QOffscreenSurface();
     surface_->create();
@@ -196,19 +205,15 @@ SiftGPUFeatureExtractor::~SiftGPUFeatureExtractor() {
     surface_->deleteLater();
 }
 
-void SiftGPUFeatureExtractor::TearDown() {
-    context_->doneCurrent();
-    context_->moveToThread(parent_thread_);
-}
-
 void SiftGPUFeatureExtractor::DoExtraction() {
-    PrintHeading1("Feature extraction (GPU)");
+    PrintHeading1("Feature extraction using SIFT (GPU)");
 
     context_->makeCurrent(surface_);
 
-    const size_t num_files =
-            std::distance(boost::filesystem::recursive_directory_iterator(image_path_),
-                          boost::filesystem::recursive_directory_iterator());
+    const size_t num_files = std::distance(
+            boost::filesystem::recursive_directory_iterator(image_path_),
+            boost::filesystem::recursive_directory_iterator()
+    );
 
     const std::string max_image_size_str = std::to_string(sift_options_.max_image_size);
     const std::string max_num_features_str = std::to_string(sift_options_.max_num_features);
@@ -275,9 +280,13 @@ void SiftGPUFeatureExtractor::DoExtraction() {
         ScaleBitmap(last_camera_, max_image_size, &scale_x, &scale_y, &bitmap);
 
         const std::vector<uint8_t> bitmap_raw_bits = bitmap.ConvertToRawBits();
-        const int code = sift_gpu.RunSIFT(bitmap.ScanWidth(), bitmap.Height(),
-                                          bitmap_raw_bits.data(), GL_LUMINANCE,
-                                          GL_UNSIGNED_BYTE);
+        const int code = sift_gpu.RunSIFT(
+                bitmap.ScanWidth(),
+                bitmap.Height(),
+                bitmap_raw_bits.data(),
+                GL_LUMINANCE,
+                GL_UNSIGNED_BYTE
+        );
 
         const int kSuccessCode = 1;
         if (code == kSuccessCode) {
@@ -334,6 +343,67 @@ void SiftGPUFeatureExtractor::DoExtraction() {
     }
 
     TearDown();
+}
+
+OpenCVFeatureExtractor::OpenCVFeatureExtractor(
+        const std::string& detectorType,
+        const Options& options,
+        const SIFTOptions& sift_options,
+        const std::string& database_path,
+        const std::string& image_path) : FeatureExtractor(options, database_path, image_path),
+                                         sift_options_(sift_options) {
+    sift_options_.Check();
+    surface_ = new QOffscreenSurface();
+    surface_->create();
+    context_ = new QOpenGLContext();
+    context_->create();
+    context_->makeCurrent(surface_);
+    context_->doneCurrent();
+    context_->moveToThread(this);
+}
+
+OpenCVFeatureExtractor::~OpenCVFeatureExtractor() {
+    delete context_;
+    surface_->deleteLater();
+}
+
+void OpenCVFeatureExtractor::DoExtraction() {
+    PrintHeading1("Feature extraction using OpenVC SIFT");
+
+    context_->makeCurrent(surface_);
+
+    cv::FeatureDetector* detector;
+    if (detectorType == "SIFT") {
+        detector = cv::xfeatures2d::SiftFeatureDetector::create(
+                sift_options_.num_features,
+                sift_options_.num_octaves,
+                sift_options_.peak_threshold,
+                sift_options_.edge_threshold,
+                sift_options_.sigma
+        );
+    }
+
+    cv::DescriptorExtractor* extractor;
+    extractor = new cv::xfeatures2d::SiftDescriptorExtractor();
+
+    QDir dir = QDir(QString::fromStdString(image_path_));
+    dir.setFilter(QDir::Files);
+    QDirIterator it(dir, QDirIterator::Subdirectories);
+    dir.setFilter(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+
+    const size_t num_files = dir.count();
+    size_t i_file = 0;
+
+    while (it.hasNext()) {
+        i_file += 1;
+        std::cout << it.next().toStdString() << std::endl;
+        std::cout << "Processing file [" << i_file << "/" << num_files << "]" << std::endl;
+        QMutexLocker locker(&mutex_);
+        if (stop_) {
+            TearDown();
+            return;
+        }
+    }
 }
 
 

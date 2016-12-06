@@ -454,10 +454,19 @@ void MainWindow::WriteAppConfig() {
 
 void MainWindow::FeatureExtraction() {
     if (options_.Check()) {
-        FeatureExtractor* feature_extractor = new SiftGPUFeatureExtractor(
+//        FeatureExtractor* feature_extractor = new SiftGPUFeatureExtractor(
+//                options_.extraction_options->Options(),
+//                options_.extraction_options->sift_options,
+//                *options_.database_path,
+//                *options_.image_path);
+
+        FeatureExtractor* feature_extractor = new OpenCVFeatureExtractor(
+                "SIFT",
                 options_.extraction_options->Options(),
-                options_.extraction_options->sift_options, *options_.database_path,
+                options_.extraction_options->sift_options,
+                *options_.database_path,
                 *options_.image_path);
+
         feature_extractor->start();
         QProgressDialog* progress_bar_ = new QProgressDialog(this);
         progress_bar_->setWindowModality(Qt::ApplicationModal);

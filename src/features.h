@@ -11,24 +11,22 @@
 #include <QtCore/QMutex>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOffscreenSurface>
+#include <QtCore/QDirIterator>
 #include <boost/filesystem.hpp>
+#include <opencv2/xfeatures2d.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
 struct SIFTOptions {
     int max_image_size = 3200;
-
     int max_num_features = 8192;
-
     int first_octave = -1;
-
     int num_octaves = 4;
-
     int octave_resolution = 3;
-
     double peak_threshold = 0.02 / octave_resolution;
-
     double edge_threshold = 10.0;
-
     int max_num_orientations = 2;
+    int num_features = 0;
+    double sigma = 1.6;
 
     enum class Normalization {
         L1_ROOT,
@@ -43,17 +41,15 @@ class FeatureExtractor : public QThread {
 public:
     struct Options {
         std::string camera_model = "RADIAL";
-
         bool single_camera = false;
-
         std::string camera_params = "";
-
         double default_focal_length_factor = 1.2;
 
         void Check() const;
     };
 
-    FeatureExtractor(const Options& options, const std::string& database_path,
+    FeatureExtractor(const Options& options,
+                     const std::string& database_path,
                      const std::string& image_path);
 
     void run();
@@ -65,20 +61,19 @@ protected:
 
     bool ReadImage(const std::string& image_path, Image* image, Bitmap* bitmap);
 
+    void TearDown();
+
     bool stop_;
     QMutex mutex_;
-
     Options options_;
-
     Database database_;
-
     std::string database_path_;
-
     std::string image_path_;
-
     Camera last_camera_;
-
     camera_t last_camera_id_;
+    QThread* parent_thread_;
+    QOpenGLContext* context_;
+    QOffscreenSurface* surface_;
 };
 
 
@@ -92,15 +87,27 @@ public:
     ~SiftGPUFeatureExtractor();
 
 private:
-    void TearDown();
+    void DoExtraction() override;
+
+    SIFTOptions sift_options_;
+};
+
+class OpenCVFeatureExtractor : public FeatureExtractor {
+public:
+    OpenCVFeatureExtractor(const std::string& detectorType,
+                           const Options& options,
+                           const SIFTOptions& sift_options,
+                           const std::string& database_path,
+                           const std::string& image_path);
+
+    ~OpenCVFeatureExtractor();
+
+private:
 
     void DoExtraction() override;
 
     SIFTOptions sift_options_;
-
-    QThread* parent_thread_;
-    QOpenGLContext* context_;
-    QOffscreenSurface* surface_;
+    std::string detectorType;
 };
 
 
