@@ -306,7 +306,7 @@ void SetPRNGSeed(unsigned seed) {
 }
 
 
-Timer::Timer() : started_(false), paused_(false) { }
+Timer::Timer() : started_(false), paused_(false) {}
 
 void Timer::Start() {
     if (started_) {
@@ -360,20 +360,20 @@ double Timer::ElapsedHours() const { return ElapsedMinutes() / 60; }
 
 void Timer::PrintSeconds() const {
     std::cout << "Elapsed time: " << std::setiosflags(std::ios::fixed)
-    << std::setprecision(5) << ElapsedSeconds() << " [seconds]"
-    << std::endl;
+              << std::setprecision(5) << ElapsedSeconds() << " [seconds]"
+              << std::endl;
 }
 
 void Timer::PrintMinutes() const {
     std::cout << "Elapsed time: " << std::setiosflags(std::ios::fixed)
-    << std::setprecision(2) << ElapsedMinutes() << " [minutes]"
-    << std::endl;
+              << std::setprecision(2) << ElapsedMinutes() << " [minutes]"
+              << std::endl;
 }
 
 void Timer::PrintHours() const {
     std::cout << "Elapsed time: " << std::setiosflags(std::ios::fixed)
-    << std::setprecision(2) << ElapsedHours() << " [hours]"
-    << std::endl;
+              << std::setprecision(2) << ElapsedHours() << " [hours]"
+              << std::endl;
 }
 
 
@@ -494,6 +494,11 @@ Eigen::Matrix3x4d ComposeProjectionMatrix(const Eigen::Vector4d& qvec,
     Eigen::Matrix3x4d proj_matrix;
     proj_matrix.leftCols<3>() = QuaternionToRotationMatrix(qvec);
     proj_matrix.rightCols<1>() = tvec;
+    // TODO(uladbohdan): to remove the following commented code.
+    // That's too much of output.
+    //std::cout << "!!! Composing projection Matrix from " << qvec(0) << " " << qvec(1) << " " << qvec(2) << " " << qvec(3) <<
+    //          "  :  " << tvec(0) << " " << tvec(1) << " " << tvec(2) << std::endl;
+    //std::cout << proj_matrix << std::endl;
     return proj_matrix;
 }
 

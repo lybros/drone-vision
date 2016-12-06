@@ -4,6 +4,7 @@
 struct SnavelyReprojectionError {
     SnavelyReprojectionError(double observed_x, double observed_y)
             : observed_x(observed_x), observed_y(observed_y) {}
+
     // in my case T stands for double.
     template<typename T>
     bool operator()(const T* const camera,
@@ -96,7 +97,7 @@ void BAExperiments::BuildCeresProblem(ceres::Problem& problem) {
     std::cout << "Real number of images retrieved: " << db_images.size() << std::endl;
 
     // Setting 3d points approximations.
-    approx_3d = new double*[6];
+    approx_3d = new double* [6];
 
     for (auto drone_image : drone_images) {
         Image db_image = database_cache_->Image(drone_image.image_db_id);
@@ -118,7 +119,7 @@ void BAExperiments::BuildCeresProblem(ceres::Problem& problem) {
         // parameterized using 9 parameters: 3 for rotation, 3 for translation, 1 for
         // focal length and 2 for radial distortion. The principal point is not modeled
         // (i.e. it is assumed be located at the image center).
-        double camera_params[9] = {
+        double camera_params[9];/* = {
                 drone_image.rotation_params[0],
                 drone_image.rotation_params[1],
                 drone_image.rotation_params[2],
@@ -128,11 +129,12 @@ void BAExperiments::BuildCeresProblem(ceres::Problem& problem) {
                 drone_data_->camera_inner_params[0],
                 drone_data_->camera_inner_params[1],
                 drone_data_->camera_inner_params[2],
-        };
+        }; */
         approx_3d[drone_image.image_db_id - 1] = new double[3]{
-                drone_image.gps_data[0],
-                drone_image.gps_data[1],
-                drone_image.gps_data[2],
+                0., 0., 0.,
+                //drone_image.gps_data[0],
+                //drone_image.gps_data[1],
+                //drone_image.gps_data[2],
         };
         for (auto obs : observations) {
             ceres::CostFunction* cost_function = SnavelyReprojectionError::Create(obs.X(), obs.Y());

@@ -4,9 +4,9 @@
 // .drone_data0 - this extension keeps the following data:
 // * Assuming we have one physical camera.
 //
-// <focal_length> <second_camera_distortion> <fourth_camera_distortion>
+// <focal_length> <cx> <cy> <second_camera_distortion> <fourth_camera_distortion>
 // <num_images>
-// <image_name_0> <3 camera rotation params> <3 camera translation params> <lat, lon, alt>
+// <image_name_0> <4x1 vector qvec> <3x1 vector tvec (lat, lon, alt)>
 // ...
 // <image_name_num_images> ...
 
@@ -26,12 +26,12 @@ public:
     struct ImageData {
         std::string image_name;
         image_t image_db_id;
-        double* rotation_params;    // 3 params.
-        double* translation_params; // 3 params.
-        double* gps_data;           // lat, lon, alt.
+        Eigen::Vector4d qvec;
+        Eigen::Vector3d tvec; // gps data
     };
 
     bool Read();
+
     void Print();
 
     // Returns a number of images read matched.

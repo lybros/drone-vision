@@ -48,14 +48,14 @@ namespace {
                      const std::string& option, const std::string& expression) {
         if (!value) {
             std::cerr << "ERROR: Option " << option_class << "." << option
-            << " failed check - " << expression << std::endl;
+                      << " failed check - " << expression << std::endl;
         }
         return value;
     }
 
 }
 
-void BaseOptions::Reset() { }
+void BaseOptions::Reset() {}
 
 bool BaseOptions::Check() { return false; }
 
@@ -395,10 +395,10 @@ void MapperOptions::Reset() {
     ba_global_max_num_iterations = 50;
 
     // Defines how to process with drone data.
+    ba_use_drone_data = true;
     ba_refine_focal_length = false;
     ba_refine_principal_point = false;
     ba_refine_extra_params = true;
-    ba_use_drone_data = true;
 
     ba_local_max_refinements = 3;
     ba_local_max_refinement_change = 0.001;

@@ -1,5 +1,4 @@
 #include "incremental_mapper_controller.h"
-#include "drone_data.h"
 
 namespace {
     size_t TriangulateImage(const MapperOptions& options, const Image& image, IncrementalMapper* mapper) {
@@ -256,7 +255,13 @@ void IncrementalMapperController::run() {
 
     std::cout << std::endl;
 
-    if (options_.ba_options->use_drone_data) {
+    std::cout << "Running with params: " << std::endl <<
+              "use_drone_data: " << mapper_options.ba_use_drone_data << std::endl <<
+              "refine_focal_length: " << mapper_options.ba_refine_focal_length << std::endl <<
+              "refine_principal_point " << mapper_options.ba_refine_principal_point << std::endl <<
+              "refine_extra_params " << mapper_options.ba_refine_extra_params << std::endl;
+
+    if (mapper_options.ba_use_drone_data) {
         if (!UseDroneData(&database_cache)) {
             std::cerr << "Failed to use drone data, aborting reconstruction process." << std::endl;
             return;
@@ -540,12 +545,14 @@ bool IncrementalMapperController::UseDroneData(DatabaseCache* database_cache) {
         std::cerr << "Drone data failed to be read from file." << std::endl;
         return false;
     }
-    drone_data.Print();
 
     int num_matched = drone_data.MatchWithDatabase(database_cache);
     if (num_matched != database_cache->NumImages()) {
         std::cout << "WARNING: matched only " << num_matched << " of " << database_cache->NumImages() << std::endl;
+    } else {
+        std::cout << "All images were successfully matched with database" << std::endl;
     }
+    drone_data.Print();
 
     if (drone_data.camera_inner_params.size() != 5) {
         std::cerr << "Failed to read camera inner params: need 5, have " <<
@@ -567,15 +574,14 @@ bool IncrementalMapperController::UseDroneData(DatabaseCache* database_cache) {
         }
     }
 
-    // Approximating 3D points with GPS data.
-    for (auto image_pair : database_cache->Images()) {
-        Image image = image_pair.second;
-        for (Point2D point_2d : image.Points2D()) {
-            if (point_2d.HasPoint3D()) {
-
-            }
-        }
+    // Approximating outer camera parameters.
+    std::cout << "Setting tvec and qvec...";
+    for (auto image_drone : drone_data.images) {
+        database_cache->Image(image_drone.image_db_id).SetQvec(image_drone.qvec);
+        database_cache->Image(image_drone.image_db_id).SetTvec(image_drone.tvec);
+        std::cout << "+";
     }
+    std::cout << "... done." << std::endl;
 
     return true;
 }

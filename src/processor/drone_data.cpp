@@ -24,16 +24,13 @@ bool DroneData::Read() {
     for (int i = 0; i < num_images; i++) {
         std::string image_line;
         std::getline(file, image_line);
-        images[i].rotation_params = new double[3];
-        images[i].translation_params = new double[3];
-        images[i].gps_data = new double[3];
+        images[i].qvec = Eigen::Vector4d();
+        images[i].tvec = Eigen::Vector3d();
         char name[100];
-        std::sscanf(image_line.c_str(), "%s %lf %lf %lf %lf %lf %lf %lf %lf %lf",
+        std::sscanf(image_line.c_str(), "%s %lf %lf %lf %lf %lf %lf %lf",
                     name,
-                    &images[i].rotation_params[0], &images[i].rotation_params[1], &images[i].rotation_params[2],
-                    &images[i].translation_params[0], &images[i].translation_params[1],
-                    &images[i].translation_params[2],
-                    &images[i].gps_data[0], &images[i].gps_data[1], &images[i].gps_data[2]);
+                    &images[i].qvec(0), &images[i].qvec(1), &images[i].qvec(2), &images[i].qvec(3),
+                    &images[i].tvec(0), &images[i].tvec(1), &images[i].tvec(2));
         images[i].image_name = std::string(name);
     }
 
@@ -71,15 +68,10 @@ void DroneData::Print() {
     for (auto image : images) {
         std::cout << "  Image: " << image.image_name << std::endl;
         std::cout << "    in database as: " << image.image_db_id << std::endl;
-        std::cout << "    Rotation params: " << image.rotation_params[0] << " "
-                  << image.rotation_params[1] << " "
-                  << image.rotation_params[2] << std::endl;
-        std::cout << "    Translation params: " << image.translation_params[0] << " "
-                  << image.translation_params[1] << " "
-                  << image.translation_params[2] << std::endl;
-        std::cout << "    GPS data: " << image.gps_data[0] << " "
-                  << image.gps_data[1] << " "
-                  << image.gps_data[2] << std::endl;
+        std::cout << "    Qvec: " << image.qvec(0) << " "
+                  << image.qvec(1) << " " << image.qvec(2) << std::endl;
+        std::cout << "    Tvec (GPS data): " << image.tvec(0) << " "
+                  << image.tvec(1) << " " << image.tvec(2) << std::endl;
     }
 
     PrintHeading1("END OF PRINT");

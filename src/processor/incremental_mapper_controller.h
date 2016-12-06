@@ -2,6 +2,7 @@
 #define INC_3D_RECONSTRUCTION_CONTROLLERS_H
 
 #include "../options.h"
+#include "drone_data.h"
 
 #include <memory>
 #include <iostream>

@@ -34,6 +34,10 @@ void Reconstruction::Load(const DatabaseCache& database_cache) {
             existing_image.SetNumObservations(image.second.NumObservations());
             existing_image.SetNumCorrespondences(image.second.NumCorrespondences());
         } else {
+            // TODO(uladbohdan): to remove the following commented code.
+            /*std::cout << "Adding image with params: " << image.second.Name() << " " <<
+                      image.second.Qvec()(0) << " " << image.second.Qvec()(1) << " " <<
+                      image.second.Qvec()(2) << " " << image.second.Qvec()(3) << std::endl; */
             AddImage(image.second);
         }
     }
