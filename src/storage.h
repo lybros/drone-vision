@@ -57,11 +57,9 @@ public:
 
     void Fill(const Eigen::Vector3ub& color);
 
-    bool InterpolateNearestNeighbor(const double x, const double y,
-                                    Eigen::Vector3ub* color) const;
+    bool InterpolateNearestNeighbor(const double x, const double y, Eigen::Vector3ub* color) const;
 
-    bool InterpolateBilinear(const double x, const double y,
-                             Eigen::Vector3d* color) const;
+    bool InterpolateBilinear(const double x, const double y, Eigen::Vector3d* color) const;
 
     bool ExifFocalLength(double* focal_length);
 
@@ -77,7 +75,8 @@ public:
                const FREE_IMAGE_FORMAT format = FIF_UNKNOWN,
                const int flags = 0) const;
 
-    Bitmap Rescale(const int new_width, const int new_height,
+    Bitmap Rescale(const int new_width,
+                   const int new_height,
                    const FREE_IMAGE_FILTER filter = FILTER_BILINEAR);
 
     Bitmap Clone() const;
@@ -88,7 +87,8 @@ public:
 
     void CloneMetadata(Bitmap* target) const;
 
-    bool ReadExifTag(const FREE_IMAGE_MDMODEL model, const std::string& tag_name,
+    bool ReadExifTag(const FREE_IMAGE_MDMODEL model,
+                     const std::string& tag_name,
                      std::string* result) const;
 
 private:

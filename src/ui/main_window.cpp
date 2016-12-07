@@ -461,7 +461,7 @@ void MainWindow::FeatureExtraction() {
 //                *options_.image_path);
 
         FeatureExtractor* feature_extractor = new OpenCVFeatureExtractor(
-                "SIFT",
+                "SIFT", "SIFT",
                 options_.extraction_options->Options(),
                 options_.extraction_options->sift_options,
                 *options_.database_path,

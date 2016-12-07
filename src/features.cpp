@@ -51,8 +51,8 @@ FeatureExtractor::FeatureExtractor(
 void FeatureExtractor::run() {
     last_camera_.SetModelIdFromName(options_.camera_model);
     last_camera_id_ = kInvalidCameraId;
-    if (!options_.camera_params.empty() &&
-        !last_camera_.SetParamsFromString(options_.camera_params)) {
+
+    if (!options_.camera_params.empty() && !last_camera_.SetParamsFromString(options_.camera_params)) {
         std::cerr << "  ERROR: Invalid camera parameters." << std::endl;
         return;
     }
@@ -103,8 +103,7 @@ bool FeatureExtractor::ReadImage(const std::string& image_path, Image* image, Bi
         const Camera camera = database_.ReadCamera(image->CameraId());
 
         if (options_.single_camera && last_camera_id_ != kInvalidCameraId &&
-            (camera.Width() != last_camera_.Width() ||
-             camera.Height() != last_camera_.Height())) {
+            (camera.Width() != last_camera_.Width() || camera.Height() != last_camera_.Height())) {
             std::cerr << "  ERROR: Single camera specified, but images have different dimensions." << std::endl;
             return false;
         }
@@ -346,12 +345,15 @@ void SiftGPUFeatureExtractor::DoExtraction() {
 }
 
 OpenCVFeatureExtractor::OpenCVFeatureExtractor(
-        const std::string& detectorType,
+        const std::string& detector_type,
+        const std::string& extractor_type,
         const Options& options,
         const SIFTOptions& sift_options,
         const std::string& database_path,
         const std::string& image_path) : FeatureExtractor(options, database_path, image_path),
-                                         sift_options_(sift_options) {
+                                         sift_options_(sift_options),
+                                         detector_type_(detector_type),
+                                         extractor_type_(extractor_type) {
     sift_options_.Check();
     surface_ = new QOffscreenSurface();
     surface_->create();
@@ -368,14 +370,16 @@ OpenCVFeatureExtractor::~OpenCVFeatureExtractor() {
 }
 
 void OpenCVFeatureExtractor::DoExtraction() {
-    PrintHeading1("Feature extraction using OpenVC SIFT");
+    PrintHeading1(QString().sprintf("Feature extraction using OpenCV %s", detector_type_.c_str()).toStdString());
 
     context_->makeCurrent(surface_);
 
-    cv::FeatureDetector* detector;
-    if (detectorType == "SIFT") {
+    cv::Ptr<cv::FeatureDetector> detector;
+    cv::Ptr<cv::DescriptorExtractor> extractor;
+
+    if (detector_type_ == "SIFT") {
         detector = cv::xfeatures2d::SiftFeatureDetector::create(
-                sift_options_.num_features,
+                sift_options_.max_num_features,
                 sift_options_.num_octaves,
                 sift_options_.peak_threshold,
                 sift_options_.edge_threshold,
@@ -383,8 +387,15 @@ void OpenCVFeatureExtractor::DoExtraction() {
         );
     }
 
-    cv::DescriptorExtractor* extractor;
-    extractor = new cv::xfeatures2d::SiftDescriptorExtractor();
+    if (extractor_type_ == "SIFT") {
+        extractor = cv::xfeatures2d::SiftDescriptorExtractor::create(
+                sift_options_.max_num_features,
+                sift_options_.num_octaves,
+                sift_options_.peak_threshold,
+                sift_options_.edge_threshold,
+                sift_options_.sigma
+        );
+    }
 
     QDir dir = QDir(QString::fromStdString(image_path_));
     dir.setFilter(QDir::Files);
@@ -396,13 +407,76 @@ void OpenCVFeatureExtractor::DoExtraction() {
 
     while (it.hasNext()) {
         i_file += 1;
-        std::cout << it.next().toStdString() << std::endl;
         std::cout << "Processing file [" << i_file << "/" << num_files << "]" << std::endl;
-        QMutexLocker locker(&mutex_);
-        if (stop_) {
-            TearDown();
-            return;
+        std::string image_path = it.next().toStdString();
+
+        {
+            QMutexLocker locker(&mutex_);
+            if (stop_) {
+                TearDown();
+                return;
+            }
         }
+
+        Image image;
+        Bitmap bitmap;
+        if (!ReadImage(image_path, &image, &bitmap)) {
+            continue;
+        }
+
+        double scale_x;
+        double scale_y;
+        ScaleBitmap(last_camera_, sift_options_.max_image_size, &scale_x, &scale_y, &bitmap);
+
+        std::vector<cv::KeyPoint> cv_keypoints;
+        cv::Mat cv_descriptors;
+        cv::Mat image_gray = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
+
+        detector->detect(image_gray, cv_keypoints);
+        extractor->compute(image_gray, cv_keypoints, cv_descriptors);
+
+        database_.BeginTransaction();
+
+        if (image.ImageId() == kInvalidImageId) {
+            image.SetImageId(database_.WriteImage(image));
+        }
+
+        const size_t num_features = cv_keypoints.size();
+
+        if (!database_.ExistsKeypoints(image.ImageId())) {
+            if (scale_x != 1.0 || scale_y != 1.0) {
+                const float inv_scale_x = static_cast<float>(1.0 / scale_x);
+                const float inv_scale_y = static_cast<float>(1.0 / scale_y);
+                //const float inv_scale_xy = (inv_scale_x + inv_scale_y) / 2.0f;
+
+                for (size_t i = 0; i < num_features; ++i) {
+                    cv_keypoints[i].pt.x *= inv_scale_x;
+                    cv_keypoints[i].pt.y *= inv_scale_y;
+                    //cv_keypoints[i].pt.s *= inv_scale_xy;
+                }
+            }
+
+            FeatureKeypoints keypoints(num_features);
+
+            for (size_t i = 0; i < num_features; ++i) {
+                keypoints[i].x = cv_keypoints[i].pt.x;
+                keypoints[i].y = cv_keypoints[i].pt.y;
+                //keypoints[i].orientation = cv_keypoints[i].angle; //(todo(drapegnik): check formats compatibility
+            }
+
+            database_.WriteKeypoints(image.ImageId(), keypoints);
+        }
+
+        FeatureDescriptors descriptors(num_features, 128);
+        cv::cv2eigen(cv_descriptors, descriptors);
+
+        if (!database_.ExistsDescriptors(image.ImageId())) {
+            database_.WriteDescriptors(image.ImageId(), descriptors);
+        }
+
+        std::cout << "  Features:       " << num_features << std::endl;
+        database_.EndTransaction();
+        TearDown();
     }
 }
 

@@ -14,7 +14,10 @@
 #include <QtCore/QDirIterator>
 #include <boost/filesystem.hpp>
 #include <opencv2/xfeatures2d.hpp>
-#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/eigen.hpp>
 
 struct SIFTOptions {
     int max_image_size = 3200;
@@ -25,7 +28,6 @@ struct SIFTOptions {
     double peak_threshold = 0.02 / octave_resolution;
     double edge_threshold = 10.0;
     int max_num_orientations = 2;
-    int num_features = 0;
     double sigma = 1.6;
 
     enum class Normalization {
@@ -94,7 +96,8 @@ private:
 
 class OpenCVFeatureExtractor : public FeatureExtractor {
 public:
-    OpenCVFeatureExtractor(const std::string& detectorType,
+    OpenCVFeatureExtractor(const std::string& detector_type,
+                           const std::string& extractor_type,
                            const Options& options,
                            const SIFTOptions& sift_options,
                            const std::string& database_path,
@@ -107,7 +110,8 @@ private:
     void DoExtraction() override;
 
     SIFTOptions sift_options_;
-    std::string detectorType;
+    std::string detector_type_;
+    std::string extractor_type_;
 };
 
 
