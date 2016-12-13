@@ -9,10 +9,12 @@
 #include "model_manager_widget.h"
 #include "new_project_widget.h"
 #include "opengl_window.h"
+#include "extract_features_widget.h"
 
 #include <QtWidgets>
 
 class NewProjectWidget;
+class ExtractFeaturesWidget;
 
 class MainWindow : public QMainWindow {
 public:
@@ -128,6 +130,7 @@ private:
     NewProjectWidget* new_project_widget_;
     DatabaseManagementWidget* database_management_widget_;
     ModelManagerWidget* model_manager_widget_;
+    ExtractFeaturesWidget* extract_features_widget_;
 
     QToolBar* project_toolbar_;
     QToolBar* import_export_toolbar_;

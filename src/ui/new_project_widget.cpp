@@ -1,7 +1,8 @@
 #include "new_project_widget.h"
 
-NewProjectWidget::NewProjectWidget(MainWindow* parent, OptionManager* options)
-        : main_window_(parent), options_(options), prev_selected_(false) {
+NewProjectWidget::NewProjectWidget(MainWindow* parent, OptionManager* options) : main_window_(parent),
+                                                                                 options_(options),
+                                                                                 prev_selected_(false) {
     setWindowFlags(Qt::Dialog);
     setWindowModality(Qt::ApplicationModal);
     setWindowTitle("New project");
@@ -10,20 +11,17 @@ NewProjectWidget::NewProjectWidget(MainWindow* parent, OptionManager* options)
     project_name_text_->setText(QString::fromStdString(*options_->project_name));
 
     QPushButton* project_path_select = new QPushButton(tr("Select"), this);
-    connect(project_path_select, &QPushButton::released, this,
-            &NewProjectWidget::SelectProjectPath);
+    connect(project_path_select, &QPushButton::released, this, &NewProjectWidget::SelectProjectPath);
     project_path_text_ = new QLineEdit(this);
     project_path_text_->setText(QString::fromStdString(*options_->project_path));
 
     QPushButton* image_path_select = new QPushButton(tr("Select"), this);
-    connect(image_path_select, &QPushButton::released, this,
-            &NewProjectWidget::SelectImagePath);
+    connect(image_path_select, &QPushButton::released, this, &NewProjectWidget::SelectImagePath);
     image_path_text_ = new QLineEdit(this);
     image_path_text_->setText(QString::fromStdString(*options_->image_path));
 
     QPushButton* create_button = new QPushButton(tr("Create"), this);
-    connect(create_button, &QPushButton::released, this,
-            &NewProjectWidget::Create);
+    connect(create_button, &QPushButton::released, this, &NewProjectWidget::Create);
 
     QGridLayout* grid = new QGridLayout(this);
 
@@ -43,8 +41,8 @@ NewProjectWidget::NewProjectWidget(MainWindow* parent, OptionManager* options)
 
 bool NewProjectWidget::PathsValid() {
     return QDir(ImagePath()).exists() &&
-            QDir(ProjectParentPath()).exists() &&
-            QFileInfo(ProjectParentPath()).isWritable();
+           QDir(ProjectParentPath()).exists() &&
+           QFileInfo(ProjectParentPath()).isWritable();
 }
 
 QString NewProjectWidget::ProjectName() const {
@@ -83,7 +81,8 @@ void NewProjectWidget::Create() {
     }
 
     if (QDir(ProjectPath()).exists()) {
-        QMessageBox::critical(this, "", tr("Project name corresponds with existent directory.\nPlease choose another project name / project directory"));
+        QMessageBox::critical(this, "",
+                              tr("Project name corresponds with existent directory.\nPlease choose another project name / project directory"));
         return;
     }
 

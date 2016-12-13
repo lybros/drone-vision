@@ -318,8 +318,8 @@ void SiftGPUFeatureExtractor::DoExtraction() {
                 for (size_t i = 0; i < sift_gpu_keypoints.size(); ++i) {
                     keypoints[i].x = sift_gpu_keypoints[i].x;
                     keypoints[i].y = sift_gpu_keypoints[i].y;
-                    keypoints[i].scale = sift_gpu_keypoints[i].s;
-                    keypoints[i].orientation = sift_gpu_keypoints[i].o;
+                    keypoints[i].scale_or_size = sift_gpu_keypoints[i].s;
+                    keypoints[i].orientation_or_angle = sift_gpu_keypoints[i].o;
                 }
 
                 database_.WriteKeypoints(image.ImageId(), keypoints);
@@ -345,15 +345,11 @@ void SiftGPUFeatureExtractor::DoExtraction() {
 }
 
 OpenCVFeatureExtractor::OpenCVFeatureExtractor(
-        const std::string& detector_type,
-        const std::string& extractor_type,
         const Options& options,
         const SIFTOptions& sift_options,
         const std::string& database_path,
         const std::string& image_path) : FeatureExtractor(options, database_path, image_path),
-                                         sift_options_(sift_options),
-                                         detector_type_(detector_type),
-                                         extractor_type_(extractor_type) {
+                                         sift_options_(sift_options) {
     sift_options_.Check();
     surface_ = new QOffscreenSurface();
     surface_->create();
@@ -370,25 +366,15 @@ OpenCVFeatureExtractor::~OpenCVFeatureExtractor() {
 }
 
 void OpenCVFeatureExtractor::DoExtraction() {
-    PrintHeading1(QString().sprintf("Feature extraction using OpenCV %s", detector_type_.c_str()).toStdString());
+    PrintHeading1(QString().sprintf("Feature extraction using %s", options_.features_type.c_str()).toStdString());
 
     context_->makeCurrent(surface_);
 
     cv::Ptr<cv::FeatureDetector> detector;
     cv::Ptr<cv::DescriptorExtractor> extractor;
 
-    if (detector_type_ == "SIFT") {
-        detector = cv::xfeatures2d::SiftFeatureDetector::create(
-                sift_options_.max_num_features,
-                sift_options_.num_octaves,
-                sift_options_.peak_threshold,
-                sift_options_.edge_threshold,
-                sift_options_.sigma
-        );
-    }
-
-    if (extractor_type_ == "SIFT") {
-        extractor = cv::xfeatures2d::SiftDescriptorExtractor::create(
+    if (options_.features_type == Database::OPENCV_SIFT) {
+        extractor = cv::xfeatures2d::SiftFeatureDetector::create(
                 sift_options_.max_num_features,
                 sift_options_.num_octaves,
                 sift_options_.peak_threshold,
@@ -432,7 +418,7 @@ void OpenCVFeatureExtractor::DoExtraction() {
         cv::Mat cv_descriptors;
         cv::Mat image_gray = cv::imread(image_path, cv::IMREAD_GRAYSCALE);
 
-        detector->detect(image_gray, cv_keypoints);
+        extractor->detect(image_gray, cv_keypoints);
         extractor->compute(image_gray, cv_keypoints, cv_descriptors);
 
         database_.BeginTransaction();
@@ -444,24 +430,25 @@ void OpenCVFeatureExtractor::DoExtraction() {
         const size_t num_features = cv_keypoints.size();
 
         if (!database_.ExistsKeypoints(image.ImageId())) {
-            if (scale_x != 1.0 || scale_y != 1.0) {
-                const float inv_scale_x = static_cast<float>(1.0 / scale_x);
-                const float inv_scale_y = static_cast<float>(1.0 / scale_y);
-                //const float inv_scale_xy = (inv_scale_x + inv_scale_y) / 2.0f;
-
-                for (size_t i = 0; i < num_features; ++i) {
-                    cv_keypoints[i].pt.x *= inv_scale_x;
-                    cv_keypoints[i].pt.y *= inv_scale_y;
-                    //cv_keypoints[i].pt.s *= inv_scale_xy;
-                }
-            }
+//            if (scale_x != 1.0 || scale_y != 1.0) { //(todo(drapegnik): check if that scale transformations need to OpenCV keypoints
+//                const float inv_scale_x = static_cast<float>(1.0 / scale_x);
+//                const float inv_scale_y = static_cast<float>(1.0 / scale_y);
+//                //const float inv_scale_xy = (inv_scale_x + inv_scale_y) / 2.0f;
+//
+//                for (size_t i = 0; i < num_features; ++i) {
+//                    cv_keypoints[i].pt.x *= inv_scale_x;
+//                    cv_keypoints[i].pt.y *= inv_scale_y;
+//                    //cv_keypoints[i].pt.s *= inv_scale_xy;
+//                }
+//            }
 
             FeatureKeypoints keypoints(num_features);
 
-            for (size_t i = 0; i < num_features; ++i) {
+            for (size_t i = 0; i < num_features; ++i) { //(todo(drapegnik): check formats compatibility
                 keypoints[i].x = cv_keypoints[i].pt.x;
                 keypoints[i].y = cv_keypoints[i].pt.y;
-                //keypoints[i].orientation = cv_keypoints[i].angle; //(todo(drapegnik): check formats compatibility
+                keypoints[i].orientation_or_angle = cv_keypoints[i].angle;
+                keypoints[i].scale_or_size = cv_keypoints[i].size;
             }
 
             database_.WriteKeypoints(image.ImageId(), keypoints);
@@ -496,7 +483,7 @@ namespace {
             scales.reserve(static_cast<size_t>(keypoints.size()));
 
             for (size_t i = 0; i < keypoints.size(); ++i) {
-                scales.emplace_back(i, keypoints[i].scale);
+                scales.emplace_back(i, keypoints[i].scale_or_size);
             }
 
             std::partial_sort(scales.begin(), scales.begin() + num_features,
@@ -767,7 +754,7 @@ void FeatureMatcher::MatchImagePairs(const std::vector<std::pair<image_t, image_
             UploadDescriptors(0, image_id1);
             UploadDescriptors(1, image_id2);
 
-            const int num_matches = sift_match_gpu_->GetSiftMatch(
+            const int num_matches = sift_match_gpu_->GetSiftMatch( //todo(drapegnik)
                     options_.max_num_matches,
                     reinterpret_cast<int (*)[2]>(matches_buffer_.data()),
                     static_cast<float>(options_.max_distance),

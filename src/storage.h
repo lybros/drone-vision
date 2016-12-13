@@ -198,8 +198,9 @@ inline int SQLite3CallHelper(const int result_code, const std::string& filename,
 class Database {
 public:
     const static int kSchemaVersion = 1;
-
     const static size_t kMaxNumImages;
+    static constexpr const char* OPENCV_SIFT = "OPENCV_SIFT";
+    static constexpr const char* SIFT_GPU = "SIFT_GPU";
 
     Database();
 

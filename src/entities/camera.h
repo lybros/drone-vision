@@ -194,8 +194,8 @@ struct FeatureKeypoint {
     float x = 0.0f;
     float y = 0.0f;
 
-    float scale = 0.0f;
-    float orientation = 0.0f;
+    float scale_or_size = 0.0f;
+    float orientation_or_angle = 0.0f;
 };
 
 struct FeatureMatch {

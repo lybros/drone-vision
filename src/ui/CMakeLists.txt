@@ -7,4 +7,4 @@ add_library(ui
         db_widgets/database_management_widget.cpp db_widgets/database_management_widget.h
         db_widgets/point_viewer_widget.cpp db_widgets/point_viewer_widget.h
         db_widgets/image_viewer_widget.cpp db_widgets/image_viewer_widget.h
-        db_widgets/matches_widget.cpp db_widgets/matches_widget.h)
+        db_widgets/matches_widget.cpp db_widgets/matches_widget.h extract_features_widget.cpp extract_features_widget.h)

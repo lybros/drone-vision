@@ -169,14 +169,11 @@ private:
     );
 
     const SceneGraph* scene_graph_;
-
     std::unordered_map<camera_t, class Camera> cameras_;
     std::unordered_map<image_t, class Image> images_;
     std::unordered_map<point3D_t, class Point_3D> points3D_;
     std::unordered_map<image_pair_t, std::pair<size_t, size_t>> image_pairs_;
-
     std::vector<image_t> reg_image_ids_;
-
     point3D_t num_added_points3D_;
 };
 

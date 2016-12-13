@@ -46,6 +46,7 @@ public:
         bool single_camera = false;
         std::string camera_params = "";
         double default_focal_length_factor = 1.2;
+        std::string features_type = "";
 
         void Check() const;
     };
@@ -96,9 +97,7 @@ private:
 
 class OpenCVFeatureExtractor : public FeatureExtractor {
 public:
-    OpenCVFeatureExtractor(const std::string& detector_type,
-                           const std::string& extractor_type,
-                           const Options& options,
+    OpenCVFeatureExtractor(const Options& options,
                            const SIFTOptions& sift_options,
                            const std::string& database_path,
                            const std::string& image_path);
@@ -110,8 +109,6 @@ private:
     void DoExtraction() override;
 
     SIFTOptions sift_options_;
-    std::string detector_type_;
-    std::string extractor_type_;
 };
 
 
@@ -119,30 +116,19 @@ class FeatureMatcher : public QThread {
 public:
     struct Options {
         int num_threads = ThreadPool::kMaxNumThreads;
-
         int gpu_index = -1;
-
         double max_ratio = 0.8;
-
         double max_distance = 0.7;
-
         bool cross_check = true;
-
         int max_num_matches = 8192;
-
         double max_error = 4.0;
-
         double confidence = 0.999;
-
         int max_num_trials = 10000;
-
         double min_inlier_ratio = 0.25;
-
         int min_num_inliers = 15;
-
         bool multiple_models = false;
-
         bool guided_matching = false;
+        std::string features_type = "";
 
         void Check() const;
     };

@@ -77,6 +77,7 @@ void MainWindow::CreateWidgets() {
     new_project_widget_ = new NewProjectWidget(this, &options_);
     new_project_widget_->SetImagePath(*options_.image_path);
     new_project_widget_->SetProjectPath(*options_.project_path);
+    extract_features_widget_ = new ExtractFeaturesWidget(this);
 
     database_management_widget_ = new DatabaseManagementWidget(this, &options_);
     model_manager_widget_ = new ModelManagerWidget(this);
@@ -101,8 +102,10 @@ void MainWindow::CreateActions() {
 
     QString recent_project_path = ReadAppConfig();
     QString recent_project_label = "Open the most recent project" +
-            (recent_project_path == "" ? "" : ": " + recent_project_path);
-    action_open_recent_project_ = new QAction(QIcon(":media/project-open.png"), tr(qPrintable(recent_project_label)), this);
+                                   (recent_project_path == "" ? "" : ": " + recent_project_path);
+    action_open_recent_project_ = new QAction(
+            QIcon(":media/project-open.png"), tr(qPrintable(recent_project_label)), this
+    );
     connect(action_open_recent_project_, &QAction::triggered, this, &MainWindow::OpenRecentProject);
     blocking_actions_.push_back(action_open_recent_project_);
 
@@ -114,65 +117,56 @@ void MainWindow::CreateActions() {
     blocking_actions_.push_back(action_feature_extraction_);
 
     action_feature_matching_ = new QAction(QIcon(":/media/feature-matching.png"), tr("Match features"), this);
-    connect(action_feature_matching_, &QAction::triggered, this,
-            &MainWindow::FeatureMatching);
+    connect(action_feature_matching_, &QAction::triggered, this, &MainWindow::FeatureMatching);
     blocking_actions_.push_back(action_feature_matching_);
 
-    action_database_management_ = new QAction(
-            QIcon(":/media/database-management.png"), tr("Manage database"), this);
-    connect(action_database_management_, &QAction::triggered, this,
-            &MainWindow::DatabaseManagement);
+    action_database_management_ = new QAction(QIcon(":/media/database-management.png"), tr("Manage database"), this);
+    connect(action_database_management_, &QAction::triggered, this, &MainWindow::DatabaseManagement);
     blocking_actions_.push_back(action_database_management_);
 
-    action_reconstruction_start_ =
-            new QAction(QIcon(":/media/reconstruction-start.png"),
-                        tr("Start / resume reconstruction"), this);
-    connect(action_reconstruction_start_, &QAction::triggered, this,
-            &MainWindow::ReconstructionStart);
+    action_reconstruction_start_ = new QAction(
+            QIcon(":/media/reconstruction-start.png"), tr("Start / resume reconstruction"), this
+    );
+    connect(action_reconstruction_start_, &QAction::triggered, this, &MainWindow::ReconstructionStart);
     blocking_actions_.push_back(action_reconstruction_start_);
 
-    action_reconstruction_pause_ =
-            new QAction(QIcon(":/media/reconstruction-pause.png"),
-                        tr("Pause reconstruction"), this);
-    connect(action_reconstruction_pause_, &QAction::triggered, this,
-            &MainWindow::ReconstructionPause);
+    action_reconstruction_pause_ = new QAction(
+            QIcon(":/media/reconstruction-pause.png"), tr("Pause reconstruction"), this
+    );
+    connect(action_reconstruction_pause_, &QAction::triggered, this, &MainWindow::ReconstructionPause);
     action_reconstruction_pause_->setEnabled(false);
     blocking_actions_.push_back(action_reconstruction_pause_);
 
-    action_reconstruction_reset_ =
-            new QAction(QIcon(":/media/reconstruction-reset.png"),
-                        tr("Reset reconstruction"), this);
-    connect(action_reconstruction_reset_, &QAction::triggered, this,
-            &MainWindow::OverwriteReconstruction);
+    action_reconstruction_reset_ = new QAction(
+            QIcon(":/media/reconstruction-reset.png"), tr("Reset reconstruction"), this
+    );
+    connect(action_reconstruction_reset_, &QAction::triggered, this, &MainWindow::OverwriteReconstruction);
 
-    action_render_reset_view_ = new QAction(
-            QIcon(":/media/render-reset-view.png"), tr("Reset view"), this);
-    connect(action_render_reset_view_, &QAction::triggered, opengl_window_,
-            &OpenGLWindow::ResetView);
+    action_render_reset_view_ = new QAction(QIcon(":/media/render-reset-view.png"), tr("Reset view"), this);
+    connect(action_render_reset_view_, &QAction::triggered, opengl_window_, &OpenGLWindow::ResetView);
 
-    connect(model_manager_widget_, static_cast<void (QComboBox::*)(int)>(
-                    &QComboBox::currentIndexChanged),
-            this, &MainWindow::SelectModelIdx);
+    connect(model_manager_widget_,
+            static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this,
+            &MainWindow::SelectModelIdx);
 
-    action_surface_reconstruct_ =
-            new QAction(QIcon(":/media/model-stats.png"), tr("Reconstruct surface model"), this);
-    action_densify_ =
-            new QAction(QIcon(":/media/undistort.png"), tr("Densify model"), this);
-    connect(action_densify_, &QAction::triggered, this,
-            &MainWindow::DensifyModel);
+    action_surface_reconstruct_ = new QAction(QIcon(":/media/model-stats.png"), tr("Reconstruct surface model"), this);
+    action_densify_ = new QAction(QIcon(":/media/undistort.png"), tr("Densify model"), this);
+    connect(action_densify_, &QAction::triggered, this, &MainWindow::DensifyModel);
     connect(action_surface_reconstruct_, &QAction::triggered, this, &MainWindow::SurfaceReconstructModel);
     blocking_actions_.push_back(action_densify_);
     blocking_actions_.push_back(action_surface_reconstruct_);
 
     action_render_ = new QAction(tr("Render"), this);
-    connect(action_render_, &QAction::triggered, this, &MainWindow::Render,
-            Qt::BlockingQueuedConnection);
+    connect(action_render_, &QAction::triggered, this, &MainWindow::Render, Qt::BlockingQueuedConnection);
 
     action_render_now_ = new QAction(tr("Render now"), this);
     connect(action_render_now_, &QAction::triggered, this, &MainWindow::RenderNow, Qt::BlockingQueuedConnection);
 
     action_reconstruction_finish_ = new QAction(tr("Finish reconstruction"), this);
-    connect(action_reconstruction_finish_, &QAction::triggered, this,
+    connect(action_reconstruction_finish_,
+            &QAction::triggered,
+            this,
             &MainWindow::ReconstructionFinish, Qt::BlockingQueuedConnection);
 }
 
@@ -453,19 +447,36 @@ void MainWindow::WriteAppConfig() {
 }
 
 void MainWindow::FeatureExtraction() {
-    if (options_.Check()) {
-//        FeatureExtractor* feature_extractor = new SiftGPUFeatureExtractor(
-//                options_.extraction_options->Options(),
-//                options_.extraction_options->sift_options,
-//                *options_.database_path,
-//                *options_.image_path);
 
-        FeatureExtractor* feature_extractor = new OpenCVFeatureExtractor(
-                "SIFT", "SIFT",
-                options_.extraction_options->Options(),
-                options_.extraction_options->sift_options,
-                *options_.database_path,
-                *options_.image_path);
+    //extract_features_widget_->show(); todo(drapegnik): create select feature type dialog
+    //extract_features_widget_->raise();
+
+
+    options_.AddExtractionOptions(Database::OPENCV_SIFT);
+    options_.AddMatchOptions(Database::OPENCV_SIFT);
+    //options_.AddExtractionOptions(Database::SIFT_GPU); // or
+    //options_.AddMatchOptions(Database::SIFT_GPU);
+
+    if (options_.Check()) {
+
+        FeatureExtractor* feature_extractor;
+
+        if (options_.extraction_options->features_type == Database::SIFT_GPU) {
+
+            feature_extractor = new SiftGPUFeatureExtractor(
+                    options_.extraction_options->Options(),
+                    options_.extraction_options->sift_options,
+                    *options_.database_path,
+                    *options_.image_path);
+
+        } else if (options_.extraction_options->features_type == Database::OPENCV_SIFT) {
+
+            feature_extractor = new OpenCVFeatureExtractor(
+                    options_.extraction_options->Options(),
+                    options_.extraction_options->sift_options,
+                    *options_.database_path,
+                    *options_.image_path);
+        }
 
         feature_extractor->start();
         QProgressDialog* progress_bar_ = new QProgressDialog(this);
@@ -716,13 +727,11 @@ void MainWindow::UpdateTimer() {
     const int minutes = (elapsed_time / 60) % 60;
     const int hours = (elapsed_time / 3600) % 24;
     const int days = elapsed_time / 86400;
-    statusbar_timer_label_->setText(QString().sprintf(
-            "Time %02d:%02d:%02d:%02d", days, hours, minutes, seconds));
+    statusbar_timer_label_->setText(QString().sprintf("Time %02d:%02d:%02d:%02d", days, hours, minutes, seconds));
 }
 
 void MainWindow::ShowInvalidProjectError() {
-    QMessageBox::critical(this, "",
-                          tr("You must create or open a valid project."));
+    QMessageBox::critical(this, "", tr("You must create or open a valid project."));
 }
 
 void MainWindow::EnableBlockingActions() {

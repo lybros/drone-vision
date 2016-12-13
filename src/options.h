@@ -29,6 +29,7 @@ struct ExtractionOptions : public BaseOptions {
     bool single_camera;
     std::string camera_params;
     double default_focal_length_factor;
+    std::string features_type;
 
     SIFTOptions sift_options;
 };
@@ -55,6 +56,7 @@ struct MatchOptions : public BaseOptions {
     int min_num_inliers;
     bool multiple_models;
     bool guided_matching;
+    std::string features_type;
 };
 
 struct ExhaustiveMatchOptions : public BaseOptions {
@@ -232,9 +234,9 @@ public:
 
     void AddImageOptions();
 
-    void AddExtractionOptions();
+    void AddExtractionOptions(std::string features_type = "");
 
-    void AddMatchOptions();
+    void AddMatchOptions(std::string features_type = "");
 
     void AddExhaustiveMatchOptions();
 
@@ -291,8 +293,7 @@ void OptionManager::RegisterOption(const std::string& name, const T* option) {
     } else if (std::is_same<T, double>::value) {
         options_double_.emplace_back(name, reinterpret_cast<const double*>(option));
     } else if (std::is_same<T, std::string>::value) {
-        options_string_.emplace_back(name,
-                                     reinterpret_cast<const std::string*>(option));
+        options_string_.emplace_back(name, reinterpret_cast<const std::string*>(option));
     }
 }
 

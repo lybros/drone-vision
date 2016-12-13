@@ -1,6 +1,7 @@
 #include "reconstruction.h"
 
-Reconstruction::Reconstruction() : scene_graph_(nullptr), num_added_points3D_(0) { }
+Reconstruction::Reconstruction() : scene_graph_(nullptr),
+                                   num_added_points3D_(0) { }
 
 std::unordered_set<point3D_t> Reconstruction::Point3DIds() const {
 

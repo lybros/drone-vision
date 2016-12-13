@@ -629,8 +629,8 @@ namespace {
         for (size_t i = 0; i < keypoints.size(); ++i) {
             blob(i, 0) = keypoints[i].x;
             blob(i, 1) = keypoints[i].y;
-            blob(i, 2) = keypoints[i].scale;
-            blob(i, 3) = keypoints[i].orientation;
+            blob(i, 2) = keypoints[i].scale_or_size;
+            blob(i, 3) = keypoints[i].orientation_or_angle;
         }
         return blob;
     }
@@ -640,8 +640,8 @@ namespace {
         for (FeatureKeypointsBlob::Index i = 0; i < blob.rows(); ++i) {
             keypoints[i].x = blob(i, 0);
             keypoints[i].y = blob(i, 1);
-            keypoints[i].scale = blob(i, 2);
-            keypoints[i].orientation = blob(i, 3);
+            keypoints[i].scale_or_size = blob(i, 2);
+            keypoints[i].orientation_or_angle = blob(i, 3);
         }
         return keypoints;
     }
