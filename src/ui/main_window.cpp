@@ -101,8 +101,9 @@ void MainWindow::CreateActions() {
 
     QString recent_project_path = ReadAppConfig();
     QString recent_project_label = "Open the most recent project" +
-            (recent_project_path == "" ? "" : ": " + recent_project_path);
-    action_open_recent_project_ = new QAction(QIcon(":media/project-open.png"), tr(qPrintable(recent_project_label)), this);
+                                   (recent_project_path == "" ? "" : ": " + recent_project_path);
+    action_open_recent_project_ = new QAction(QIcon(":media/project-open.png"), tr(qPrintable(recent_project_label)),
+                                              this);
     connect(action_open_recent_project_, &QAction::triggered, this, &MainWindow::OpenRecentProject);
     blocking_actions_.push_back(action_open_recent_project_);
 
@@ -622,8 +623,7 @@ void MainWindow::RenderSelectedModel() {
     const size_t model_idx = SelectedModelIdx();
     if (mapper_controller->Model(model_idx).NumImages() > 0) {
         this->options_.render_options->min_track_len = 3;
-    }
-    else {
+    } else {
         this->options_.render_options->min_track_len = 0;
     }
     opengl_window_->reconstruction = &mapper_controller->Model(model_idx);
@@ -697,8 +697,7 @@ void MainWindow::DensifyModel() {
                     }
                     model_manager_widget_->UpdateModels(mapper_controller->Models());
                     model_manager_widget_->SetModelIdx(model_idx);
-                }
-                else {
+                } else {
                     QMessageBox::critical(this, "", tr("Densifying failed."));
                 }
                 progress_bar_->hide();
@@ -789,8 +788,7 @@ void MainWindow::SurfaceReconstructModel() {
                     this->mapper_controller->Model(model_idx).ImportPLY(path, false);
                     model_manager_widget_->UpdateModels(mapper_controller->Models());
                     model_manager_widget_->SetModelIdx(model_idx);
-                }
-                else {
+                } else {
                     QMessageBox::critical(this, "", tr("Surface reconstruct failed."));
                 }
                 progress_bar_->hide();
@@ -804,4 +802,16 @@ void MainWindow::SurfaceReconstructModel() {
     });
     progress_bar_->show();
     progress_bar_->raise();
+}
+
+void MainWindow::SetExperimentalFlags(bool use_drone_data,
+                                      bool use_qvec_tvec_estimations,
+                                      bool refine_focal_length,
+                                      bool refine_principal_point,
+                                      bool refine_extra_params) {
+    options_.mapper_options->ba_use_drone_data = use_drone_data;
+    options_.mapper_options->ba_use_qvec_tvec_estimations = use_qvec_tvec_estimations;
+    options_.mapper_options->ba_refine_focal_length = refine_focal_length;
+    options_.mapper_options->ba_refine_principal_point = refine_principal_point;
+    options_.mapper_options->ba_refine_extra_params = refine_extra_params;
 }

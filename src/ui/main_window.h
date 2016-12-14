@@ -31,6 +31,12 @@ public:
 
     void UpdateProjectInfoStatusBar();
 
+    void SetExperimentalFlags(bool use_drone_data,
+                              bool use_qvec_tvec_estimations,
+                              bool refine_focal_length,
+                              bool refine_principal_point,
+                              bool refine_extra_params);
+
 protected:
     void showEvent(QShowEvent* event);
 

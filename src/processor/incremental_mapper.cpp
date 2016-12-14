@@ -218,8 +218,8 @@ bool IncrementalMapper::RegisterInitialImagePair(const Options& options,
         return false;
     }
 
-    // It's not clear at all what is meant by vectors T and Q.
-    // I can't see the same naming of vectors in diploma.
+    // Choosing image1 as point 0 of the model.
+    // Locating image2 in regard to image1.
     image1.Qvec() = Eigen::Vector4d(1, 0, 0, 0);
     image1.Tvec() = Eigen::Vector3d(0, 0, 0);
     image2.Qvec() = prev_init_two_view_geometry_.qvec;
@@ -352,6 +352,8 @@ bool IncrementalMapper::RegisterNextImage(const Options& options, const image_t 
     abs_pose_options.ransac_options.min_inlier_ratio = options.abs_pose_min_inlier_ratio;
     abs_pose_options.ransac_options.confidence = 0.9999;
 
+    abs_pose_options.use_qvec_tvec_estimations = options.use_qvec_tvec_estimations;
+
     AbsolutePoseRefinementOptions abs_pose_refinement_options;
     if (refined_cameras_.count(image.CameraId()) > 0) {
         // If we already have our current camera in refined_cameras_.
@@ -384,24 +386,66 @@ bool IncrementalMapper::RegisterNextImage(const Options& options, const image_t 
         abs_pose_refinement_options.refine_focal_length = false;
     }
 
+    abs_pose_refinement_options.use_qvec_tvec_estimations = options.use_qvec_tvec_estimations;
+
+    // That's weird. If my flags are set then that doesn't make much sense.
     size_t num_inliers;
     std::vector<bool> inlier_mask;
 
+    /* if (options.use_drone_data && options.use_qvec_tvec_estimations) {
+         // Keeping estimations for Qvec and Tvec as they were in a drone_data file.
+         std::cout << "\e[31mSKIPPING ESTIMATION... Keeping following values:" << std::endl;
+         std::cout << "IMAGE " << image_id << "  | " <<
+                   *&image.Qvec()(0) << " " << *&image.Qvec()(1) << " " <<
+                   *&image.Qvec()(2) << " " << *&image.Qvec()(3) << " | " <<
+                   *&image.Tvec()(0) << " " << *&image.Tvec()(1) << " " << *&image.Tvec()(2);
+         std::cout << "\e[0m\n";
+     } else {*/
+
+    // TODO(uladbohdan): to remove DEBUG output.
+    std::cout << "\e[31mESTIMATION.\e[0m" << std::endl;
+    std::cout << "BEFORE IMAGE " << image_id << "  Q and T: " <<
+              *&image.Qvec()(0) << " " << *&image.Qvec()(1) << " " <<
+              *&image.Qvec()(2) << " " << *&image.Qvec()(3) << " | " <<
+              *&image.Tvec()(0) << " " << *&image.Tvec()(1) << " " << *&image.Tvec()(2) << std::endl;
+    // ok so I was searching for usages of qvec and tvec and it seems to be first (only?)
+    // place where we're using it (and some lines below). But that's fine.
+    // I was wrong. We're not really using it hear: inside the EstimateAbsolutePose() we're ignoring the values
+    // and initializing with other data.
     if (!EstimateAbsolutePose(abs_pose_options, tri_points2D, tri_points3D,
                               &image.Qvec(), &image.Tvec(), &camera, &num_inliers,
                               &inlier_mask)) {
         return false;
     }
+    // TODO(uladbohdan): to remove DEBUG output.
+    std::cout << "AFTER  IMAGE " << image_id << "  Q and T: " <<
+              *&image.Qvec()(0) << " " << *&image.Qvec()(1) << " " <<
+              *&image.Qvec()(2) << " " << *&image.Qvec()(3) << " | " <<
+              *&image.Tvec()(0) << " " << *&image.Tvec()(1) << " " << *&image.Tvec()(2) << std::endl;
+    std::cout << "\e[31mEND OF ESTIMATION.\e[0m" << std::endl;
 
     if (num_inliers < static_cast<size_t>(options.abs_pose_min_num_inliers)) {
         return false;
     }
 
+    std::cout << "\e[31mREFINEMENT.\e[0m" << std::endl;
+    std::cout << "BEFORE IMAGE " << image_id << "  Q and T: " <<
+              *&image.Qvec()(0) << " " << *&image.Qvec()(1) << " " << *&image.Qvec()(2) << " " << *&image.Qvec()(3)
+              << " | " <<
+              *&image.Tvec()(0) << " " << *&image.Tvec()(1) << " " << *&image.Tvec()(2) << std::endl;
+    // But here we're finally not ignoring the qvec and tvec and adding them into a problem.
     if (!RefineAbsolutePose(abs_pose_refinement_options, inlier_mask,
                             tri_points2D, tri_points3D, &image.Qvec(),
                             &image.Tvec(), &camera)) {
         return false;
     }
+    std::cout << "AFTER  IMAGE " << image_id << "  Q and T: " <<
+              *&image.Qvec()(0) << " " << *&image.Qvec()(1) << " " << *&image.Qvec()(2) << " " << *&image.Qvec()(3)
+              << " | " <<
+              *&image.Tvec()(0) << " " << *&image.Tvec()(1) << " " << *&image.Tvec()(2) << std::endl;
+    std::cout << "\e[31mEND OF REFINEMENT.\e[0m" << std::endl;
+
+
 
     // Looks like after all, if image passes all the obstructions it met - it can be added into reconstruction!
     reconstruction_->RegisterImage(image_id);
@@ -458,6 +502,7 @@ IncrementalMapper::AdjustLocalBundle(const Options& options,
         ba_config.AddImage(image_id);
         for (const image_t local_image_id : local_bundle) {
             ba_config.AddImage(local_image_id);
+
         }
 
         image_t constant_image_id = kInvalidImageId;
@@ -466,8 +511,14 @@ IncrementalMapper::AdjustLocalBundle(const Options& options,
             ba_config.SetConstantTvec(image_id, {0});
             constant_image_id = local_bundle[0];
         } else if (local_bundle.size() > 1) {
-            ba_config.SetConstantPose(local_bundle[local_bundle.size() - 1]);
-            ba_config.SetConstantTvec(local_bundle[local_bundle.size() - 2], {0});
+            if (options.use_drone_data && options.use_qvec_tvec_estimations) {
+                for (image_t image_id : local_bundle) {
+                    ba_config.SetConstantPose(image_id);
+                }
+            } else {
+                ba_config.SetConstantPose(local_bundle[local_bundle.size() - 1]);
+                ba_config.SetConstantTvec(local_bundle[local_bundle.size() - 2], {0});
+            }
             constant_image_id = local_bundle[local_bundle.size() - 1];
         }
 
@@ -525,13 +576,20 @@ bool IncrementalMapper::AdjustGlobalBundle(const BundleAdjuster::Options& ba_opt
     for (const image_t image_id : reg_image_ids) {
         ba_config.AddImage(image_id);
 
-        /*if (ba_options.use_drone_data) {
+        if (ba_options.use_drone_data) {
             camera_t camera_id = reconstruction_->Image(image_id).CameraId();
             ba_config.SetConstantCamera(camera_id);
-        }*/
+        }
     }
-    ba_config.SetConstantPose(reg_image_ids[0]);
-    ba_config.SetConstantTvec(reg_image_ids[1], {0});
+
+    if (ba_options.use_drone_data && ba_options.use_qvec_tvec_estimations) {
+        for (image_t image_id : reconstruction_->RegImageIds()) {
+            ba_config.SetConstantPose(image_id);
+        }
+    } else {
+        ba_config.SetConstantPose(reg_image_ids[0]);
+        ba_config.SetConstantTvec(reg_image_ids[1], {0});
+    }
 
 
     // This guy will finally run bundle adjustment with all the options and config parameters we're passing.

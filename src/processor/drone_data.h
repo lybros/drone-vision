@@ -1,12 +1,13 @@
 // Let's define the format of the file, which contains additional data from drone.
 // Depending on which sensors and detectors do we have on the drone, data set can vary.
 //
-// .drone_data0 - this extension keeps the following data:
+// drone_data.txt - this file keeps the following data:
 // * Assuming we have one physical camera.
+// * Every image stores quaternion which defines camera rotation and translation vector.
 //
 // <focal_length> <cx> <cy> <second_camera_distortion> <fourth_camera_distortion>
 // <num_images>
-// <image_name_0> <4x1 vector qvec> <3x1 vector tvec (lat, lon, alt)>
+// <image_name_0> <4d quaternion vector> <3d translation vector (lat, lon, alt)>
 // ...
 // <image_name_num_images> ...
 
@@ -27,7 +28,7 @@ public:
         std::string image_name;
         image_t image_db_id;
         Eigen::Vector4d qvec;
-        Eigen::Vector3d tvec; // gps data
+        Eigen::Vector3d tvec;
     };
 
     bool Read();

@@ -31,7 +31,8 @@ public:
                 ImageSelectionMethod::MIN_UNCERTAINTY;
 
         // Initialized in MapperOptions::IncrementalMapperOptions().
-        bool use_drone_data = true;
+        bool use_drone_data;
+        bool use_qvec_tvec_estimations;
 
         void Check() const;
     };

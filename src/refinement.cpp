@@ -90,6 +90,8 @@ bool EstimateAbsolutePose(const AbsolutePoseEstimationOptions& options,
         }
     }
 
+    // Retrieving quaternion and translation vector from project matrix 3x4. Completely ignoring whatever
+    // we had in qvec/tvec before.
     *qvec = RotationMatrixToQuaternion(proj_matrix.leftCols<3>());
     *tvec = proj_matrix.rightCols<1>();
 

@@ -193,6 +193,7 @@ struct MapperOptions : public BaseOptions {
     bool ba_refine_extra_params;
 
     bool ba_use_drone_data;
+    bool ba_use_qvec_tvec_estimations;
 
     int ba_local_num_images;
     int ba_local_max_num_iterations;

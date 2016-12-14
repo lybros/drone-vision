@@ -6,6 +6,8 @@
 struct AbsolutePoseEstimationOptions {
     bool estimate_focal_length = false;
 
+    bool use_qvec_tvec_estimations;
+
     size_t num_focal_length_samples = 30;
 
     double min_focal_length_ratio = 0.2;
@@ -27,6 +29,8 @@ struct AbsolutePoseRefinementOptions {
     int max_num_iterations = 100;
 
     double loss_function_scale = 1.0;
+
+    bool use_qvec_tvec_estimations;
 
     bool refine_focal_length = true;
 

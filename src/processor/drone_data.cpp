@@ -69,7 +69,7 @@ void DroneData::Print() {
         std::cout << "  Image: " << image.image_name << std::endl;
         std::cout << "    in database as: " << image.image_db_id << std::endl;
         std::cout << "    Qvec: " << image.qvec(0) << " "
-                  << image.qvec(1) << " " << image.qvec(2) << std::endl;
+                  << image.qvec(1) << " " << image.qvec(2) << " " << image.qvec(3) << std::endl;
         std::cout << "    Tvec (GPS data): " << image.tvec(0) << " "
                   << image.tvec(1) << " " << image.tvec(2) << std::endl;
     }

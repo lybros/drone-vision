@@ -58,7 +58,6 @@ bool BundleAdjustmentConfiguration::IsConstantCamera(
 }
 
 void BundleAdjustmentConfiguration::SetConstantPose(const image_t image_id) {
-    // Why to use macros from GLOG package (which stands for google logging)?
     CHECK(HasImage(image_id));
     CHECK(!HasConstantTvec(image_id));
     constant_poses_.insert(image_id);
@@ -354,18 +353,18 @@ void BundleAdjuster::ParameterizeCameras(Reconstruction* reconstruction) {
                                  !options_.refine_principal_point &&
                                  !options_.refine_extra_params;
     // TODO(uladbohdan): to remove the following code.
-    std::cout << "making sure what are the options: " << options_.refine_focal_length << " " <<
+     std::cout << "making sure what are the options: " << options_.refine_focal_length << " " <<
               options_.refine_principal_point << " " << options_.refine_extra_params << std::endl;
     for (const camera_t camera_id : camera_ids_) {
         Camera& camera = reconstruction->Camera(camera_id);
 
         if (constant_camera || config_.IsConstantCamera(camera_id)) {
             // TODO(uladbohdan): to remove the following code.
-            std::cout << "CAMERA CONST PARAMS: ";
+            /*std::cout << "CAMERA CONST PARAMS: ";
             for (double p : camera.Params()) {
                 std::cout << p << " ";
             }
-            std::cout << std::endl;
+            std::cout << std::endl; */
 
             problem_->SetParameterBlockConstant(camera.ParamsData());
             continue;
@@ -391,11 +390,11 @@ void BundleAdjuster::ParameterizeCameras(Reconstruction* reconstruction) {
             // Just indices which will allow us to get data from params_ vector.
 
             // TODO(uladbohdan): to remove the following code.
-            std::cout << "CAMERA NON-CONST PARAMS: ";
+            /*std::cout << "CAMERA NON-CONST PARAMS: ";
             for (double p : camera.Params()) {
                 std::cout << p << " ";
             }
-            std::cout << std::endl;
+            std::cout << std::endl; */
 
             if (const_camera_params.size() > 0) {
                 ceres::SubsetParameterization* camera_params_parameterization =

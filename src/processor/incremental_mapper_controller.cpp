@@ -259,11 +259,12 @@ void IncrementalMapperController::run() {
               "use_drone_data: " << mapper_options.ba_use_drone_data << std::endl <<
               "refine_focal_length: " << mapper_options.ba_refine_focal_length << std::endl <<
               "refine_principal_point " << mapper_options.ba_refine_principal_point << std::endl <<
-              "refine_extra_params " << mapper_options.ba_refine_extra_params << std::endl;
+              "refine_extra_params " << mapper_options.ba_refine_extra_params << std::endl <<
+              "use_qvec_tvec_estimations " << mapper_options.ba_use_qvec_tvec_estimations << std::endl;
 
     if (mapper_options.ba_use_drone_data) {
         if (!UseDroneData(&database_cache)) {
-            std::cerr << "Failed to use drone data, aborting reconstruction process." << std::endl;
+            std::cerr << "Failed to apply drone data, aborting reconstruction process." << std::endl;
             return;
         } else {
             std::cout << "Drone data successfully applied to database." << std::endl;
@@ -411,6 +412,16 @@ void IncrementalMapperController::run() {
             }
 
             for (size_t reg_trial = 0; reg_trial < next_images.size(); ++reg_trial) {
+                // DEBUG output:
+                std::cout << "\e[31mInfo about registered images (image, Q and T):\e[0m" << std::endl;
+                for (image_t image_id : reconstruction.RegImageIds()) {
+                    Image& im = reconstruction.Image(image_id);
+                    std::cout << image_id << "  |  ";
+                    std::cout << im.Qvec()(0) << " " << im.Qvec()(1) << " " << im.Qvec()(2) << " " << im.Qvec()(3) << "  |  ";
+                    std::cout << im.Tvec()(0) << " " << im.Tvec()(1) << " " << im.Tvec()(2) << std::endl;
+                }
+                std::cout << "\e[31mEnd of info.\e[0m" << std::endl;
+
                 // Trying to add every image from the list we have.
                 const image_t next_image_id = next_images[reg_trial];
                 const Image& next_image = reconstruction.Image(next_image_id);
@@ -521,6 +532,16 @@ void IncrementalMapperController::run() {
             mapper.NumTotalRegImages() >= database_cache.NumImages() - 1) {
             break;
         }
+
+        // DEBUG output:
+        std::cout << "\e[31mFINAL Info about registered images (image, Q and T):\e[0m" << std::endl;
+        for (image_t image_id : reconstruction.RegImageIds()) {
+            Image& im = reconstruction.Image(image_id);
+            std::cout << image_id << "  |  ";
+            std::cout << im.Qvec()(0) << " " << im.Qvec()(1) << " " << im.Qvec()(2) << " " << im.Qvec()(3) << "  |  ";
+            std::cout << im.Tvec()(0) << " " << im.Tvec()(1) << " " << im.Tvec()(2) << std::endl;
+        }
+        std::cout << "\e[31mEnd of info.\e[0m" << std::endl;
     }
 
     std::cout << std::endl;

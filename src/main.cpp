@@ -18,8 +18,25 @@ int main(int argc, char** argv) {
         MainWindow main_window(binary_path);
         main_window.show();
         return app.exec();
-    }
-    else if (mode == "pmvs") {
+    } else if (mode == "experiment") {
+        if (argc != 7) {
+            std::cerr << "Cannot run experiment mode with number of arguments != 7, sorry." << std::endl;
+        }
+        std::string use_drone_data = argv[2];
+        std::string use_qvec_tvec_estimations = argv[3];
+        std::string refine_focal_length = argv[4];
+        std::string refine_principal_point = argv[5];
+        std::string refine_extra_params = argv[6];
+
+        MainWindow main_window(binary_path);
+        main_window.SetExperimentalFlags(use_drone_data == "1",
+                                         use_qvec_tvec_estimations == "1",
+                                         refine_focal_length == "1",
+                                         refine_principal_point == "1",
+                                         refine_extra_params == "1");
+        main_window.show();
+        return app.exec();
+    } else if (mode == "pmvs") {
         std::cerr << "Get arguments " << argv[2] << " " << argv[3] << std::endl;
         PMVS3::Soption option;
         option.init(argv[2], argv[3]);
@@ -32,8 +49,7 @@ int main(int argc, char** argv) {
         sprintf(buffer, "%smodels/%s", argv[2], argv[3]);
         findMatch.write(buffer, true, true, true);
         return 0;
-    }
-    else if (mode == "cmvs") {
+    } else if (mode == "cmvs") {
         int maximage = 100;
         if (argc >= 4)
             maximage = atoi(argv[3]);

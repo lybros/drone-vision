@@ -396,6 +396,7 @@ void MapperOptions::Reset() {
 
     // Defines how to process with drone data.
     ba_use_drone_data = true;
+    ba_use_qvec_tvec_estimations = true;
     ba_refine_focal_length = false;
     ba_refine_principal_point = false;
     ba_refine_extra_params = true;
@@ -451,6 +452,7 @@ IncrementalMapper::Options MapperOptions::IncrementalMapperOptions() const {
     options.max_extra_param = max_extra_param;
     options.num_threads = num_threads;
     options.use_drone_data = ba_use_drone_data;
+    options.use_qvec_tvec_estimations = ba_use_qvec_tvec_estimations;
     return options;
 }
 
@@ -480,6 +482,7 @@ BundleAdjuster::Options MapperOptions::LocalBundleAdjustmentOptions() const {
     options.loss_function_type =
             BundleAdjuster::Options::LossFunctionType::CAUCHY;
     options.use_drone_data = ba_use_drone_data;
+    options.use_qvec_tvec_estimations = ba_use_qvec_tvec_estimations;
     return options;
 }
 
@@ -500,6 +503,7 @@ BundleAdjuster::Options MapperOptions::GlobalBundleAdjustmentOptions() const {
     options.loss_function_type =
             BundleAdjuster::Options::LossFunctionType::TRIVIAL;
     options.use_drone_data = ba_use_drone_data;
+    options.use_qvec_tvec_estimations = ba_use_qvec_tvec_estimations;
     return options;
 }
 

@@ -254,7 +254,8 @@ public:
 
         // Initialized in MapperOptions::GlobalBundleAdjustmentOptions() &
         //                MapperOptions::LocalBundleAdjustmentOptions()
-        bool use_drone_data = true;
+        bool use_drone_data;
+        bool use_qvec_tvec_estimations;
 
         ceres::Solver::Options solver_options;
 
