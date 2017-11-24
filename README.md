@@ -1,8 +1,12 @@
 # drone-vision
-Course work on [FAMCS](http://www.fpmi.bsu.by/en/main.aspx), [BSU](http://www.bsu.by/en/main.aspx) and [UIIP](http://uiip.bas-net.by/eng/), [NASB](http://nasb.gov.by/eng/)
+
+Course work on [FAMCS](http://www.fpmi.bsu.by/en/main.aspx),
+[BSU](http://www.bsu.by/en/main.aspx) and [UIIP](http://uiip.bas-net.by/eng/),
+[NASB](http://nasb.gov.by/eng/)
 
 ### requirements:
-* [Qt](https://www.qt.io/download/)  ~5.7
+
+* [Qt](https://www.qt.io/download/) ~5.7
 * [cmake](https://cmake.org/download/) ~3.5.2
 * [OpenCV](https://www.gittip.com/OpenCV/) ~2.4.13
 * [FreeImage](http://freeimage.sourceforge.net/) ~3.17.0
@@ -16,16 +20,21 @@ Course work on [FAMCS](http://www.fpmi.bsu.by/en/main.aspx), [BSU](http://www.bs
 * Threads
 
 ### install:
+
 #### for mac os:
+
 ```
 bash mac_os_install.sh
 ```
-install all requirements via [Homebrew](http://brew.sh/), you can switch on needed version with ```brew switch <formula> <version>```
+
+install all requirements via [Homebrew](http://brew.sh/), you can switch on
+needed version with `brew switch <formula> <version>`
 
 ### build:
-set ```<path_to_qt_cmake>``` for example ```$HOME/Qt/5.7/clang_64/lib/cmake/```
-set ```(CMAKE_PREFIX_PATH, <path_to_qt_cmake>)``` in ```CMakeLists.txt:9```
-and run:
+
+set `<path_to_qt_cmake>` for example `$HOME/Qt/5.7/clang_64/lib/cmake/` set
+`(CMAKE_PREFIX_PATH, <path_to_qt_cmake>)` in `CMakeLists.txt:9` and run:
+
 ```
 mkdir release && cd release
 cmake -D CMAKE_BUILD_TYPE=RELEASE -DCMAKE_PREFIX_PATH=<path_to_qt_cmake> ..
@@ -33,14 +42,17 @@ make -j4
 ```
 
 or just run:
+
 ```
 bash build.sh
 ```
 
 ### run:
+
 ```
 bash run.sh
 ```
+
 or
 
 ```
@@ -48,9 +60,10 @@ or
 ```
 
 ### development:
-* import code style settings for JetBrains IDEs from ```CodeStyle.xml```
 
-* use ```utils/find_obj.py``` for bruteforce matching images, usage:
-    ```
-    python find_obj.py <image_to_find> # --feature=orb --in=in/ --out=out/ by default
-    ```
+* import code style settings for JetBrains IDEs from `CodeStyle.xml`
+
+* use `utils/find_obj.py` for bruteforce matching images, usage:
+  ```
+  python find_obj.py <image_to_find> # --feature=orb --in=in/ --out=out/ by default
+  ```
